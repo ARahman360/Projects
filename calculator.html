@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calculator</title>
+    <style>
+      :root {
+        --bg: #0f172a;
+        --panel: #111827;
+        --panel-alt: #1f2937;
+        --display: #e2e8f0;
+        --button: #374151;
+        --button-hover: #4b5563;
+        --operator: #f59e0b;
+        --operator-hover: #fbbf24;
+        --action: #475569;
+        --action-hover: #64748b;
+        --text: #f8fafc;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(135deg, #020617, #0f172a 50%, #111827);
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      .calculator {
+        width: min(92vw, 360px);
+        background: var(--panel);
+        border-radius: 24px;
+        padding: 18px;
+        box-shadow: 0 25px 60px rgba(15, 23, 42, 0.7);
+      }
+
+      .display {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        min-height: 90px;
+        padding: 18px 14px;
+        margin-bottom: 18px;
+        border-radius: 18px;
+        background: rgba(15, 23, 42, 0.9);
+        color: var(--display);
+        font-size: clamp(2rem, 6vw, 3rem);
+        overflow: hidden;
+        text-align: right;
+        word-break: break-all;
+      }
+
+      .keys {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      button {
+        appearance: none;
+        border: none;
+        border-radius: 16px;
+        background: var(--button);
+        color: var(--text);
+        font-size: 1.5rem;
+        font-weight: 700;
+        min-height: 68px;
+        cursor: pointer;
+        transition: transform 0.15s ease, filter 0.15s ease, background 0.15s ease;
+      }
+
+      button:hover {
+        filter: brightness(1.08);
+      }
+
+      button:active {
+        transform: scale(0.97);
+      }
+
+      .action {
+        background: var(--action);
+      }
+
+      .action:hover {
+        background: var(--action-hover);
+      }
+
+      .operator {
+        background: var(--operator);
+      }
+
+      .operator:hover {
+        background: var(--operator-hover);
+      }
+
+      .zero {
+        grid-column: span 2;
+      }
+
+      .equals {
+        grid-column: span 2;
+        background: #10b981;
+      }
+
+      .equals:hover {
+        background: #34d399;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="calculator" aria-label="Calculator application">
+      <div id="display" class="display" aria-live="polite">0</div>
+      <div class="keys">
+        <button type="button" class="action" data-action="clear">C</button>
+        <button type="button" class="action" data-action="delete">DEL</button>
+        <button type="button" class="action" data-action="operator" data-value="/">÷</button>
+        <button type="button" class="operator" data-action="operator" data-value="*">×</button>
+
+        <button type="button" data-action="digit" data-value="7">7</button>
+        <button type="button" data-action="digit" data-value="8">8</button>
+        <button type="button" data-action="digit" data-value="9">9</button>
+        <button type="button" class="operator" data-action="operator" data-value="-">−</button>
+
+        <button type="button" data-action="digit" data-value="4">4</button>
+        <button type="button" data-action="digit" data-value="5">5</button>
+        <button type="button" data-action="digit" data-value="6">6</button>
+        <button type="button" class="operator" data-action="operator" data-value="+">+</button>
+
+        <button type="button" data-action="digit" data-value="1">1</button>
+        <button type="button" data-action="digit" data-value="2">2</button>
+        <button type="button" data-action="digit" data-value="3">3</button>
+        <button type="button" class="equals" data-action="equals">=</button>
+
+        <button type="button" class="zero" data-action="digit" data-value="0">0</button>
+        <button type="button" data-action="decimal" data-value=".">.</button>
+      </div>
+    </main>
+
+    <script src="./learn.js"></script>
+  </body>
+</html>
