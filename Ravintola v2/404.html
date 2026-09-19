@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>Page not found | Halali</title>
+    <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem('halaliTheme');
+        var wantsDark = stored ? stored === 'dark' : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (wantsDark) document.documentElement.setAttribute('data-theme', 'dark');
+      } catch (e) {}
+    })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="enhancements.css">
+</head>
+<body class="error-page">
+    <header class="error-header">
+        <a class="logo" href="index.html" aria-label="Halali home">
+            <span class="logo-mark" aria-hidden="true"><i></i><b></b></span>
+            <span class="logo-name"><em>H</em>alali</span>
+        </a>
+        <button type="button" class="icon-toggle" data-theme-toggle aria-label="Toggle dark mode" aria-pressed="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"></path></svg>
+        </button>
+    </header>
+    <main>
+        <div class="error-hero">
+            <span class="error-mark" aria-hidden="true"></span>
+            <p class="error-eyebrow">404 · Wrong table</p>
+            <h1>This page<br>wandered <em>off menu.</em></h1>
+            <p>The page you're looking for isn't on tonight's menu — it may have moved, or the link might be off. There's still plenty else to come hungry for.</p>
+            <div class="error-actions">
+                <a class="button" href="index.html">Back to Halali <span aria-hidden="true">↗</span></a>
+                <a class="text-link dark-link" href="index.html#menu">See the menu <span aria-hidden="true">↗</span></a>
+                <a class="text-link dark-link" href="index.html#reserve">Reserve a table <span aria-hidden="true">↗</span></a>
+            </div>
+        </div>
+    </main>
+    <script>
+    (function () {
+      var btn = document.querySelector('[data-theme-toggle]');
+      if (!btn) return;
+      var root = document.documentElement;
+      function isDark() { return root.getAttribute('data-theme') === 'dark'; }
+      function reflect() { btn.setAttribute('aria-pressed', isDark() ? 'true' : 'false'); }
+      btn.addEventListener('click', function () {
+        var dark = !isDark();
+        if (dark) root.setAttribute('data-theme', 'dark'); else root.removeAttribute('data-theme');
+        try { localStorage.setItem('halaliTheme', dark ? 'dark' : 'light'); } catch (e) {}
+        reflect();
+      });
+      reflect();
+    })();
+    </script>
+</body>
+</html>

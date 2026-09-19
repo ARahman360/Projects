@@ -1,0 +1,110 @@
+/* ==========================================================================
+   Halali — print.css
+   Loaded only via <link media="print">, so every rule here only applies
+   when printing. Forces a clean, light, paper-friendly layout regardless
+   of whether dark mode is active on screen.
+   ========================================================================== */
+
+@page {
+  margin: 1.5cm;
+}
+
+html, body {
+  background: #fff !important;
+  color: #000 !important;
+}
+
+/* Reset the ink/cream/line variables for print, since dark mode's
+   attribute-based overrides carry no media restriction of their own. */
+:root, html[data-theme="dark"] {
+  --ink: #1a1a1a;
+  --cream: #ffffff;
+  --line: rgba(0, 0, 0, 0.25);
+}
+
+/* Chrome that means nothing on paper */
+.site-header,
+.skip-link,
+.more-menu,
+.page-nav,
+.account-modal,
+.scroll-progress,
+.back-to-top,
+.contact-fab,
+.search-overlay,
+.cookie-banner,
+.confirm-modal,
+.toast,
+.marquee,
+.menu-toolbar,
+.menu-overview,
+.hero-actions,
+.order-panel,
+.newsletter-form,
+.checkout-button,
+form,
+.footer-top .button-light {
+  display: none !important;
+}
+
+main {
+  padding: 0 !important;
+}
+
+.section {
+  break-inside: avoid;
+  padding: 24px 0 !important;
+}
+
+.menu-card {
+  break-inside: avoid;
+  border: 1px solid #ccc !important;
+  box-shadow: none !important;
+}
+
+.dish-image {
+  display: none !important;
+}
+
+.experience-card-image img,
+.hero-image img,
+.story-image img,
+.reserve-art img,
+.visit-map img,
+.delivery-photo img {
+  max-width: 100% !important;
+}
+
+a {
+  color: #000 !important;
+  text-decoration: underline;
+}
+
+a[href^="http"]:not(.logo)::after {
+  content: " (" attr(href) ")";
+  font-size: 10px;
+  word-break: break-all;
+}
+
+.site-footer {
+  background: none !important;
+  color: #000 !important;
+}
+
+.site-footer a {
+  color: #000 !important;
+}
+
+.faq-answer {
+  display: block !important;
+  grid-template-rows: none !important;
+}
+
+.faq-answer-inner {
+  overflow: visible !important;
+  padding-bottom: 12px !important;
+}
+
+.faq-icon {
+  display: none !important;
+}
