@@ -1,0 +1,396 @@
+// Home Foods database schema
+// Prisma 8
+
+enum UserRole {
+  CUSTOMER
+  SELLER
+  RIDER
+  ADMIN
+}
+
+enum ShopStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  CLOSED
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY_FOR_PICKUP
+  PICKED_UP
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum PaymentMethod {
+  CARD
+  CASH
+  ONLINE
+}
+
+enum DeliveryStatus {
+  UNASSIGNED
+  ASSIGNED
+  ACCEPTED
+  PICKED_UP
+  IN_TRANSIT
+  DELIVERED
+  FAILED
+}
+
+enum SubscriptionPlanType {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAUSED
+  CANCELLED
+  EXPIRED
+}
+
+enum AddressType {
+  HOME
+  WORK
+  OTHER
+}
+
+model User {
+  id          Int      @id @default(autoincrement())
+  email       String   @unique
+  password    String
+  name        String?
+  phone       String?
+  role        UserRole @default(CUSTOMER)
+  avatarUrl   String?
+
+  shops       Shop[]
+  addresses   Address[]
+  carts       Cart[]
+  orders      Order[]
+  reviews     Review[]
+  rider       Rider?
+
+  createdAt   TimestamptzString @default(now())
+  updatedAt   temporal.updatedAtString()
+}
+
+model Shop {
+  id              Int        @id @default(autoincrement())
+  sellerId        Int
+  name            String
+  description     String?
+  logoUrl         String?
+  coverImageUrl   String?
+  phone           String?
+  email           String?
+  address         String?
+  city            String?
+  latitude        Float?
+  longitude       Float?
+  status          ShopStatus @default(PENDING)
+  minimumOrder    Float?
+  deliveryFee     Float?
+  estimatedMinutes Int?
+
+  seller          User       @relation(fields: [sellerId], references: [id])
+  categories      MenuCategory[]
+  menuItems       MenuItem[]
+  orders          Order[]
+  subscriptionPlans SubscriptionPlan[]
+  reviews         Review[]
+
+  createdAt       TimestamptzString @default(now())
+  updatedAt       temporal.updatedAtString()
+
+  @@index([sellerId])
+  @@index([status])
+}
+
+model MenuCategory {
+  id          Int      @id @default(autoincrement())
+  shopId      Int
+  name        String
+  description String?
+  imageUrl    String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+
+  shop        Shop     @relation(fields: [shopId], references: [id])
+  items       MenuItem[]
+
+  createdAt   TimestamptzString @default(now())
+  updatedAt   temporal.updatedAtString()
+
+  @@index([shopId])
+}
+
+model MenuItem {
+  id          Int      @id @default(autoincrement())
+  shopId      Int
+  categoryId  Int?
+  name        String
+  description String?
+  imageUrl    String?
+  price       Float
+  isAvailable Boolean  @default(true)
+  isFeatured  Boolean  @default(false)
+  sortOrder   Int      @default(0)
+
+  shop        Shop          @relation(fields: [shopId], references: [id])
+  category    MenuCategory? @relation(fields: [categoryId], references: [id])
+  options     MenuItemOption[]
+  cartItems   CartItem[]
+  orderItems  OrderItem[]
+
+  createdAt   TimestamptzString @default(now())
+  updatedAt   temporal.updatedAtString()
+
+  @@index([shopId])
+  @@index([categoryId])
+}
+
+model MenuItemOption {
+  id          Int      @id @default(autoincrement())
+  menuItemId  Int
+  name        String
+  price       Float    @default(0)
+  isAvailable Boolean  @default(true)
+
+  menuItem    MenuItem @relation(fields: [menuItemId], references: [id])
+
+  createdAt   TimestamptzString @default(now())
+  updatedAt   temporal.updatedAtString()
+
+  @@index([menuItemId])
+}
+
+model Address {
+  id          Int         @id @default(autoincrement())
+  userId      Int
+  type        AddressType @default(HOME)
+  label       String?
+  addressLine1 String
+  addressLine2 String?
+  city        String
+  postalCode  String?
+  latitude    Float?
+  longitude   Float?
+  isDefault   Boolean     @default(false)
+
+  user        User        @relation(fields: [userId], references: [id])
+  orders      Order[]
+
+  createdAt   TimestamptzString @default(now())
+  updatedAt   temporal.updatedAtString()
+
+  @@index([userId])
+}
+
+model Cart {
+  id          Int        @id @default(autoincrement())
+  userId      Int
+  user        User       @relation(fields: [userId], references: [id])
+  items       CartItem[]
+
+  createdAt   TimestamptzString @default(now())
+  updatedAt   temporal.updatedAtString()
+
+  @@unique([userId])
+}
+
+model CartItem {
+  id          Int      @id @default(autoincrement())
+  cartId      Int
+  menuItemId  Int
+  quantity    Int      @default(1)
+  unitPrice   Float
+
+  cart        Cart     @relation(fields: [cartId], references: [id])
+  menuItem    MenuItem @relation(fields: [menuItemId], references: [id])
+
+  createdAt   TimestamptzString @default(now())
+  updatedAt   temporal.updatedAtString()
+
+  @@index([cartId])
+  @@index([menuItemId])
+}
+
+model Order {
+  id              Int           @id @default(autoincrement())
+  orderNumber     String        @unique
+  customerId      Int
+  shopId          Int
+  addressId       Int?
+
+  status          OrderStatus   @default(PENDING)
+  subtotal        Float
+  deliveryFee     Float         @default(0)
+  serviceFee      Float         @default(0)
+  discount        Float         @default(0)
+  total           Float
+  notes           String?
+
+  customer        User          @relation(fields: [customerId], references: [id])
+  shop            Shop          @relation(fields: [shopId], references: [id])
+  address         Address?      @relation(fields: [addressId], references: [id])
+
+  items           OrderItem[]
+  payment         Payment?
+  delivery        Delivery?
+  review          Review?
+
+  createdAt       TimestamptzString @default(now())
+  updatedAt       temporal.updatedAtString()
+
+  @@index([customerId])
+  @@index([shopId])
+  @@index([status])
+}
+
+model OrderItem {
+  id          Int      @id @default(autoincrement())
+  orderId     Int
+  menuItemId  Int
+  name        String
+  quantity    Int
+  unitPrice   Float
+  totalPrice  Float
+  options     String?
+
+  order       Order    @relation(fields: [orderId], references: [id])
+  menuItem    MenuItem @relation(fields: [menuItemId], references: [id])
+
+  createdAt   TimestamptzString @default(now())
+
+  @@index([orderId])
+  @@index([menuItemId])
+}
+
+model Payment {
+  id              Int           @id @default(autoincrement())
+  orderId         Int           @unique
+  amount          Float
+  currency        String        @default("USD")
+  method          PaymentMethod
+  status          PaymentStatus @default(PENDING)
+  transactionId   String?
+  provider        String?
+  providerPaymentId String?
+
+  order           Order         @relation(fields: [orderId], references: [id])
+
+  createdAt       TimestamptzString @default(now())
+  updatedAt       temporal.updatedAtString()
+}
+
+model Rider {
+  id              Int      @id @default(autoincrement())
+  userId          Int      @unique
+  isAvailable     Boolean  @default(false)
+  vehicleType     String?
+  vehicleNumber   String?
+  currentLatitude Float?
+  currentLongitude Float?
+
+  user            User     @relation(fields: [userId], references: [id])
+  deliveries      Delivery[]
+
+  createdAt       TimestamptzString @default(now())
+  updatedAt       temporal.updatedAtString()
+}
+
+model Delivery {
+  id              Int            @id @default(autoincrement())
+  orderId         Int            @unique
+  riderId         Int?
+  status          DeliveryStatus @default(UNASSIGNED)
+  pickupTime      TimestamptzString?
+  pickedUpTime    TimestamptzString?
+  deliveredTime   TimestamptzString?
+  estimatedTime   Int?
+  notes           String?
+
+  order           Order          @relation(fields: [orderId], references: [id])
+  rider           Rider?         @relation(fields: [riderId], references: [id])
+
+  createdAt       TimestamptzString @default(now())
+  updatedAt       temporal.updatedAtString()
+
+  @@index([riderId])
+  @@index([status])
+}
+
+model SubscriptionPlan {
+  id              Int                  @id @default(autoincrement())
+  shopId          Int
+  name            String
+  description     String?
+  type            SubscriptionPlanType
+  price           Float
+  mealsPerPeriod  Int                  @default(1)
+  isActive        Boolean              @default(true)
+
+  shop            Shop                 @relation(fields: [shopId], references: [id])
+  subscriptions   Subscription[]
+
+  createdAt       TimestamptzString @default(now())
+  updatedAt       temporal.updatedAtString()
+
+  @@index([shopId])
+}
+
+model Subscription {
+  id              Int                @id @default(autoincrement())
+  customerId      Int
+  planId          Int
+  status          SubscriptionStatus @default(ACTIVE)
+  startDate       TimestamptzString
+  endDate         TimestamptzString?
+  nextDelivery    TimestamptzString?
+  autoRenew       Boolean            @default(true)
+
+  customer        User               @relation(fields: [customerId], references: [id])
+  plan            SubscriptionPlan   @relation(fields: [planId], references: [id])
+
+  createdAt       TimestamptzString @default(now())
+  updatedAt       temporal.updatedAtString()
+
+  @@index([customerId])
+  @@index([planId])
+  @@index([status])
+}
+
+model Review {
+  id          Int      @id @default(autoincrement())
+  customerId  Int
+  shopId      Int
+  orderId     Int      @unique
+  rating      Int
+  comment     String?
+
+  customer    User     @relation(fields: [customerId], references: [id])
+  shop        Shop     @relation(fields: [shopId], references: [id])
+  order       Order    @relation(fields: [orderId], references: [id])
+
+  createdAt   TimestamptzString @default(now())
+  updatedAt   temporal.updatedAtString()
+
+  @@index([shopId])
+  @@index([customerId])
+}
