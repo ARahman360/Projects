@@ -8,6 +8,13 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "node --experimental-strip-types --import dotenv/config --test tests/catalog-filter.test.mjs tests/location.test.mjs tests/feature-flags.test.mjs tests/request-security.test.mjs tests/session-secret.test.mjs",
+    "db:migrate": "prisma db migrate",
+    "seed:marketplace": "tsx scripts/seed-marketplace.ts",
+    "repair:fixture-plans": "tsx scripts/repair-fixture-plans.ts",
+    "set:test-passwords": "tsx scripts/set-test-account-passwords.ts",
+    "repair:test-data": "tsx scripts/seed-marketplace.ts",
+    "admin:promote": "tsx scripts/promote-admin.ts",
     "postinstall": "prisma skills sync || exit 0",
     "contract:emit": "prisma contract emit"
   },

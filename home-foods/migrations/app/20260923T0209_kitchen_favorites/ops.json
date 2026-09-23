@@ -1,0 +1,245 @@
+[
+  {
+    "id": "table.kitchenFavorite",
+    "label": "Create table \"kitchenFavorite\"",
+    "summary": "Creates table \"kitchenFavorite\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "kitchenFavorite"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"kitchenFavorite\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"kitchenFavorite\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"kitchenFavorite\"",
+        "sql": "CREATE TABLE \"public\".\"kitchenFavorite\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"customerId\" int4 NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"shopId\" int4 NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"kitchenFavorite\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"kitchenFavorite\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.kitchenFavorite.kitchenFavorite_customerId_shopId_key",
+    "label": "Add unique constraint on \"kitchenFavorite\" (customerId, shopId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "kitchenFavorite_customerId_shopId_key",
+        "table": "kitchenFavorite"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"kitchenFavorite_customerId_shopId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "kitchenFavorite_customerId_shopId_key",
+          "public",
+          "\"public\".\"kitchenFavorite\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"kitchenFavorite_customerId_shopId_key\"",
+        "sql": "ALTER TABLE \"public\".\"kitchenFavorite\" ADD CONSTRAINT \"kitchenFavorite_customerId_shopId_key\" UNIQUE (\"customerId\", \"shopId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"kitchenFavorite_customerId_shopId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "kitchenFavorite_customerId_shopId_key",
+          "public",
+          "\"public\".\"kitchenFavorite\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.kitchenFavorite.kitchenFavorite_customerId_idx_b2a8a46c",
+    "label": "Create index \"kitchenFavorite_customerId_idx_b2a8a46c\" on \"kitchenFavorite\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "kitchenFavorite_customerId_idx_b2a8a46c",
+        "table": "kitchenFavorite"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"kitchenFavorite_customerId_idx_b2a8a46c\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"kitchenFavorite_customerId_idx_b2a8a46c\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"kitchenFavorite_customerId_idx_b2a8a46c\"",
+        "sql": "CREATE INDEX \"kitchenFavorite_customerId_idx_b2a8a46c\" ON \"public\".\"kitchenFavorite\" (\"customerId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"kitchenFavorite_customerId_idx_b2a8a46c\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"kitchenFavorite_customerId_idx_b2a8a46c\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.kitchenFavorite.kitchenFavorite_shopId_idx_e9207c6b",
+    "label": "Create index \"kitchenFavorite_shopId_idx_e9207c6b\" on \"kitchenFavorite\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "kitchenFavorite_shopId_idx_e9207c6b",
+        "table": "kitchenFavorite"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"kitchenFavorite_shopId_idx_e9207c6b\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"kitchenFavorite_shopId_idx_e9207c6b\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"kitchenFavorite_shopId_idx_e9207c6b\"",
+        "sql": "CREATE INDEX \"kitchenFavorite_shopId_idx_e9207c6b\" ON \"public\".\"kitchenFavorite\" (\"shopId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"kitchenFavorite_shopId_idx_e9207c6b\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"kitchenFavorite_shopId_idx_e9207c6b\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.kitchenFavorite.kitchenFavorite_customerId_fkey",
+    "label": "Add foreign key \"kitchenFavorite_customerId_fkey\" on \"kitchenFavorite\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "kitchenFavorite_customerId_fkey",
+        "table": "kitchenFavorite"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"kitchenFavorite_customerId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "kitchenFavorite_customerId_fkey",
+          "public",
+          "\"public\".\"kitchenFavorite\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"kitchenFavorite_customerId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"kitchenFavorite\"\nADD CONSTRAINT \"kitchenFavorite_customerId_fkey\"\nFOREIGN KEY (\"customerId\")\nREFERENCES \"public\".\"user\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"kitchenFavorite_customerId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "kitchenFavorite_customerId_fkey",
+          "public",
+          "\"public\".\"kitchenFavorite\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.kitchenFavorite.kitchenFavorite_shopId_fkey",
+    "label": "Add foreign key \"kitchenFavorite_shopId_fkey\" on \"kitchenFavorite\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "kitchenFavorite_shopId_fkey",
+        "table": "kitchenFavorite"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"kitchenFavorite_shopId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "kitchenFavorite_shopId_fkey",
+          "public",
+          "\"public\".\"kitchenFavorite\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"kitchenFavorite_shopId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"kitchenFavorite\"\nADD CONSTRAINT \"kitchenFavorite_shopId_fkey\"\nFOREIGN KEY (\"shopId\")\nREFERENCES \"public\".\"shop\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"kitchenFavorite_shopId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "kitchenFavorite_shopId_fkey",
+          "public",
+          "\"public\".\"kitchenFavorite\""
+        ]
+      }
+    ]
+  }
+]

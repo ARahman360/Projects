@@ -20,6 +20,14 @@
       "model": "Delivery",
       "namespace": "public"
     },
+    "favorite": {
+      "model": "Favorite",
+      "namespace": "public"
+    },
+    "kitchenFavorite": {
+      "model": "KitchenFavorite",
+      "namespace": "public"
+    },
     "menuCategory": {
       "model": "MenuCategory",
       "namespace": "public"
@@ -32,12 +40,24 @@
       "model": "MenuItemOption",
       "namespace": "public"
     },
+    "newsletterSubscriber": {
+      "model": "NewsletterSubscriber",
+      "namespace": "public"
+    },
     "order": {
       "model": "Order",
       "namespace": "public"
     },
     "orderItem": {
       "model": "OrderItem",
+      "namespace": "public"
+    },
+    "orderStatusEvent": {
+      "model": "OrderStatusEvent",
+      "namespace": "public"
+    },
+    "passwordResetToken": {
+      "model": "PasswordResetToken",
       "namespace": "public"
     },
     "payment": {
@@ -52,6 +72,14 @@
       "model": "Rider",
       "namespace": "public"
     },
+    "scheduledMeal": {
+      "model": "ScheduledMeal",
+      "namespace": "public"
+    },
+    "scheduledMealEvent": {
+      "model": "ScheduledMealEvent",
+      "namespace": "public"
+    },
     "shop": {
       "model": "Shop",
       "namespace": "public"
@@ -62,6 +90,10 @@
     },
     "subscriptionPlan": {
       "model": "SubscriptionPlan",
+      "namespace": "public"
+    },
+    "subscriptionPlanItem": {
+      "model": "SubscriptionPlanItem",
       "namespace": "public"
     },
     "user": {
@@ -235,6 +267,10 @@
                 "value": "DAILY"
               },
               {
+                "name": "THREE_DAY",
+                "value": "THREE_DAY"
+              },
+              {
                 "name": "WEEKLY",
                 "value": "WEEKLY"
               },
@@ -401,6 +437,21 @@
                 },
                 "to": {
                   "model": "Order",
+                  "namespace": "public"
+                }
+              },
+              "subscriptions": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "addressId"
+                  ]
+                },
+                "to": {
+                  "model": "Subscription",
                   "namespace": "public"
                 }
               },
@@ -824,6 +875,200 @@
               "table": "delivery"
             }
           },
+          "Favorite": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "customerId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "menuItemId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "shopId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "customer": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "customerId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              },
+              "menuItem": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "menuItemId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "MenuItem",
+                  "namespace": "public"
+                }
+              },
+              "shop": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "shopId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Shop",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "customerId": {
+                  "column": "customerId"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "menuItemId": {
+                  "column": "menuItemId"
+                },
+                "shopId": {
+                  "column": "shopId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "favorite"
+            }
+          },
+          "KitchenFavorite": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "customerId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "shopId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "customer": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "customerId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              },
+              "shop": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "shopId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Shop",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "customerId": {
+                  "column": "customerId"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "shopId": {
+                  "column": "shopId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "kitchenFavorite"
+            }
+          },
           "MenuCategory": {
             "fields": {
               "createdAt": {
@@ -1076,6 +1321,21 @@
                   "namespace": "public"
                 }
               },
+              "favorites": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "menuItemId"
+                  ]
+                },
+                "to": {
+                  "model": "Favorite",
+                  "namespace": "public"
+                }
+              },
               "options": {
                 "cardinality": "1:N",
                 "on": {
@@ -1119,6 +1379,21 @@
                 },
                 "to": {
                   "model": "Shop",
+                  "namespace": "public"
+                }
+              },
+              "subscriptionPlanItems": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "menuItemId"
+                  ]
+                },
+                "to": {
+                  "model": "SubscriptionPlanItem",
                   "namespace": "public"
                 }
               }
@@ -1262,6 +1537,67 @@
               },
               "namespaceId": "public",
               "table": "menuItemOption"
+            }
+          },
+          "NewsletterSubscriber": {
+            "fields": {
+              "consentAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "email": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "consentAt": {
+                  "column": "consentAt"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "email": {
+                  "column": "email"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "newsletterSubscriber"
             }
           },
           "Order": {
@@ -1467,6 +1803,22 @@
                   "namespace": "public"
                 }
               },
+              "scheduledMeal": {
+                "cardinality": "1:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "orderId"
+                  ]
+                },
+                "to": {
+                  "model": "ScheduledMeal",
+                  "namespace": "public"
+                }
+              },
               "shop": {
                 "cardinality": "N:1",
                 "nullable": false,
@@ -1480,6 +1832,21 @@
                 },
                 "to": {
                   "model": "Shop",
+                  "namespace": "public"
+                }
+              },
+              "statusEvents": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "orderId"
+                  ]
+                },
+                "to": {
+                  "model": "OrderStatusEvent",
                   "namespace": "public"
                 }
               }
@@ -1665,6 +2032,192 @@
               },
               "namespaceId": "public",
               "table": "orderItem"
+            }
+          },
+          "OrderStatusEvent": {
+            "fields": {
+              "actorId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "actorRole": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "domain": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "message": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "orderId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "order": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "orderId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Order",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "actorId": {
+                  "column": "actorId"
+                },
+                "actorRole": {
+                  "column": "actorRole"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "domain": {
+                  "column": "domain"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "message": {
+                  "column": "message"
+                },
+                "orderId": {
+                  "column": "orderId"
+                },
+                "status": {
+                  "column": "status"
+                }
+              },
+              "namespaceId": "public",
+              "table": "orderStatusEvent"
+            }
+          },
+          "PasswordResetToken": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "expiresAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "tokenHash": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "userId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "user": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "userId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "expiresAt": {
+                  "column": "expiresAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "tokenHash": {
+                  "column": "tokenHash"
+                },
+                "userId": {
+                  "column": "userId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "passwordResetToken"
             }
           },
           "Payment": {
@@ -2090,6 +2643,293 @@
               "table": "rider"
             }
           },
+          "ScheduledMeal": {
+            "fields": {
+              "billingEventKey": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "deliveredAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "notes": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "orderId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "portions": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "scheduledAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "sequence": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "subscriptionId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "timeZone": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "events": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "scheduledMealId"
+                  ]
+                },
+                "to": {
+                  "model": "ScheduledMealEvent",
+                  "namespace": "public"
+                }
+              },
+              "order": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "orderId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Order",
+                  "namespace": "public"
+                }
+              },
+              "subscription": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "subscriptionId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Subscription",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "billingEventKey": {
+                  "column": "billingEventKey"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "deliveredAt": {
+                  "column": "deliveredAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "notes": {
+                  "column": "notes"
+                },
+                "orderId": {
+                  "column": "orderId"
+                },
+                "portions": {
+                  "column": "portions"
+                },
+                "scheduledAt": {
+                  "column": "scheduledAt"
+                },
+                "sequence": {
+                  "column": "sequence"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "subscriptionId": {
+                  "column": "subscriptionId"
+                },
+                "timeZone": {
+                  "column": "timeZone"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "scheduledMeal"
+            }
+          },
+          "ScheduledMealEvent": {
+            "fields": {
+              "actorId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "actorRole": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "message": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "scheduledMealId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "scheduledMeal": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "scheduledMealId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "ScheduledMeal",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "actorId": {
+                  "column": "actorId"
+                },
+                "actorRole": {
+                  "column": "actorRole"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "message": {
+                  "column": "message"
+                },
+                "scheduledMealId": {
+                  "column": "scheduledMealId"
+                },
+                "status": {
+                  "column": "status"
+                }
+              },
+              "namespaceId": "public",
+              "table": "scheduledMealEvent"
+            }
+          },
           "Shop": {
             "fields": {
               "address": {
@@ -2241,6 +3081,36 @@
                   "namespace": "public"
                 }
               },
+              "customerFavorites": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "shopId"
+                  ]
+                },
+                "to": {
+                  "model": "KitchenFavorite",
+                  "namespace": "public"
+                }
+              },
+              "favorites": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "shopId"
+                  ]
+                },
+                "to": {
+                  "model": "Favorite",
+                  "namespace": "public"
+                }
+              },
               "menuItems": {
                 "cardinality": "1:N",
                 "on": {
@@ -2381,6 +3251,13 @@
           },
           "Subscription": {
             "fields": {
+              "addressId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "autoRenew": {
                 "nullable": false,
                 "type": {
@@ -2399,6 +3276,13 @@
                 "nullable": false,
                 "type": {
                   "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "deliveryTime": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
@@ -2430,6 +3314,13 @@
                   "kind": "scalar"
                 }
               },
+              "portions": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "startDate": {
                 "nullable": false,
                 "type": {
@@ -2450,6 +3341,13 @@
                   "plane": "domain"
                 }
               },
+              "stripeSubscriptionId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "updatedAt": {
                 "nullable": false,
                 "type": {
@@ -2459,6 +3357,22 @@
               }
             },
             "relations": {
+              "address": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "addressId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Address",
+                  "namespace": "public"
+                }
+              },
               "customer": {
                 "cardinality": "N:1",
                 "nullable": false,
@@ -2490,10 +3404,28 @@
                   "model": "SubscriptionPlan",
                   "namespace": "public"
                 }
+              },
+              "scheduledMeals": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "subscriptionId"
+                  ]
+                },
+                "to": {
+                  "model": "ScheduledMeal",
+                  "namespace": "public"
+                }
               }
             },
             "storage": {
               "fields": {
+                "addressId": {
+                  "column": "addressId"
+                },
                 "autoRenew": {
                   "column": "autoRenew"
                 },
@@ -2502,6 +3434,9 @@
                 },
                 "customerId": {
                   "column": "customerId"
+                },
+                "deliveryTime": {
+                  "column": "deliveryTime"
                 },
                 "endDate": {
                   "column": "endDate"
@@ -2515,11 +3450,17 @@
                 "planId": {
                   "column": "planId"
                 },
+                "portions": {
+                  "column": "portions"
+                },
                 "startDate": {
                   "column": "startDate"
                 },
                 "status": {
                   "column": "status"
+                },
+                "stripeSubscriptionId": {
+                  "column": "stripeSubscriptionId"
                 },
                 "updatedAt": {
                   "column": "updatedAt"
@@ -2535,6 +3476,13 @@
                 "nullable": false,
                 "type": {
                   "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "currency": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
@@ -2609,6 +3557,21 @@
               }
             },
             "relations": {
+              "items": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "planId"
+                  ]
+                },
+                "to": {
+                  "model": "SubscriptionPlanItem",
+                  "namespace": "public"
+                }
+              },
               "shop": {
                 "cardinality": "N:1",
                 "nullable": false,
@@ -2646,6 +3609,9 @@
                 "createdAt": {
                   "column": "createdAt"
                 },
+                "currency": {
+                  "column": "currency"
+                },
                 "description": {
                   "column": "description"
                 },
@@ -2676,6 +3642,90 @@
               },
               "namespaceId": "public",
               "table": "subscriptionPlan"
+            }
+          },
+          "SubscriptionPlanItem": {
+            "fields": {
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "menuItemId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "planId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "quantity": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "menuItem": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "menuItemId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "MenuItem",
+                  "namespace": "public"
+                }
+              },
+              "plan": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "planId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "SubscriptionPlan",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "id": {
+                  "column": "id"
+                },
+                "menuItemId": {
+                  "column": "menuItemId"
+                },
+                "planId": {
+                  "column": "planId"
+                },
+                "quantity": {
+                  "column": "quantity"
+                }
+              },
+              "namespaceId": "public",
+              "table": "subscriptionPlanItem"
             }
           },
           "User": {
@@ -2781,6 +3831,36 @@
                   "namespace": "public"
                 }
               },
+              "favoriteKitchens": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "customerId"
+                  ]
+                },
+                "to": {
+                  "model": "KitchenFavorite",
+                  "namespace": "public"
+                }
+              },
+              "favorites": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "customerId"
+                  ]
+                },
+                "to": {
+                  "model": "Favorite",
+                  "namespace": "public"
+                }
+              },
               "orders": {
                 "cardinality": "1:N",
                 "on": {
@@ -2793,6 +3873,21 @@
                 },
                 "to": {
                   "model": "Order",
+                  "namespace": "public"
+                }
+              },
+              "passwordResetTokens": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "userId"
+                  ]
+                },
+                "to": {
+                  "model": "PasswordResetToken",
                   "namespace": "public"
                 }
               },
@@ -2839,6 +3934,21 @@
                 },
                 "to": {
                   "model": "Shop",
+                  "namespace": "public"
+                }
+              },
+              "subscriptions": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "customerId"
+                  ]
+                },
+                "to": {
+                  "model": "Subscription",
                   "namespace": "public"
                 }
               }
@@ -3338,6 +4448,229 @@
                 }
               ]
             },
+            "favorite": {
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "customerId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "menuItemId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "shopId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "customerId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "favorite"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "user"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "shopId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "favorite"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "shop"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "menuItemId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "favorite"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "menuItem"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "customerId"
+                  ],
+                  "name": "favorite_customerId_idx_b2a8a46c",
+                  "prefix": "favorite_customerId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "menuItemId"
+                  ],
+                  "name": "favorite_menuItemId_idx_715cce4c",
+                  "prefix": "favorite_menuItemId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "shopId"
+                  ],
+                  "name": "favorite_shopId_idx_e9207c6b",
+                  "prefix": "favorite_shopId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "customerId",
+                    "menuItemId"
+                  ]
+                }
+              ]
+            },
+            "kitchenFavorite": {
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "customerId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "shopId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "customerId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "kitchenFavorite"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "user"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "shopId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "kitchenFavorite"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "shop"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "customerId"
+                  ],
+                  "name": "kitchenFavorite_customerId_idx_b2a8a46c",
+                  "prefix": "kitchenFavorite_customerId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "shopId"
+                  ],
+                  "name": "kitchenFavorite_shopId_idx_e9207c6b",
+                  "prefix": "kitchenFavorite_shopId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "customerId",
+                    "shopId"
+                  ]
+                }
+              ]
+            },
             "menuCategory": {
               "columns": {
                 "createdAt": {
@@ -3668,6 +5001,61 @@
               },
               "uniques": []
             },
+            "newsletterSubscriber": {
+              "columns": {
+                "consentAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "email": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "email"
+                  ]
+                }
+              ]
+            },
             "order": {
               "checks": [
                 {
@@ -3989,6 +5377,191 @@
                 ]
               },
               "uniques": []
+            },
+            "orderStatusEvent": {
+              "columns": {
+                "actorId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
+                "actorRole": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "domain": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "ORDER"
+                  },
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "message": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "orderId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "orderId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "orderStatusEvent"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "order"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "orderId",
+                    "createdAt"
+                  ],
+                  "name": "orderStatusEvent_orderId_createdAt_idx_cf5e070a",
+                  "prefix": "orderStatusEvent_orderId_createdAt_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "orderId"
+                  ],
+                  "name": "orderStatusEvent_orderId_idx_d284871b",
+                  "prefix": "orderStatusEvent_orderId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "passwordResetToken": {
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "expiresAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "tokenHash": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "userId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "userId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "passwordResetToken"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "user"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "userId",
+                    "createdAt"
+                  ],
+                  "name": "passwordResetToken_userId_createdAt_idx_f726f04a",
+                  "prefix": "passwordResetToken_userId_createdAt_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "userId"
+                  ],
+                  "name": "passwordResetToken_userId_idx_a489d58a",
+                  "prefix": "passwordResetToken_userId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "tokenHash"
+                  ]
+                }
+              ]
             },
             "payment": {
               "checks": [
@@ -4344,6 +5917,266 @@
                 }
               ]
             },
+            "scheduledMeal": {
+              "columns": {
+                "billingEventKey": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "deliveredAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "notes": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "orderId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
+                "portions": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 1
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "scheduledAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "sequence": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "UPCOMING"
+                  },
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "subscriptionId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "timeZone": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "Europe/Helsinki"
+                  },
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "subscriptionId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "scheduledMeal"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "subscription"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "orderId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "scheduledMeal"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "order"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "status",
+                    "scheduledAt"
+                  ],
+                  "name": "scheduledMeal_status_scheduledAt_idx_62252894",
+                  "prefix": "scheduledMeal_status_scheduledAt_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "subscriptionId"
+                  ],
+                  "name": "scheduledMeal_subscriptionId_idx_edbe96bf",
+                  "prefix": "scheduledMeal_subscriptionId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "subscriptionId",
+                    "scheduledAt"
+                  ],
+                  "name": "scheduledMeal_subscriptionId_scheduledAt_idx_886f07e4",
+                  "prefix": "scheduledMeal_subscriptionId_scheduledAt_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "orderId"
+                  ]
+                },
+                {
+                  "columns": [
+                    "subscriptionId",
+                    "billingEventKey",
+                    "sequence"
+                  ]
+                }
+              ]
+            },
+            "scheduledMealEvent": {
+              "columns": {
+                "actorId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
+                "actorRole": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "message": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "scheduledMealId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "scheduledMealId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "scheduledMealEvent"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "scheduledMeal"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "scheduledMealId",
+                    "createdAt"
+                  ],
+                  "name": "scheduledMealEvent_scheduledMealId_createdAt_idx_5f132ed1",
+                  "prefix": "scheduledMealEvent_scheduledMealId_createdAt_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "scheduledMealId"
+                  ],
+                  "name": "scheduledMealEvent_scheduledMealId_idx_2a701afb",
+                  "prefix": "scheduledMealEvent_scheduledMealId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
             "shop": {
               "checks": [
                 {
@@ -4514,6 +6347,11 @@
                 }
               ],
               "columns": {
+                "addressId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
                 "autoRenew": {
                   "codecId": "pg/bool@1",
                   "default": {
@@ -4536,6 +6374,11 @@
                   "codecId": "pg/int4@1",
                   "nativeType": "int4",
                   "nullable": false
+                },
+                "deliveryTime": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
                 },
                 "endDate": {
                   "codecId": "pg/timestamptz-string@1",
@@ -4561,6 +6404,15 @@
                   "nativeType": "int4",
                   "nullable": false
                 },
+                "portions": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 1
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
                 "startDate": {
                   "codecId": "pg/timestamptz-string@1",
                   "nativeType": "timestamptz",
@@ -4580,6 +6432,11 @@
                     "namespaceId": "public",
                     "plane": "storage"
                   }
+                },
+                "stripeSubscriptionId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
                 },
                 "updatedAt": {
                   "codecId": "pg/timestamptz-string@1",
@@ -4619,9 +6476,33 @@
                     "namespaceId": "public",
                     "tableName": "subscriptionPlan"
                   }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "addressId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "subscription"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "address"
+                  }
                 }
               ],
               "indexes": [
+                {
+                  "columns": [
+                    "addressId"
+                  ],
+                  "name": "subscription_addressId_idx_a5ddb548",
+                  "prefix": "subscription_addressId_idx",
+                  "unique": false
+                },
                 {
                   "columns": [
                     "customerId"
@@ -4652,13 +6533,19 @@
                   "id"
                 ]
               },
-              "uniques": []
+              "uniques": [
+                {
+                  "columns": [
+                    "stripeSubscriptionId"
+                  ]
+                }
+              ]
             },
             "subscriptionPlan": {
               "checks": [
                 {
-                  "expression": "\"type\" IN ('DAILY', 'WEEKLY', 'MONTHLY')",
-                  "name": "subscriptionPlan_type_check_b7b8ccce",
+                  "expression": "\"type\" IN ('DAILY', 'THREE_DAY', 'WEEKLY', 'MONTHLY')",
+                  "name": "subscriptionPlan_type_check_de9b01b6",
                   "prefix": "subscriptionPlan_type_check"
                 }
               ],
@@ -4670,6 +6557,15 @@
                     "kind": "function"
                   },
                   "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "currency": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "GBP"
+                  },
+                  "nativeType": "text",
                   "nullable": false
                 },
                 "description": {
@@ -4770,6 +6666,103 @@
                 ]
               },
               "uniques": []
+            },
+            "subscriptionPlanItem": {
+              "columns": {
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "menuItemId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "planId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "quantity": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 1
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "planId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "subscriptionPlanItem"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "subscriptionPlan"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "menuItemId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "subscriptionPlanItem"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "menuItem"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "menuItemId"
+                  ],
+                  "name": "subscriptionPlanItem_menuItemId_idx_715cce4c",
+                  "prefix": "subscriptionPlanItem_menuItemId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "planId"
+                  ],
+                  "name": "subscriptionPlanItem_planId_idx_5b32079a",
+                  "prefix": "subscriptionPlanItem_planId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "planId",
+                    "menuItemId"
+                  ]
+                }
+              ]
             },
             "user": {
               "checks": [
@@ -4926,6 +6919,7 @@
               "kind": "valueSet",
               "values": [
                 "DAILY",
+                "THREE_DAY",
                 "WEEKLY",
                 "MONTHLY"
               ]
@@ -4954,10 +6948,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "16a02d759e17f3ae76431786d2338f23fdba0539ead099c54eb46d48af3857f2"
+    "storageHash": "42700e96dd0a086cdc56de8e4702a3a84565634c4bb1eec6273535d8b4d83a62"
   },
   "execution": {
-    "executionHash": "fabf5c37aa6d03547a3a190cc7c333f9eba7f26614f2893972bfa42f2d7bb927",
+    "executionHash": "6a798fe5863219e1a94434be9b3689a946ed07045dc95c60387dff0fc37be662",
     "mutations": {
       "defaults": [
         {
@@ -5077,6 +7071,21 @@
           "ref": {
             "column": "updatedAt",
             "namespace": "public",
+            "table": "newsletterSubscriber"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "updatedAt",
+            "namespace": "public",
             "table": "order"
           }
         },
@@ -5123,6 +7132,21 @@
             "column": "updatedAt",
             "namespace": "public",
             "table": "rider"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "updatedAt",
+            "namespace": "public",
+            "table": "scheduledMeal"
           }
         },
         {

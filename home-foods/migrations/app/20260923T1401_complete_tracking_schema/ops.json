@@ -1,0 +1,128 @@
+[
+  {
+    "id": "column.public.scheduledMeal.billingEventKey",
+    "label": "Add column \"billingEventKey\" to \"scheduledMeal\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "billingEventKey",
+        "table": "scheduledMeal"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"billingEventKey\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "scheduledMeal",
+          "billingEventKey"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"billingEventKey\"",
+        "sql": "ALTER TABLE \"public\".\"scheduledMeal\" ADD COLUMN \"billingEventKey\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"billingEventKey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "scheduledMeal",
+          "billingEventKey"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.scheduledMeal.sequence",
+    "label": "Add column \"sequence\" to \"scheduledMeal\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "sequence",
+        "table": "scheduledMeal"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"sequence\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "scheduledMeal",
+          "sequence"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"sequence\"",
+        "sql": "ALTER TABLE \"public\".\"scheduledMeal\" ADD COLUMN \"sequence\" int4"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"sequence\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "scheduledMeal",
+          "sequence"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.scheduledMeal.scheduledMeal_subscriptionId_billingEventKey_sequence_key",
+    "label": "Add unique constraint on \"scheduledMeal\" (subscriptionId, billingEventKey, sequence)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "scheduledMeal_subscriptionId_billingEventKey_sequence_key",
+        "table": "scheduledMeal"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"scheduledMeal_subscriptionId_billingEventKey_sequence_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "scheduledMeal_subscriptionId_billingEventKey_sequence_key",
+          "public",
+          "\"public\".\"scheduledMeal\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"scheduledMeal_subscriptionId_billingEventKey_sequence_key\"",
+        "sql": "ALTER TABLE \"public\".\"scheduledMeal\" ADD CONSTRAINT \"scheduledMeal_subscriptionId_billingEventKey_sequence_key\" UNIQUE (\"subscriptionId\", \"billingEventKey\", \"sequence\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"scheduledMeal_subscriptionId_billingEventKey_sequence_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "scheduledMeal_subscriptionId_billingEventKey_sequence_key",
+          "public",
+          "\"public\".\"scheduledMeal\""
+        ]
+      }
+    ]
+  }
+]

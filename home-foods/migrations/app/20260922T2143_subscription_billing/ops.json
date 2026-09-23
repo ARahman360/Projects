@@ -1,0 +1,335 @@
+[
+  {
+    "id": "column.public.subscription.addressId",
+    "label": "Add column \"addressId\" to \"subscription\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "addressId",
+        "table": "subscription"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"addressId\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "subscription",
+          "addressId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"addressId\"",
+        "sql": "ALTER TABLE \"public\".\"subscription\" ADD COLUMN \"addressId\" int4"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"addressId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "subscription",
+          "addressId"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.subscription.deliveryTime",
+    "label": "Add column \"deliveryTime\" to \"subscription\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "deliveryTime",
+        "table": "subscription"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"deliveryTime\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "subscription",
+          "deliveryTime"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"deliveryTime\"",
+        "sql": "ALTER TABLE \"public\".\"subscription\" ADD COLUMN \"deliveryTime\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"deliveryTime\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "subscription",
+          "deliveryTime"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.subscription.portions",
+    "label": "Add column \"portions\" to \"subscription\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "portions",
+        "table": "subscription"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"portions\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "subscription",
+          "portions"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"portions\"",
+        "sql": "ALTER TABLE \"public\".\"subscription\" ADD COLUMN \"portions\" int4 DEFAULT 1 NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"portions\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "subscription",
+          "portions"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.subscription.stripeSubscriptionId",
+    "label": "Add column \"stripeSubscriptionId\" to \"subscription\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "stripeSubscriptionId",
+        "table": "subscription"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"stripeSubscriptionId\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "subscription",
+          "stripeSubscriptionId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"stripeSubscriptionId\"",
+        "sql": "ALTER TABLE \"public\".\"subscription\" ADD COLUMN \"stripeSubscriptionId\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"stripeSubscriptionId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "subscription",
+          "stripeSubscriptionId"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.subscriptionPlan.currency",
+    "label": "Add column \"currency\" to \"subscriptionPlan\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "currency",
+        "table": "subscriptionPlan"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"currency\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "subscriptionPlan",
+          "currency"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"currency\"",
+        "sql": "ALTER TABLE \"public\".\"subscriptionPlan\" ADD COLUMN \"currency\" text DEFAULT 'GBP' NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"currency\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "subscriptionPlan",
+          "currency"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.subscription.subscription_stripeSubscriptionId_key",
+    "label": "Add unique constraint on \"subscription\" (stripeSubscriptionId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "subscription_stripeSubscriptionId_key",
+        "table": "subscription"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"subscription_stripeSubscriptionId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "subscription_stripeSubscriptionId_key",
+          "public",
+          "\"public\".\"subscription\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"subscription_stripeSubscriptionId_key\"",
+        "sql": "ALTER TABLE \"public\".\"subscription\" ADD CONSTRAINT \"subscription_stripeSubscriptionId_key\" UNIQUE (\"stripeSubscriptionId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"subscription_stripeSubscriptionId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "subscription_stripeSubscriptionId_key",
+          "public",
+          "\"public\".\"subscription\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.subscription.subscription_addressId_idx_a5ddb548",
+    "label": "Create index \"subscription_addressId_idx_a5ddb548\" on \"subscription\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "subscription_addressId_idx_a5ddb548",
+        "table": "subscription"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"subscription_addressId_idx_a5ddb548\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"subscription_addressId_idx_a5ddb548\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"subscription_addressId_idx_a5ddb548\"",
+        "sql": "CREATE INDEX \"subscription_addressId_idx_a5ddb548\" ON \"public\".\"subscription\" (\"addressId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"subscription_addressId_idx_a5ddb548\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"subscription_addressId_idx_a5ddb548\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.subscription.subscription_addressId_fkey",
+    "label": "Add foreign key \"subscription_addressId_fkey\" on \"subscription\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "subscription_addressId_fkey",
+        "table": "subscription"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"subscription_addressId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "subscription_addressId_fkey",
+          "public",
+          "\"public\".\"subscription\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"subscription_addressId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"subscription\"\nADD CONSTRAINT \"subscription_addressId_fkey\"\nFOREIGN KEY (\"addressId\")\nREFERENCES \"public\".\"address\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"subscription_addressId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "subscription_addressId_fkey",
+          "public",
+          "\"public\".\"subscription\""
+        ]
+      }
+    ]
+  }
+]

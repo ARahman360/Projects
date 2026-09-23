@@ -1,0 +1,90 @@
+import { db } from "@/src/prisma/db";
+import { getSession, jsonError } from "@/src/lib/auth";
+import { refundStripePayment } from "@/src/lib/stripe";
+import { getKitchenDeliveryDistance } from "@/src/lib/location";
+import { isDeliveryRadiusEnforced, isNationwideDevelopmentMode, isDevelopmentTestSeller } from "@/src/lib/feature-flags";
+
+export const runtime = "nodejs";
+
+export async function GET() {
+  const session = await getSession();
+  if (!session) return jsonError("Sign in to open the admin workspace.", 401);
+  if (session.role !== "ADMIN") return jsonError("Administrator access is required.", 403);
+  try {
+    const [shops, orders, initialRiders, users, allDeliveries, subscriptions] = await Promise.all([
+      db.orm.public.Shop.include("seller", (seller) => seller.select("id", "name", "email")).orderBy((shop) => shop.createdAt.desc()).limit(100).all(),
+      db.orm.public.Order.include("shop", (shop) => shop.select("id", "name")).include("payment").include("delivery", (delivery) => delivery.include("rider", (rider) => rider.include("user", (user) => user.select("name", "email")))).include("statusEvents").orderBy((order) => order.createdAt.desc()).limit(100).all(),
+      db.orm.public.Rider.include("user", (user) => user.select("id", "name", "email")).all(),
+      db.orm.public.User.select("id", "name", "email", "role", "createdAt").orderBy((user) => user.createdAt.desc()).limit(100).all(),
+      db.orm.public.Delivery.include("rider", (rider) => rider.select("id", "isAvailable").include("user", (user) => user.select("name", "email"))).include("order", (order) => order.include("shop", (shop) => shop.select("id", "name", "latitude", "longitude").include("seller", (seller) => seller.select("name", "email"))).include("address", (address) => address.select("city", "latitude", "longitude"))).orderBy((delivery) => delivery.createdAt.asc()).limit(200).all(),
+      db.orm.public.Subscription.include("plan", (plan) => plan.include("shop", (shop) => shop.select("id", "name"))).include("scheduledMeals", (meals) => meals.include("order", (order) => order.include("delivery")).orderBy((meal) => meal.scheduledAt.asc())).orderBy((subscription) => subscription.createdAt.desc()).limit(100).all(),
+    ]);
+    const staleRiders = initialRiders.filter((rider) => rider.isAvailable && Date.now() - new Date(rider.updatedAt).getTime() > 2 * 60 * 1000);
+    await Promise.all(staleRiders.map((rider) => db.orm.public.Rider.where({ id: rider.id }).update({ isAvailable: false })));
+    const riders = staleRiders.length ? await db.orm.public.Rider.include("user", (user) => user.select("id", "name", "email")).all() : initialRiders;
+    const deliveries = allDeliveries.filter((delivery) => delivery.status === "FAILED" || (delivery.status === "UNASSIGNED" && delivery.order?.status === "READY_FOR_PICKUP") || (Boolean(delivery.riderId) && delivery.rider?.isAvailable === false && ["ASSIGNED", "ACCEPTED", "PICKED_UP", "IN_TRANSIT"].includes(delivery.status)));
+    return Response.json({ shops, orders, riders, users, deliveries, subscriptions });
+  } catch (error) {
+    console.error("Admin workspace request failed", error);
+    return jsonError("Admin data is unavailable. Check the database setup.", 503);
+  }
+}
+
+export async function PATCH(request: Request) {
+  const session = await getSession();
+  if (!session) return jsonError("Sign in to administer the marketplace.", 401);
+  if (session.role !== "ADMIN") return jsonError("Administrator access is required.", 403);
+  try {
+    const body = await request.json() as { action?: string; shopId?: number; deliveryId?: number; riderId?: number; orderId?: number; status?: string };
+    if (body.action === "shop-status") {
+      const shopId = Number(body.shopId);
+      if (!Number.isInteger(shopId) || !["ACTIVE", "SUSPENDED", "CLOSED"].includes(body.status ?? "")) return jsonError("Choose a valid shop status.");
+      await db.orm.public.Shop.where({ id: shopId }).update({ status: body.status as "ACTIVE" | "SUSPENDED" | "CLOSED" });
+      return Response.json({ success: true });
+    }
+    if (body.action === "assign-rider") {
+      const deliveryId = Number(body.deliveryId);
+      const riderId = Number(body.riderId);
+      if (!Number.isInteger(deliveryId) || !Number.isInteger(riderId)) return jsonError("Choose a delivery and rider.");
+      const [delivery, rider] = await Promise.all([db.orm.public.Delivery.where({ id: deliveryId }).include("rider").first(), db.orm.public.Rider.where({ id: riderId, isAvailable: true }).first()]);
+      const canReassignOfflineRider = Boolean(delivery?.riderId && delivery.rider?.isAvailable === false && ["ASSIGNED", "ACCEPTED", "PICKED_UP", "IN_TRANSIT"].includes(delivery.status));
+      if (!delivery || !["UNASSIGNED", "FAILED"].includes(delivery.status) && !canReassignOfflineRider || !rider) return jsonError("That delivery or rider is no longer available.", 409);
+      const order = await db.orm.public.Order.where({ id: delivery.orderId }).first();
+      if (!order || ["CANCELLED", "REFUNDED", "DELIVERED"].includes(order.status)) return jsonError("This order can no longer be assigned.", 409);
+      const shop = await db.orm.public.Shop.where({ id: order.shopId }).include("seller", (seller) => seller.select("name", "email")).first();
+      const address = order.addressId == null ? null : await db.orm.public.Address.where({ id: order.addressId }).first();
+      if (isNationwideDevelopmentMode() && !isDevelopmentTestSeller(shop?.seller)) return jsonError("Nationwide development assignments are limited to fictional test kitchens.", 403);
+      if (isDeliveryRadiusEnforced() && !isNationwideDevelopmentMode()) {
+        if (!shop || !address || shop.latitude == null || shop.longitude == null || address.latitude == null || address.longitude == null) return jsonError("This delivery has no verified route locations.", 409);
+        try {
+          const route = await getKitchenDeliveryDistance({ latitude: address.latitude, longitude: address.longitude }, { latitude: shop.latitude, longitude: shop.longitude });
+          if (!route.eligible) return jsonError("This delivery is outside the 20 km limit.", 409);
+        } catch { return jsonError("Delivery distance could not be checked. Try again.", 503); }
+      }
+      await db.transaction(async (tx) => {
+        await tx.orm.public.Delivery.where({ id: delivery.id }).update({ riderId: rider.id, status: "ASSIGNED", ...(["FAILED", "PICKED_UP", "IN_TRANSIT", "ACCEPTED"].includes(delivery.status) ? { notes: "Reassigned by HomeFoods administrator" } : {}) });
+        if (delivery.status !== "UNASSIGNED") await tx.orm.public.Order.where({ id: order.id }).update({ status: "READY_FOR_PICKUP" });
+        await tx.orm.public.OrderStatusEvent.create({ orderId: delivery.orderId, status: "REASSIGNED", domain: "DELIVERY", actorId: session.userId, actorRole: "ADMIN", message: delivery.status === "UNASSIGNED" ? "Administrator assigned a rider" : "Administrator reassigned delivery from a failed or offline rider" });
+      });
+      return Response.json({ success: true });
+    }
+    if (body.action === "refund-order") {
+      const orderId = Number(body.orderId);
+      if (!Number.isInteger(orderId)) return jsonError("Choose an order to refund.");
+      const [order, payment] = await Promise.all([db.orm.public.Order.where({ id: orderId }).first(), db.orm.public.Payment.where({ orderId }).first()]);
+      if (!order || !payment) return jsonError("Order payment not found.", 404);
+      if (payment.method !== "CARD" || payment.status !== "PAID" || !payment.providerPaymentId) return jsonError("Only completed Stripe card payments can be refunded here.", 409);
+      await refundStripePayment(payment.providerPaymentId, order.id);
+      await db.transaction(async (tx) => {
+        await tx.orm.public.Payment.where({ id: payment.id }).update({ status: "REFUNDED" });
+        await tx.orm.public.Order.where({ id: order.id }).update({ status: "REFUNDED" });
+        await tx.orm.public.OrderStatusEvent.create({ orderId: order.id, status: "REFUNDED", domain: "ORDER", actorId: session.userId, actorRole: "ADMIN" });
+      });
+      return Response.json({ success: true });
+    }
+    return jsonError("Unknown admin action.");
+  } catch (error) {
+    console.error("Admin action failed", error);
+    return jsonError("Couldn't complete that admin action.", 503);
+  }
+}

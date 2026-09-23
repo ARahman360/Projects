@@ -1,0 +1,929 @@
+[
+  {
+    "id": "dropCheckConstraint.subscriptionPlan.subscriptionPlan_type_check_b7b8ccce",
+    "label": "Drop check constraint \"subscriptionPlan_type_check_b7b8ccce\" on \"subscriptionPlan\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "subscriptionPlan_type_check_b7b8ccce",
+        "table": "subscriptionPlan"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"subscriptionPlan_type_check_b7b8ccce\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "subscriptionPlan_type_check_b7b8ccce",
+          "public",
+          "\"public\".\"subscriptionPlan\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop check constraint \"subscriptionPlan_type_check_b7b8ccce\"",
+        "sql": "ALTER TABLE \"public\".\"subscriptionPlan\" DROP CONSTRAINT \"subscriptionPlan_type_check_b7b8ccce\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"subscriptionPlan_type_check_b7b8ccce\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "subscriptionPlan_type_check_b7b8ccce",
+          "public",
+          "\"public\".\"subscriptionPlan\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.orderStatusEvent",
+    "label": "Create table \"orderStatusEvent\"",
+    "summary": "Creates table \"orderStatusEvent\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "orderStatusEvent"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"orderStatusEvent\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"orderStatusEvent\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"orderStatusEvent\"",
+        "sql": "CREATE TABLE \"public\".\"orderStatusEvent\" (\n  \"actorId\" int4,\n  \"actorRole\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"domain\" text DEFAULT 'ORDER' NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"message\" text,\n  \"orderId\" int4 NOT NULL,\n  \"status\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"orderStatusEvent\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"orderStatusEvent\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.scheduledMeal",
+    "label": "Create table \"scheduledMeal\"",
+    "summary": "Creates table \"scheduledMeal\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "scheduledMeal"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"scheduledMeal\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"scheduledMeal\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"scheduledMeal\"",
+        "sql": "CREATE TABLE \"public\".\"scheduledMeal\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"deliveredAt\" timestamptz,\n  \"id\" SERIAL NOT NULL,\n  \"notes\" text,\n  \"orderId\" int4,\n  \"portions\" int4 DEFAULT 1 NOT NULL,\n  \"scheduledAt\" timestamptz NOT NULL,\n  \"status\" text DEFAULT 'UPCOMING' NOT NULL,\n  \"subscriptionId\" int4 NOT NULL,\n  \"timeZone\" text DEFAULT 'Europe/Helsinki' NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"scheduledMeal\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"scheduledMeal\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.scheduledMealEvent",
+    "label": "Create table \"scheduledMealEvent\"",
+    "summary": "Creates table \"scheduledMealEvent\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "scheduledMealEvent"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"scheduledMealEvent\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"scheduledMealEvent\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"scheduledMealEvent\"",
+        "sql": "CREATE TABLE \"public\".\"scheduledMealEvent\" (\n  \"actorId\" int4,\n  \"actorRole\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"message\" text,\n  \"scheduledMealId\" int4 NOT NULL,\n  \"status\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"scheduledMealEvent\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"scheduledMealEvent\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.subscriptionPlanItem",
+    "label": "Create table \"subscriptionPlanItem\"",
+    "summary": "Creates table \"subscriptionPlanItem\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "subscriptionPlanItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"subscriptionPlanItem\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"subscriptionPlanItem\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"subscriptionPlanItem\"",
+        "sql": "CREATE TABLE \"public\".\"subscriptionPlanItem\" (\n  \"id\" SERIAL NOT NULL,\n  \"menuItemId\" int4 NOT NULL,\n  \"planId\" int4 NOT NULL,\n  \"quantity\" int4 DEFAULT 1 NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"subscriptionPlanItem\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"subscriptionPlanItem\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.scheduledMeal.scheduledMeal_orderId_key",
+    "label": "Add unique constraint on \"scheduledMeal\" (orderId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "scheduledMeal_orderId_key",
+        "table": "scheduledMeal"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"scheduledMeal_orderId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "scheduledMeal_orderId_key",
+          "public",
+          "\"public\".\"scheduledMeal\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"scheduledMeal_orderId_key\"",
+        "sql": "ALTER TABLE \"public\".\"scheduledMeal\" ADD CONSTRAINT \"scheduledMeal_orderId_key\" UNIQUE (\"orderId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"scheduledMeal_orderId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "scheduledMeal_orderId_key",
+          "public",
+          "\"public\".\"scheduledMeal\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.subscriptionPlan.subscriptionPlan_type_check_de9b01b6",
+    "label": "Add check constraint \"subscriptionPlan_type_check_de9b01b6\" on \"subscriptionPlan\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "subscriptionPlan_type_check_de9b01b6",
+        "table": "subscriptionPlan"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"subscriptionPlan_type_check_de9b01b6\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "subscriptionPlan_type_check_de9b01b6",
+          "public",
+          "\"public\".\"subscriptionPlan\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"subscriptionPlan_type_check_de9b01b6\"",
+        "sql": "ALTER TABLE \"public\".\"subscriptionPlan\" ADD CONSTRAINT \"subscriptionPlan_type_check_de9b01b6\" CHECK (\"type\" IN ('DAILY', 'THREE_DAY', 'WEEKLY', 'MONTHLY'))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"subscriptionPlan_type_check_de9b01b6\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "subscriptionPlan_type_check_de9b01b6",
+          "public",
+          "\"public\".\"subscriptionPlan\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.subscriptionPlanItem.subscriptionPlanItem_planId_menuItemId_key",
+    "label": "Add unique constraint on \"subscriptionPlanItem\" (planId, menuItemId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "subscriptionPlanItem_planId_menuItemId_key",
+        "table": "subscriptionPlanItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"subscriptionPlanItem_planId_menuItemId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "subscriptionPlanItem_planId_menuItemId_key",
+          "public",
+          "\"public\".\"subscriptionPlanItem\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"subscriptionPlanItem_planId_menuItemId_key\"",
+        "sql": "ALTER TABLE \"public\".\"subscriptionPlanItem\" ADD CONSTRAINT \"subscriptionPlanItem_planId_menuItemId_key\" UNIQUE (\"planId\", \"menuItemId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"subscriptionPlanItem_planId_menuItemId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "subscriptionPlanItem_planId_menuItemId_key",
+          "public",
+          "\"public\".\"subscriptionPlanItem\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.orderStatusEvent.orderStatusEvent_orderId_createdAt_idx_cf5e070a",
+    "label": "Create index \"orderStatusEvent_orderId_createdAt_idx_cf5e070a\" on \"orderStatusEvent\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "orderStatusEvent_orderId_createdAt_idx_cf5e070a",
+        "table": "orderStatusEvent"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"orderStatusEvent_orderId_createdAt_idx_cf5e070a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"orderStatusEvent_orderId_createdAt_idx_cf5e070a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"orderStatusEvent_orderId_createdAt_idx_cf5e070a\"",
+        "sql": "CREATE INDEX \"orderStatusEvent_orderId_createdAt_idx_cf5e070a\" ON \"public\".\"orderStatusEvent\" (\"orderId\", \"createdAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"orderStatusEvent_orderId_createdAt_idx_cf5e070a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"orderStatusEvent_orderId_createdAt_idx_cf5e070a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.orderStatusEvent.orderStatusEvent_orderId_idx_d284871b",
+    "label": "Create index \"orderStatusEvent_orderId_idx_d284871b\" on \"orderStatusEvent\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "orderStatusEvent_orderId_idx_d284871b",
+        "table": "orderStatusEvent"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"orderStatusEvent_orderId_idx_d284871b\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"orderStatusEvent_orderId_idx_d284871b\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"orderStatusEvent_orderId_idx_d284871b\"",
+        "sql": "CREATE INDEX \"orderStatusEvent_orderId_idx_d284871b\" ON \"public\".\"orderStatusEvent\" (\"orderId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"orderStatusEvent_orderId_idx_d284871b\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"orderStatusEvent_orderId_idx_d284871b\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.scheduledMeal.scheduledMeal_status_scheduledAt_idx_62252894",
+    "label": "Create index \"scheduledMeal_status_scheduledAt_idx_62252894\" on \"scheduledMeal\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "scheduledMeal_status_scheduledAt_idx_62252894",
+        "table": "scheduledMeal"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"scheduledMeal_status_scheduledAt_idx_62252894\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"scheduledMeal_status_scheduledAt_idx_62252894\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"scheduledMeal_status_scheduledAt_idx_62252894\"",
+        "sql": "CREATE INDEX \"scheduledMeal_status_scheduledAt_idx_62252894\" ON \"public\".\"scheduledMeal\" (\"status\", \"scheduledAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"scheduledMeal_status_scheduledAt_idx_62252894\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"scheduledMeal_status_scheduledAt_idx_62252894\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.scheduledMeal.scheduledMeal_subscriptionId_idx_edbe96bf",
+    "label": "Create index \"scheduledMeal_subscriptionId_idx_edbe96bf\" on \"scheduledMeal\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "scheduledMeal_subscriptionId_idx_edbe96bf",
+        "table": "scheduledMeal"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"scheduledMeal_subscriptionId_idx_edbe96bf\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"scheduledMeal_subscriptionId_idx_edbe96bf\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"scheduledMeal_subscriptionId_idx_edbe96bf\"",
+        "sql": "CREATE INDEX \"scheduledMeal_subscriptionId_idx_edbe96bf\" ON \"public\".\"scheduledMeal\" (\"subscriptionId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"scheduledMeal_subscriptionId_idx_edbe96bf\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"scheduledMeal_subscriptionId_idx_edbe96bf\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.scheduledMeal.scheduledMeal_subscriptionId_scheduledAt_idx_886f07e4",
+    "label": "Create index \"scheduledMeal_subscriptionId_scheduledAt_idx_886f07e4\" on \"scheduledMeal\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "scheduledMeal_subscriptionId_scheduledAt_idx_886f07e4",
+        "table": "scheduledMeal"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"scheduledMeal_subscriptionId_scheduledAt_idx_886f07e4\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"scheduledMeal_subscriptionId_scheduledAt_idx_886f07e4\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"scheduledMeal_subscriptionId_scheduledAt_idx_886f07e4\"",
+        "sql": "CREATE INDEX \"scheduledMeal_subscriptionId_scheduledAt_idx_886f07e4\" ON \"public\".\"scheduledMeal\" (\"subscriptionId\", \"scheduledAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"scheduledMeal_subscriptionId_scheduledAt_idx_886f07e4\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"scheduledMeal_subscriptionId_scheduledAt_idx_886f07e4\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.scheduledMealEvent.scheduledMealEvent_scheduledMealId_createdAt_idx_5f132ed1",
+    "label": "Create index \"scheduledMealEvent_scheduledMealId_createdAt_idx_5f132ed1\" on \"scheduledMealEvent\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "scheduledMealEvent_scheduledMealId_createdAt_idx_5f132ed1",
+        "table": "scheduledMealEvent"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"scheduledMealEvent_scheduledMealId_createdAt_idx_5f132ed1\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"scheduledMealEvent_scheduledMealId_createdAt_idx_5f132ed1\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"scheduledMealEvent_scheduledMealId_createdAt_idx_5f132ed1\"",
+        "sql": "CREATE INDEX \"scheduledMealEvent_scheduledMealId_createdAt_idx_5f132ed1\" ON \"public\".\"scheduledMealEvent\" (\"scheduledMealId\", \"createdAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"scheduledMealEvent_scheduledMealId_createdAt_idx_5f132ed1\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"scheduledMealEvent_scheduledMealId_createdAt_idx_5f132ed1\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.scheduledMealEvent.scheduledMealEvent_scheduledMealId_idx_2a701afb",
+    "label": "Create index \"scheduledMealEvent_scheduledMealId_idx_2a701afb\" on \"scheduledMealEvent\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "scheduledMealEvent_scheduledMealId_idx_2a701afb",
+        "table": "scheduledMealEvent"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"scheduledMealEvent_scheduledMealId_idx_2a701afb\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"scheduledMealEvent_scheduledMealId_idx_2a701afb\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"scheduledMealEvent_scheduledMealId_idx_2a701afb\"",
+        "sql": "CREATE INDEX \"scheduledMealEvent_scheduledMealId_idx_2a701afb\" ON \"public\".\"scheduledMealEvent\" (\"scheduledMealId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"scheduledMealEvent_scheduledMealId_idx_2a701afb\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"scheduledMealEvent_scheduledMealId_idx_2a701afb\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.subscriptionPlanItem.subscriptionPlanItem_menuItemId_idx_715cce4c",
+    "label": "Create index \"subscriptionPlanItem_menuItemId_idx_715cce4c\" on \"subscriptionPlanItem\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "subscriptionPlanItem_menuItemId_idx_715cce4c",
+        "table": "subscriptionPlanItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"subscriptionPlanItem_menuItemId_idx_715cce4c\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"subscriptionPlanItem_menuItemId_idx_715cce4c\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"subscriptionPlanItem_menuItemId_idx_715cce4c\"",
+        "sql": "CREATE INDEX \"subscriptionPlanItem_menuItemId_idx_715cce4c\" ON \"public\".\"subscriptionPlanItem\" (\"menuItemId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"subscriptionPlanItem_menuItemId_idx_715cce4c\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"subscriptionPlanItem_menuItemId_idx_715cce4c\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.subscriptionPlanItem.subscriptionPlanItem_planId_idx_5b32079a",
+    "label": "Create index \"subscriptionPlanItem_planId_idx_5b32079a\" on \"subscriptionPlanItem\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "subscriptionPlanItem_planId_idx_5b32079a",
+        "table": "subscriptionPlanItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"subscriptionPlanItem_planId_idx_5b32079a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"subscriptionPlanItem_planId_idx_5b32079a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"subscriptionPlanItem_planId_idx_5b32079a\"",
+        "sql": "CREATE INDEX \"subscriptionPlanItem_planId_idx_5b32079a\" ON \"public\".\"subscriptionPlanItem\" (\"planId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"subscriptionPlanItem_planId_idx_5b32079a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"subscriptionPlanItem_planId_idx_5b32079a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.orderStatusEvent.orderStatusEvent_orderId_fkey",
+    "label": "Add foreign key \"orderStatusEvent_orderId_fkey\" on \"orderStatusEvent\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "orderStatusEvent_orderId_fkey",
+        "table": "orderStatusEvent"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"orderStatusEvent_orderId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "orderStatusEvent_orderId_fkey",
+          "public",
+          "\"public\".\"orderStatusEvent\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"orderStatusEvent_orderId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"orderStatusEvent\"\nADD CONSTRAINT \"orderStatusEvent_orderId_fkey\"\nFOREIGN KEY (\"orderId\")\nREFERENCES \"public\".\"order\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"orderStatusEvent_orderId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "orderStatusEvent_orderId_fkey",
+          "public",
+          "\"public\".\"orderStatusEvent\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.scheduledMeal.scheduledMeal_subscriptionId_fkey",
+    "label": "Add foreign key \"scheduledMeal_subscriptionId_fkey\" on \"scheduledMeal\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "scheduledMeal_subscriptionId_fkey",
+        "table": "scheduledMeal"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"scheduledMeal_subscriptionId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "scheduledMeal_subscriptionId_fkey",
+          "public",
+          "\"public\".\"scheduledMeal\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"scheduledMeal_subscriptionId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"scheduledMeal\"\nADD CONSTRAINT \"scheduledMeal_subscriptionId_fkey\"\nFOREIGN KEY (\"subscriptionId\")\nREFERENCES \"public\".\"subscription\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"scheduledMeal_subscriptionId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "scheduledMeal_subscriptionId_fkey",
+          "public",
+          "\"public\".\"scheduledMeal\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.scheduledMeal.scheduledMeal_orderId_fkey",
+    "label": "Add foreign key \"scheduledMeal_orderId_fkey\" on \"scheduledMeal\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "scheduledMeal_orderId_fkey",
+        "table": "scheduledMeal"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"scheduledMeal_orderId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "scheduledMeal_orderId_fkey",
+          "public",
+          "\"public\".\"scheduledMeal\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"scheduledMeal_orderId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"scheduledMeal\"\nADD CONSTRAINT \"scheduledMeal_orderId_fkey\"\nFOREIGN KEY (\"orderId\")\nREFERENCES \"public\".\"order\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"scheduledMeal_orderId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "scheduledMeal_orderId_fkey",
+          "public",
+          "\"public\".\"scheduledMeal\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.scheduledMealEvent.scheduledMealEvent_scheduledMealId_fkey",
+    "label": "Add foreign key \"scheduledMealEvent_scheduledMealId_fkey\" on \"scheduledMealEvent\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "scheduledMealEvent_scheduledMealId_fkey",
+        "table": "scheduledMealEvent"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"scheduledMealEvent_scheduledMealId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "scheduledMealEvent_scheduledMealId_fkey",
+          "public",
+          "\"public\".\"scheduledMealEvent\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"scheduledMealEvent_scheduledMealId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"scheduledMealEvent\"\nADD CONSTRAINT \"scheduledMealEvent_scheduledMealId_fkey\"\nFOREIGN KEY (\"scheduledMealId\")\nREFERENCES \"public\".\"scheduledMeal\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"scheduledMealEvent_scheduledMealId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "scheduledMealEvent_scheduledMealId_fkey",
+          "public",
+          "\"public\".\"scheduledMealEvent\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.subscriptionPlanItem.subscriptionPlanItem_planId_fkey",
+    "label": "Add foreign key \"subscriptionPlanItem_planId_fkey\" on \"subscriptionPlanItem\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "subscriptionPlanItem_planId_fkey",
+        "table": "subscriptionPlanItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"subscriptionPlanItem_planId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "subscriptionPlanItem_planId_fkey",
+          "public",
+          "\"public\".\"subscriptionPlanItem\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"subscriptionPlanItem_planId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"subscriptionPlanItem\"\nADD CONSTRAINT \"subscriptionPlanItem_planId_fkey\"\nFOREIGN KEY (\"planId\")\nREFERENCES \"public\".\"subscriptionPlan\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"subscriptionPlanItem_planId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "subscriptionPlanItem_planId_fkey",
+          "public",
+          "\"public\".\"subscriptionPlanItem\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.subscriptionPlanItem.subscriptionPlanItem_menuItemId_fkey",
+    "label": "Add foreign key \"subscriptionPlanItem_menuItemId_fkey\" on \"subscriptionPlanItem\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "subscriptionPlanItem_menuItemId_fkey",
+        "table": "subscriptionPlanItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"subscriptionPlanItem_menuItemId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "subscriptionPlanItem_menuItemId_fkey",
+          "public",
+          "\"public\".\"subscriptionPlanItem\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"subscriptionPlanItem_menuItemId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"subscriptionPlanItem\"\nADD CONSTRAINT \"subscriptionPlanItem_menuItemId_fkey\"\nFOREIGN KEY (\"menuItemId\")\nREFERENCES \"public\".\"menuItem\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"subscriptionPlanItem_menuItemId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "subscriptionPlanItem_menuItemId_fkey",
+          "public",
+          "\"public\".\"subscriptionPlanItem\""
+        ]
+      }
+    ]
+  }
+]

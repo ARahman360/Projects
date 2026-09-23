@@ -53,6 +53,7 @@ enum DeliveryStatus {
 
 enum SubscriptionPlanType {
   DAILY
+  THREE_DAY
   WEEKLY
   MONTHLY
 }
@@ -85,6 +86,10 @@ model User {
   orders      Order[]
   reviews     Review[]
   rider       Rider?
+  subscriptions Subscription[]
+  favorites   Favorite[]
+  passwordResetTokens PasswordResetToken[]
+  favoriteKitchens KitchenFavorite[]
 
   createdAt   TimestamptzString @default(now())
   updatedAt   temporal.updatedAtString()
@@ -114,6 +119,8 @@ model Shop {
   orders          Order[]
   subscriptionPlans SubscriptionPlan[]
   reviews         Review[]
+  favorites       Favorite[]
+  customerFavorites KitchenFavorite[]
 
   createdAt       TimestamptzString @default(now())
   updatedAt       temporal.updatedAtString()
@@ -157,6 +164,8 @@ model MenuItem {
   options     MenuItemOption[]
   cartItems   CartItem[]
   orderItems  OrderItem[]
+  subscriptionPlanItems SubscriptionPlanItem[]
+  favorites   Favorite[]
 
   createdAt   TimestamptzString @default(now())
   updatedAt   temporal.updatedAtString()
@@ -195,6 +204,7 @@ model Address {
 
   user        User        @relation(fields: [userId], references: [id])
   orders      Order[]
+  subscriptions Subscription[]
 
   createdAt   TimestamptzString @default(now())
   updatedAt   temporal.updatedAtString()
@@ -254,6 +264,8 @@ model Order {
   payment         Payment?
   delivery        Delivery?
   review          Review?
+  scheduledMeal   ScheduledMeal?
+  statusEvents    OrderStatusEvent[]
 
   createdAt       TimestamptzString @default(now())
   updatedAt       temporal.updatedAtString()
@@ -280,6 +292,23 @@ model OrderItem {
 
   @@index([orderId])
   @@index([menuItemId])
+}
+
+// Append-only operational history; actor identity and role are captured at
+// event time so later profile changes cannot rewrite who made a transition.
+model OrderStatusEvent {
+  id          Int      @id @default(autoincrement())
+  orderId     Int
+  status      String
+  domain      String   @default("ORDER")
+  actorId     Int?
+  actorRole   String
+  message     String?
+  createdAt   TimestamptzString @default(now())
+
+  order       Order    @relation(fields: [orderId], references: [id])
+
+  @@index([orderId, createdAt])
 }
 
 model Payment {
@@ -343,16 +372,31 @@ model SubscriptionPlan {
   description     String?
   type            SubscriptionPlanType
   price           Float
+  currency        String               @default("GBP")
   mealsPerPeriod  Int                  @default(1)
   isActive        Boolean              @default(true)
 
   shop            Shop                 @relation(fields: [shopId], references: [id])
   subscriptions   Subscription[]
+  items           SubscriptionPlanItem[]
 
   createdAt       TimestamptzString @default(now())
   updatedAt       temporal.updatedAtString()
 
   @@index([shopId])
+}
+
+model SubscriptionPlanItem {
+  id          Int      @id @default(autoincrement())
+  planId      Int
+  menuItemId  Int
+  quantity    Int      @default(1)
+
+  plan        SubscriptionPlan @relation(fields: [planId], references: [id])
+  menuItem    MenuItem         @relation(fields: [menuItemId], references: [id])
+
+  @@unique([planId, menuItemId])
+  @@index([menuItemId])
 }
 
 model Subscription {
@@ -364,16 +408,61 @@ model Subscription {
   endDate         TimestamptzString?
   nextDelivery    TimestamptzString?
   autoRenew       Boolean            @default(true)
+  addressId       Int?
+  deliveryTime    String?
+  portions        Int                @default(1)
+  stripeSubscriptionId String?       @unique
 
   customer        User               @relation(fields: [customerId], references: [id])
   plan            SubscriptionPlan   @relation(fields: [planId], references: [id])
+  address         Address?           @relation(fields: [addressId], references: [id])
+  scheduledMeals  ScheduledMeal[]
 
   createdAt       TimestamptzString @default(now())
   updatedAt       temporal.updatedAtString()
 
   @@index([customerId])
   @@index([planId])
+  @@index([addressId])
   @@index([status])
+}
+
+model ScheduledMeal {
+  id              Int      @id @default(autoincrement())
+  subscriptionId  Int
+  orderId         Int?     @unique
+  billingEventKey String?
+  sequence        Int?
+  scheduledAt     TimestamptzString
+  timeZone        String   @default("Europe/Helsinki")
+  status          String   @default("UPCOMING")
+  portions        Int      @default(1)
+  deliveredAt     TimestamptzString?
+  notes           String?
+  createdAt       TimestamptzString @default(now())
+  updatedAt       temporal.updatedAtString()
+
+  subscription    Subscription @relation(fields: [subscriptionId], references: [id])
+  order           Order?       @relation(fields: [orderId], references: [id])
+  events          ScheduledMealEvent[]
+
+  @@index([subscriptionId, scheduledAt])
+  @@index([status, scheduledAt])
+  @@unique([subscriptionId, billingEventKey, sequence])
+}
+
+model ScheduledMealEvent {
+  id              Int      @id @default(autoincrement())
+  scheduledMealId Int
+  status          String
+  actorId         Int?
+  actorRole       String
+  message         String?
+  createdAt       TimestamptzString @default(now())
+
+  scheduledMeal   ScheduledMeal @relation(fields: [scheduledMealId], references: [id])
+
+  @@index([scheduledMealId, createdAt])
 }
 
 model Review {
@@ -393,4 +482,55 @@ model Review {
 
   @@index([shopId])
   @@index([customerId])
+}
+
+model Favorite {
+  id          Int      @id @default(autoincrement())
+  customerId  Int
+  shopId      Int
+  menuItemId  Int
+
+  customer    User     @relation(fields: [customerId], references: [id])
+  shop        Shop     @relation(fields: [shopId], references: [id])
+  menuItem    MenuItem @relation(fields: [menuItemId], references: [id])
+
+  createdAt   TimestamptzString @default(now())
+
+  @@unique([customerId, menuItemId])
+  @@index([shopId])
+  @@index([menuItemId])
+}
+
+model PasswordResetToken {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  tokenHash String   @unique
+  expiresAt TimestamptzString
+  createdAt TimestamptzString @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
+}
+
+model KitchenFavorite {
+  id         Int      @id @default(autoincrement())
+  customerId Int
+  shopId     Int
+
+  customer   User     @relation(fields: [customerId], references: [id])
+  shop       Shop     @relation(fields: [shopId], references: [id])
+
+  createdAt  TimestamptzString @default(now())
+
+  @@unique([customerId, shopId])
+  @@index([shopId])
+}
+
+model NewsletterSubscriber {
+  id        Int                @id @default(autoincrement())
+  email     String             @unique
+  consentAt TimestamptzString  @default(now())
+  createdAt TimestamptzString  @default(now())
+  updatedAt temporal.updatedAtString()
 }
