@@ -1,11 +1,31 @@
-import { randomBytes } from "node:crypto";
+import { assertFinnishKitchen } from "@/src/lib/location";
+import { createHash, randomBytes } from "node:crypto";
 import { db } from "@/src/prisma/db";
 import { getSession, jsonError } from "@/src/lib/auth";
 import { createCheckoutSession } from "@/src/lib/stripe";
-import { getKitchenDeliveryDistance, ROUTING_UNAVAILABLE_MESSAGE, verifyAddressText, verifyCoordinates } from "@/src/lib/location";
-import { isDeliveryRadiusEnforced, isDevelopmentSandboxEnabled, isDevelopmentTestSeller, isNationwideDevelopmentMode } from "@/src/lib/feature-flags";
+import { getKitchenDeliveryDistance, ROUTING_UNAVAILABLE_MESSAGE } from "@/src/lib/location";
+import { isDeliveryRadiusEnforced, isDevelopmentSandboxEnabled, isDevelopmentTestSeller, isNationwideDevelopmentSeller, isNationwideDevelopmentMode } from "@/src/lib/feature-flags";
 
+import { resolveSavedDeliveryAddress, verifiedAddressDraft } from "@/src/lib/saved-addresses";
+import { isSandboxAddress } from "@/src/lib/address-policy";
+import { isSameOriginRequest } from "@/src/lib/request-security";
 export const runtime = "nodejs";
+type CheckoutResult = { orders: Array<{ orderId:number; orderNumber:string; shopName:string; total:number }>; payment:string; checkoutUrl?:string };
+async function finishCheckout(result: CheckoutResult, key: string, userId: number, origin: string) {
+  try {
+  if (result.payment === "STRIPE_CHECKOUT" && !result.checkoutUrl) {
+    const checkout = await createCheckoutSession({ amount: result.orders.reduce((sum,o)=>sum+o.total,0), orderIds:result.orders.map(o=>o.orderId), customerId:userId, origin, idempotencyKey:key });
+    await db.transaction(async tx => {
+      for (const order of result.orders) await tx.orm.public.Payment.where({orderId:order.orderId}).update({providerPaymentId:checkout.id??null});
+      result = {...result,checkoutUrl:checkout.url};
+      await tx.orm.public.CheckoutRequest.where({id:key,userId}).update({result:JSON.stringify(result)});
+    });
+  }
+  return Response.json(result,{status:201});
+  } catch {
+    return jsonError("We couldn't open payment right now. Your order is saved and unpaid. Retry with the same basket to resume payment without creating another order.", 503);
+  }
+}
 
 export async function GET() {
   const session = await getSession();
@@ -58,12 +78,22 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  if (!isSameOriginRequest(request)) return jsonError("Request origin could not be verified.", 403);
+  let requestKey = "", requestHash = "";
   const session = await getSession();
   if (!session) return jsonError("Sign in to place an order.", 401);
   if (session.role !== "CUSTOMER") return jsonError("Only customer accounts can place orders.", 403);
   try {
-    const body = await request.json() as { lines?: Array<{ menuItemId?: number; quantity?: number }>; addressId?: number | null; addressLine1?: string; addressLine2?: string; city?: string; postalCode?: string; notes?: string; paymentMethod?: string };
+    const body = await request.json() as { lines?: Array<{ menuItemId?: number; quantity?: number }>; addressId?: number | null; addressLine1?: string; addressLine2?: string; city?: string; postalCode?: string; notes?: string; paymentMethod?: string; idempotencyKey?: string; verificationToken?: string; countryCode?: string };
     if (!Array.isArray(body.lines) || body.lines.length < 1 || body.lines.length > 30) return jsonError("Your cart is empty or has too many different items.");
+    if (typeof body.idempotencyKey !== "string" || !/^[a-zA-Z0-9-]{16,100}$/.test(body.idempotencyKey)) return jsonError("Please refresh checkout before submitting this order.");
+    requestKey = session.userId + ":" + body.idempotencyKey;
+    requestHash = createHash("sha256").update(JSON.stringify(body)).digest("hex");
+    const previous = await db.orm.public.CheckoutRequest.where({id:requestKey,userId:session.userId}).first();
+    if (previous) {
+      if (previous.requestHash !== requestHash) return jsonError("This checkout attempt has changed. Start a new checkout.",409);
+      if (previous.result) return finishCheckout(JSON.parse(previous.result),requestKey,session.userId,new URL(request.url).origin);
+    }
     const selectedAddressId = Number(body.addressId);
     const hasSavedAddress = Number.isInteger(selectedAddressId) && selectedAddressId > 0;
     if (!hasSavedAddress && (typeof body.addressLine1 !== "string" || body.addressLine1.trim().length < 5 || typeof body.city !== "string" || body.city.trim().length < 2)) return jsonError("Enter a delivery address and city.");
@@ -78,22 +108,22 @@ export async function POST(request: Request) {
       quantities.set(id, (quantities.get(id) ?? 0) + quantity);
     }
     const menuItems = await db.orm.public.MenuItem.where((item) => item.id.in([...quantities.keys()]))
-      .include("shop", (shop) => shop.select("id", "name", "description", "status", "deliveryFee", "estimatedMinutes", "latitude", "longitude").include("seller", (seller) => seller.select("name", "email")))
+      .include("shop", (shop) => shop.select("id", "name", "address", "description", "status", "deliveryFee", "estimatedMinutes", "latitude", "longitude").include("seller", (seller) => seller.select("name", "email")))
       .all();
     if (menuItems.length !== quantities.size || menuItems.some((item) => !item.isAvailable || !item.shop || item.shop.status !== "ACTIVE")) return jsonError("A cart item is no longer available. Refresh the menu and try again.", 409);
     if (menuItems.some((item) => !item.shop)) return jsonError("A cart shop is unavailable. Refresh the menu and try again.", 409);
-    if (isNationwideDevelopmentMode() && menuItems.some((item) => !isDevelopmentTestSeller(item.shop?.seller))) return jsonError("Nationwide development orders are available only from fictional HomeFoods test kitchens.", 403);
+    if (isNationwideDevelopmentMode() && menuItems.some((item) => !isNationwideDevelopmentSeller(item.shop?.seller))) return jsonError("This kitchen is unavailable in the current development catalog.", 403);
     const byShop = new Map<number, typeof menuItems>();
     for (const item of menuItems) byShop.set(item.shopId, [...(byShop.get(item.shopId) ?? []), item]);
     const addressLine1 = typeof body.addressLine1 === "string" ? body.addressLine1.trim() : "";
     const city = typeof body.city === "string" ? body.city.trim() : "";
     const postalCode = typeof body.postalCode === "string" ? body.postalCode.trim() : "";
     const notes = typeof body.notes === "string" ? body.notes.trim().slice(0, 500) : "";
-    const savedAddress = hasSavedAddress ? await db.orm.public.Address.where({ id: selectedAddressId, userId: session.userId }).first() : null;
-    if (hasSavedAddress && !savedAddress) return jsonError("That saved delivery address is not available on your account.", 404);
-    const verifiedAddress = savedAddress?.latitude != null && savedAddress.longitude != null
-      ? await verifyCoordinates(savedAddress.latitude, savedAddress.longitude)
-      : await verifyAddressText(`${savedAddress?.addressLine1 ?? addressLine1}${savedAddress?.addressLine2 ? ` ${savedAddress.addressLine2}` : typeof body.addressLine2 === "string" ? ` ${body.addressLine2}` : ""}, ${savedAddress?.postalCode ?? postalCode} ${savedAddress?.city ?? city}, Finland`);
+    const confirmed = hasSavedAddress ? await resolveSavedDeliveryAddress(selectedAddressId,session.userId) : await verifiedAddressDraft({...body,addressLine1,city,postalCode});
+    const sandboxAddress = isSandboxAddress(confirmed);
+    if (sandboxAddress && (paymentMethod !== "CASH" || menuItems.some(item=>!isDevelopmentTestSeller(item.shop?.seller)))) return jsonError("Sandbox addresses are limited to cash simulation at fictional test kitchens.",422);
+    const verifiedAddress = {latitude:confirmed.latitude!,longitude:confirmed.longitude!};
+    for (const items of byShop.values()) await assertFinnishKitchen(items[0].shop!);
     if (isDeliveryRadiusEnforced() && !process.env.GEOAPIFY_API_KEY) return jsonError("Delivery distance checks are not configured. Please contact HomeFoods support.", 503);
     if (isDeliveryRadiusEnforced()) for (const items of byShop.values()) {
       const kitchen = items[0]?.shop;
@@ -107,17 +137,18 @@ export async function POST(request: Request) {
       }
     }
 
-    const created = await db.transaction(async (tx) => {
-      let address = hasSavedAddress ? await tx.orm.public.Address.where({ id: selectedAddressId, userId: session.userId }).first() : null;
-      if (hasSavedAddress && !address) throw new Error("That saved delivery address is not available on your account.");
-      if (address) {
-        await tx.orm.public.Address.where({ userId: session.userId }).update({ isDefault: false });
-        address = await tx.orm.public.Address.where({ id: address.id, userId: session.userId }).update({ addressLine1: verifiedAddress.addressLine1, city: verifiedAddress.city, postalCode: verifiedAddress.postalCode || null, latitude: verifiedAddress.latitude, longitude: verifiedAddress.longitude, isDefault: true });
-      } else {
-        await tx.orm.public.Address.where({ userId: session.userId }).update({ isDefault: false });
-        address = await tx.orm.public.Address.create({ userId: session.userId, addressLine1: verifiedAddress.addressLine1, addressLine2: typeof body.addressLine2 === "string" ? body.addressLine2.trim() : null, city: verifiedAddress.city, postalCode: verifiedAddress.postalCode || null, latitude: verifiedAddress.latitude, longitude: verifiedAddress.longitude, isDefault: true });
+    const result = await db.transaction(async (tx) => {
+      await tx.orm.public.CheckoutRequest.create({id:requestKey,userId:session.userId,requestHash});
+      await tx.orm.public.User.where({id:session.userId}).update({updatedAt:new Date().toISOString()});
+      let saved = hasSavedAddress ? await tx.orm.public.Address.where({id:selectedAddressId,userId:session.userId,isArchived:false}).first() : null;
+      if (hasSavedAddress && (!saved || saved.verificationHash !== confirmed.verificationHash)) throw new Error("The delivery address changed or was removed. Choose it again before ordering.");
+      if (!saved) {
+        const first = !(await tx.orm.public.Address.where({userId:session.userId,isArchived:false}).first());
+        const {addressLine1,addressLine2,city,postalCode,latitude,longitude,countryCode,verificationSource,verificationHash,verifiedAt,label} = confirmed;
+        saved = await tx.orm.public.Address.create({userId:session.userId,addressLine1,addressLine2,city,postalCode,latitude,longitude,countryCode,verificationSource,verificationHash,verifiedAt,label,isDefault:first});
       }
-      if (!address) throw new Error("The delivery address could not be saved.");
+      const {addressLine1,addressLine2,city,postalCode,latitude,longitude,countryCode,verificationSource,verificationHash,verifiedAt,label} = saved;
+      const address = await tx.orm.public.Address.create({userId:session.userId,addressLine1,addressLine2,city,postalCode,latitude,longitude,countryCode,verificationSource,verificationHash,verifiedAt,label,isArchived:true,isDefault:false});
       const orders = [] as Array<{ orderId: number; orderNumber: string; shopName: string; total: number }>;
       for (const [shopId, items] of byShop) {
         const subtotal = items.reduce((sum, item) => sum + item.price * (quantities.get(item.id) ?? 0), 0);
@@ -126,7 +157,7 @@ export async function POST(request: Request) {
         const serviceFee = Math.round(subtotal * 0.05 * 100) / 100;
         const total = Math.round((subtotal + deliveryFee + serviceFee) * 100) / 100;
         const orderNumber = `HF-${randomBytes(4).toString("hex").toUpperCase()}`;
-        const order = await tx.orm.public.Order.create({ orderNumber, customerId: session.userId, shopId, addressId: address.id, status: "PENDING", subtotal, deliveryFee, serviceFee, discount: 0, total, notes: notes || null });
+        const order = await tx.orm.public.Order.create({ orderNumber, customerId: session.userId, shopId, addressId: address.id, isSandbox: isNationwideDevelopmentMode(), status: "PENDING", subtotal, deliveryFee, serviceFee, discount: 0, total, notes: notes || null });
         await tx.orm.public.OrderStatusEvent.create({ orderId: order.id, status: "PENDING", domain: "ORDER", actorId: session.userId, actorRole: "CUSTOMER", message: "Order placed" });
         for (const item of items) {
           const quantity = quantities.get(item.id) ?? 0;
@@ -136,18 +167,17 @@ export async function POST(request: Request) {
         await tx.orm.public.Delivery.create({ orderId: order.id, status: "UNASSIGNED", estimatedTime: isNationwideDevelopmentMode() ? null : firstShop?.estimatedMinutes ?? null, notes: isNationwideDevelopmentMode() ? "Fictional nationwide development test delivery. No real delivery-time commitment." : null });
         orders.push({ orderId: order.id, orderNumber, shopName: firstShop?.name ?? "HomeFoods kitchen", total });
       }
-      return orders;
+      const result: CheckoutResult = { orders, payment: paymentMethod === "CARD" ? "STRIPE_CHECKOUT" : "CASH_ON_DELIVERY" };
+      await tx.orm.public.CheckoutRequest.where({id:requestKey}).update({result:JSON.stringify(result)});
+      return result;
     });
-    if (paymentMethod === "CARD") {
-      const checkout = await createCheckoutSession({ amount: created.reduce((sum, order) => sum + order.total, 0), orderIds: created.map((order) => order.orderId), customerId: session.userId, origin: new URL(request.url).origin });
-      await db.transaction(async (tx) => {
-        for (const order of created) await tx.orm.public.Payment.where({ orderId: order.orderId }).update({ providerPaymentId: checkout.id ?? null });
-      });
-      return Response.json({ orders: created, checkoutUrl: checkout.url, payment: "STRIPE_CHECKOUT" }, { status: 201 });
-    }
-    return Response.json({ orders: created, payment: "CASH_ON_DELIVERY" }, { status: 201 });
+    return finishCheckout(result,requestKey,session.userId,new URL(request.url).origin);
   } catch (error) {
-    console.error("Order creation failed", error);
+    if (requestKey) {
+      const committed = await db.orm.public.CheckoutRequest.where({id:requestKey,userId:session.userId}).first();
+      if (committed?.result && committed.requestHash === requestHash) return finishCheckout(JSON.parse(committed.result),requestKey,session.userId,new URL(request.url).origin);
+    }
+    console.error("Order creation failed", error instanceof Error ? error.name : "unknown");
     const message = error instanceof Error ? error.message : "We couldn't place that order. Please check the address and try again.";
     const status = message.includes("not configured") ? 503 : message.includes("not available in this country") ? 422 : 503;
     return jsonError(message, status);

@@ -1,0 +1,36 @@
+{
+  "passed": [
+    "Tanvir and Samia verified Finnish development locations",
+    "Both eligible with development radius disabled",
+    "Two kitchen sandbox checkout",
+    "Idempotent repeat creates no duplicate orders"
+  ],
+  "locations": [
+    {
+      "id": 2,
+      "name": "Tanvir's kitchen",
+      "address": "[SANDBOX LOCATION] Lahden vanha linja-autoasema, Lahdenkatu 2, Keski-Lahti, 15110 Lahti, Suomi",
+      "city": "Lahti"
+    },
+    {
+      "id": 43,
+      "name": "Samia's kitchen",
+      "address": "[SANDBOX LOCATION] Mannerheimintie 9, 00100 Helsinki, Suomi",
+      "city": "Helsinki"
+    }
+  ],
+  "orders": [
+    {
+      "orderId": 23,
+      "orderNumber": "HF-CB69DB90",
+      "shopName": "Tanvir's kitchen",
+      "total": 8.28
+    },
+    {
+      "orderId": 24,
+      "orderNumber": "HF-A2BC2D0E",
+      "shopName": "Samia's kitchen",
+      "total": 9.33
+    }
+  ]
+}

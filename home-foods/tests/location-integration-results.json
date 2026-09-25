@@ -1,0 +1,19 @@
+{
+  "at": "2026-09-23T20:43:34.634Z",
+  "passed": [
+    "development guards and guest address ownership",
+    "fresh registration and customer/seller/rider/admin login",
+    "live autocomplete, reverse geocoding, leading-zero postcode and foreign rejection",
+    "add multiple addresses, set default and reject cross-account/role access",
+    "sandbox order created once on concurrent double submission; visible to customer and seller",
+    "address editing/deletion preserves historical order snapshot and invalidates checkout selection",
+    "nondefault, default and last-address deletion with deterministic replacement",
+    "two existing fictional customer accounts add/edit/order/delete successfully",
+    "explicit sandbox fallback, foreign-country and malformed-postcode rejection",
+    "seller preparation, rider assigned pickup/delivery address and administrator order visibility"
+  ],
+  "orderNumbers": [
+    "HF-8F3CA9D4"
+  ],
+  "newTestCustomer": "location-qa-1790196195533@homefoods.test"
+}

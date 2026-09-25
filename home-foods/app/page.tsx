@@ -1,9 +1,12 @@
 "use client";
 
+function publishFavoritesChange(){localStorage.setItem("homefoods:favorites-updated",String(Date.now()));window.dispatchEvent(new Event("homefoods:favorites-change"));}
+
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
+import OverlayLayer from "@/src/components/overlay-layer";
 import Brand from "@/src/components/brand";
-import LocationSelector from "@/src/components/location-selector";
+import LocationSelector, { type DeliveryLocation } from "@/src/components/location-selector";
 import { ThemeToggle } from "@/src/components/site-enhancements";
 import HomeSections from "@/src/components/home-sections";
 import { OriginButton } from "@/src/components/ui/origin-button";
@@ -13,7 +16,6 @@ import { filterAndSortDishes, normalizeCatalogSearchText } from "@/src/lib/catal
 type Dish = { id: number; shopId: number; name: string; shop: string; cuisine: string; category: string; price: number; rating: number | null; time: string; estimatedMinutes?: number | null; deliveryDistanceKm?: number | null; image: string | null; description: string; deliveryFee: number; orderCount?: number; favoriteCount?: number; isFeatured?: boolean };
 type CartLine = { dish: Dish; quantity: number };
 type User = { id: number; email: string; name: string | null; role: "CUSTOMER" | "SELLER" | "RIDER" | "ADMIN" };
-type SavedAddress = { id: number; label: string | null; addressLine1: string; addressLine2?: string | null; city: string; postalCode: string | null; latitude?: number | null; longitude?: number | null; isDefault: boolean };
 type Shop = { id: number; name: string; description?: string | null; logoUrl?: string | null; coverImageUrl?: string | null; city?: string | null; cuisine?: string; status?: string; deliveryFee?: number | null; estimatedMinutes?: number | null; distanceKm?: number | null; deliveryDistanceKm?: number | null; deliverable?: boolean | null; deliveryStatus?: string | null; latitude?: number | null; longitude?: number | null; rating?: number | null; reviewCount?: number; orderCount?: number; favoriteCount?: number; createdAt?: string };
 type CarouselSection = { id: string; title: string; description: string; kind: "food" | "kitchen"; href: string; items: Array<Dish | Shop> };
 const categories = ["All", "Bangladeshi", "Indian", "Biryani", "Beef", "Chicken", "Vegetarian", "Desserts"];
@@ -66,6 +68,10 @@ export default function Home() {
   const searchWrapRef = useRef<HTMLDivElement>(null);
   const drawerRef = useRef<HTMLElement>(null);
   const cartTriggerRef = useRef<HTMLButtonElement>(null);
+  const sidebarRef = useRef<HTMLElement>(null);
+  const menuTriggerRef = useRef<HTMLButtonElement>(null);
+  const checkoutDialogRef = useRef<HTMLElement>(null);
+  const checkoutTriggerRef = useRef<HTMLElement | null>(null);
   const [category, setCategory] = useState("All");
   const [quickOnly, setQuickOnly] = useState(false);
   const [freeDeliveryOnly, setFreeDeliveryOnly] = useState(false);
@@ -79,7 +85,7 @@ export default function Home() {
     const search = params.toString();
     window.history.replaceState(null, "", `${window.location.pathname}${search ? `?${search}` : ""}${window.location.hash}`);
   }
-  const [selectedLocation, setSelectedLocation] = useState<{ label: string; latitude?: number; longitude?: number; countryCode?: string }>({ label: "Choose a location" });
+  const [selectedLocation, setSelectedLocation] = useState<DeliveryLocation>({ label: "Choose a location" });
   const [filtersHydrated, setFiltersHydrated] = useState(false);
   const [locationStatus, setLocationStatus] = useState<{ checked: boolean; available: boolean; kitchenCount: number; radiusEnforced?: boolean; nationwideDevelopmentMode?: boolean } | null>(null);
   const [showUnavailableKitchens, setShowUnavailableKitchens] = useState(false);
@@ -100,9 +106,11 @@ export default function Home() {
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterStatus, setNewsletterStatus] = useState("");
   const [addressLine1, setAddressLine1] = useState("");
+  const orderSubmitLock = useRef(false);
+  const checkoutAttempt = useRef<{signature:string;key:string}|null>(null);
+  const deliveryRequest = useRef(0);
   const [city, setCity] = useState("");
   const [postalCode, setPostalCode] = useState("");
-  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
   const [paymentMethod, setPaymentMethod] = useState("CASH");
   const [orderNumbers, setOrderNumbers] = useState<string[]>([]);
@@ -133,6 +141,7 @@ export default function Home() {
     void Promise.resolve().then(() => {
       const params = new URLSearchParams(window.location.search);
       if (params.get("cart") === "open") setCartOpen(true);
+      const reorderNotice=sessionStorage.getItem("homefoods:reorder-notice");if(reorderNotice){setPromoMessage(reorderNotice);sessionStorage.removeItem("homefoods:reorder-notice");}
       if (params.get("signin") === "1") { router.replace("/signin"); }
       const allowedSorts = ["recommended", "price-low", "price-high", "rating", "fastest", "nearest"];
       if (allowedSorts.includes(params.get("sort") ?? "")) { setSortBy(params.get("sort")!); setSortTouched(params.has("sort")); }
@@ -147,17 +156,14 @@ export default function Home() {
     function onLocationChange(event: Event) {
       const detail = (event as CustomEvent<typeof selectedLocation>).detail;
       if (!detail) return;
-      setSelectedLocation(detail); setSelectedAddressId(null); setDeliveryCheckStatus("idle");
-      if (checkout && cart.length && detail.latitude != null && detail.longitude != null) {
-        setDeliveryCheckStatus("checking"); setOrderError("");
-        void fetch("/api/location/delivery-check", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ shopIds: [...new Set(cart.map(({ dish }) => dish.shopId))], latitude: detail.latitude, longitude: detail.longitude }), cache: "no-store" })
-          .then(async (response) => { const result = await response.json(); if (!response.ok) throw new Error(result.error ?? "Delivery distance could not be checked."); const unavailable = (result.checks ?? []).find((check: { eligible: boolean; message?: string }) => !check.eligible); if (unavailable) throw new Error(unavailable.message ?? "A kitchen in your basket can't deliver here."); setLocationStatus({ checked: true, available: true, kitchenCount: (result.checks ?? []).length, radiusEnforced: result.radiusEnforced, nationwideDevelopmentMode: result.nationwideDevelopmentMode }); setDeliveryCheckStatus("ready"); })
-          .catch((error: unknown) => { setDeliveryCheckStatus("blocked"); setOrderError(error instanceof Error ? error.message : "Delivery distance could not be checked."); });
-      }
+      const changed = detail.addressId !== selectedLocation.addressId || detail.latitude !== selectedLocation.latitude || detail.longitude !== selectedLocation.longitude || detail.ownerId !== selectedLocation.ownerId;
+      if (changed) { deliveryRequest.current++; setDeliveryCheckStatus("idle"); setOrderError(placingOrder ? "Your delivery address changed. Please review it and place the order again." : ""); }
+      setSelectedLocation(detail); setSelectedAddressId(detail.addressId ?? null);
+      setAddressLine1(detail.address?.addressLine1 ?? ""); setCity(detail.address?.city ?? ""); setPostalCode(detail.address?.postalCode ?? "");
     }
     window.addEventListener("homefoods:location-change", onLocationChange);
     return () => window.removeEventListener("homefoods:location-change", onLocationChange);
-  }, [checkout, cart]);
+  }, [selectedLocation, placingOrder]);
   useEffect(() => { void Promise.resolve().then(loadCatalog); }, [loadCatalog]);
   const unavailableCartShops = useMemo(() => {
     if (!locationStatus?.checked || !cart.length) return [];
@@ -173,25 +179,6 @@ export default function Home() {
     window.history.replaceState(null, "", `${window.location.pathname}${search ? `?${search}` : ""}${window.location.hash}`);
   }, [filtersHydrated, sortBy, sortTouched, category, quickOnly, topRatedOnly, freeDeliveryOnly]);
   useEffect(() => {
-    if (!cartOpen) return;
-    const opener = cartTriggerRef.current;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const focusable = drawerRef.current?.querySelector<HTMLElement>("button:not(:disabled),a[href],input,textarea,select,[tabindex]:not([tabindex='-1'])");
-    focusable?.focus();
-    function onKeyDown(event: globalThis.KeyboardEvent) {
-      if (event.key === "Escape") { setCartOpen(false); return; }
-      if (event.key !== "Tab" || !drawerRef.current) return;
-      const controls = [...drawerRef.current.querySelectorAll<HTMLElement>("button:not(:disabled),a[href],input,textarea,select,[tabindex]:not([tabindex='-1'])")];
-      if (!controls.length) return;
-      const first = controls[0]; const last = controls[controls.length - 1];
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
-    }
-    document.addEventListener("keydown", onKeyDown);
-    return () => { document.body.style.overflow = previousOverflow; document.removeEventListener("keydown", onKeyDown); opener?.focus(); };
-  }, [cartOpen]);
-  useEffect(() => {
     const normalized = query.trim();
     if (normalized.length < 2) return;
     let active = true;
@@ -204,26 +191,28 @@ export default function Home() {
   }, [query, selectedLocation.latitude, selectedLocation.longitude]);
   const cartStorageKey = `home-foods-cart:${user?.role === "CUSTOMER" ? user.id : "guest"}`;
   useEffect(() => {
-    void fetch("/api/auth", { cache: "no-store" }).then((response) => response.json()).then(async (data) => {
-      const current = data.user as User | null;
-      setUser(current);
-      if (current?.role === "CUSTOMER") {
-        const [favoriteResponse, addressResponse] = await Promise.all([fetch("/api/favorites", { cache: "no-store" }), fetch("/api/addresses", { cache: "no-store" })]);
-        const favoriteData = await favoriteResponse.json();
-        const addressData = await addressResponse.json();
-        setFavorites((favoriteData.favorites ?? []).map((favorite: { menuItemId: number }) => favorite.menuItemId));
-        setFavoriteShops((favoriteData.favoriteKitchens ?? []).map((favorite: { shopId: number }) => favorite.shopId));
-        const addresses = (addressData.addresses ?? []) as SavedAddress[];
-        setSavedAddresses(addresses);
-        const preferred = addresses.find((address) => address.isDefault) ?? addresses[0];
-        if (preferred) {
-          setSelectedAddressId(preferred.id);
-          setAddressLine1(preferred.addressLine1); setCity(preferred.city); setPostalCode(preferred.postalCode ?? "");
-          setSelectedLocation({ label: `${preferred.label ? `${preferred.label} · ` : ""}${preferred.addressLine1}, ${preferred.city}`, latitude: preferred.latitude ?? undefined, longitude: preferred.longitude ?? undefined, countryCode: "FI" });
+    let active = true, generation = 0;
+    const refreshAccount = () => {
+      const currentRequest = ++generation;
+      setSelectedAddressId(null); setAddressLine1(""); setCity(""); setPostalCode(""); setOrderError(""); setDeliveryCheckStatus("idle");
+      checkoutAttempt.current = null;
+      void fetch("/api/auth", { cache: "no-store" }).then(response => response.json()).then(async data => {
+        if (!active || currentRequest !== generation) return;
+        const current = data.user as User | null;
+        setUser(current); setFavorites([]); setFavoriteShops([]);
+        if (current?.role === "CUSTOMER") {
+          const response = await fetch("/api/favorites", { cache: "no-store" });
+          const favorites = await response.json();
+          if (!active || currentRequest !== generation) return;
+          setFavorites((favorites.favorites ?? []).map((f: { menuItemId: number }) => f.menuItemId));
+          setFavoriteShops((favorites.favoriteKitchens ?? []).map((f: { shopId: number }) => f.shopId));
         }
-      } else setSavedAddresses([]);
-    }).catch(() => { setUser(null); setSavedAddresses([]); });
+      }).catch(() => { if (active && currentRequest === generation) setUser(null); });
+    };
+    refreshAccount(); window.addEventListener("homefoods:account-change", refreshAccount);
+    return () => { active = false; window.removeEventListener("homefoods:account-change", refreshAccount); };
   }, []);
+  useEffect(()=>{let active=true;const refresh=()=>{if(user?.role!=="CUSTOMER")return;void fetch("/api/favorites",{cache:"no-store"}).then(r=>r.json()).then(data=>{if(active){setFavorites((data.favorites??[]).map((f:{menuItemId:number})=>f.menuItemId));setFavoriteShops((data.favoriteKitchens??[]).map((f:{shopId:number})=>f.shopId));}}).catch(()=>{});};const storage=(e:StorageEvent)=>{if(e.key==="homefoods:favorites-updated")refresh();};window.addEventListener("focus",refresh);window.addEventListener("storage",storage);return()=>{active=false;window.removeEventListener("focus",refresh);window.removeEventListener("storage",storage);};},[user]);
   useEffect(() => {
     queueMicrotask(() => {
       try {
@@ -273,7 +262,7 @@ export default function Home() {
   const itemCount = cart.reduce((sum, line) => sum + line.quantity, 0);
   const subtotal = cart.reduce((sum, line) => sum + line.quantity * line.dish.price, 0);
   const deliveryTotal = [...new Map(cart.map(({ dish }) => [dish.shopId, dish.deliveryFee])).values()].reduce((sum, fee) => sum + fee, 0);
-  const serviceFee = Math.round(subtotal * 0.05 * 100) / 100;
+  const serviceFee = Math.round([...new Set(cart.map(line => line.dish.shopId))].reduce((total, shopId) => total + Math.round(cart.filter(line => line.dish.shopId === shopId).reduce((sum, line) => sum + line.dish.price * line.quantity, 0) * 5) / 100, 0) * 100) / 100;
   const cartTotal = subtotal + deliveryTotal + serviceFee;
 
   function add(dish: Dish) {
@@ -290,32 +279,27 @@ export default function Home() {
 
   async function validateCartDelivery(addressId = selectedAddressId) {
     if (!cart.length) return false;
-    const body: Record<string, unknown> = { shopIds: [...new Set(cart.map(({ dish }) => dish.shopId))] };
-    if (addressId) body.addressId = addressId;
-    else if (selectedLocation.latitude != null && selectedLocation.longitude != null) { body.latitude = selectedLocation.latitude; body.longitude = selectedLocation.longitude; }
-    else if (addressLine1.trim().length >= 5 && city.trim().length >= 2) body.addressText = `${addressLine1.trim()}, ${postalCode.trim()} ${city.trim()}, Finland`;
-    else { setDeliveryCheckStatus("blocked"); setOrderError("Choose or enter a confirmed Finnish delivery address before continuing."); return false; }
+    if (!addressId) { setDeliveryCheckStatus("blocked"); setOrderError("Choose and confirm a Finnish delivery address before continuing."); return false; }
+    const version = ++deliveryRequest.current;
     setDeliveryCheckStatus("checking"); setOrderError("");
     try {
-      const response = await fetch("/api/location/delivery-check", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), cache: "no-store" });
+      const response = await fetch("/api/location/delivery-check", { method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({addressId,shopIds:[...new Set(cart.map(({dish})=>dish.shopId))]}),signal:AbortSignal.timeout(30000) });
       const result = await response.json();
-      if (!response.ok) throw new Error(result.error ?? "Delivery distance could not be checked.");
-      const unavailable = (result.checks ?? []).find((check: { eligible: boolean; message?: string }) => !check.eligible);
-      if (unavailable) throw new Error(unavailable.message ?? "A kitchen in your basket can't deliver to this address.");
-      setLocationStatus({ checked: true, available: true, kitchenCount: (result.checks ?? []).length, radiusEnforced: result.radiusEnforced, nationwideDevelopmentMode: result.nationwideDevelopmentMode });
-      setDeliveryCheckStatus("ready");
-      return true;
-    } catch (error) {
-      setDeliveryCheckStatus("blocked"); setOrderError(error instanceof Error ? error.message : "Delivery distance could not be checked.");
-      return false;
-    }
+      if (version !== deliveryRequest.current) return false;
+      if (!response.ok) throw new Error(result.error ?? "Delivery availability could not be checked.");
+      const unavailable = result.checks?.find((check:{eligible:boolean;message?:string})=>!check.eligible);
+      if (unavailable) throw new Error(unavailable.message);
+      setLocationStatus({checked:true,available:true,kitchenCount:result.checks.length,radiusEnforced:result.radiusEnforced,nationwideDevelopmentMode:result.nationwideDevelopmentMode});
+      setDeliveryCheckStatus("ready");return true;
+    } catch(error) { if(version===deliveryRequest.current){setDeliveryCheckStatus("blocked");setOrderError(error instanceof Error?error.message:"Delivery availability could not be checked.");}return false; }
   }
 
   function openCheckout() {
     if (!user) { setCartOpen(false); router.push("/signin?returnTo=%2F%3Fcart%3Dopen"); return; }
     if (user.role !== "CUSTOMER") { setOrderError("Checkout is available for customer accounts."); return; }
+    checkoutTriggerRef.current = cartTriggerRef.current;
     setCartOpen(false); setCheckout(true); setDeliveryCheckStatus("idle"); setOrderError("");
-    if (selectedAddressId || (selectedLocation.latitude != null && selectedLocation.longitude != null) || (addressLine1.trim().length >= 5 && city.trim().length >= 2)) void validateCartDelivery();
+    if (selectedAddressId) void validateCartDelivery();
     else setOrderError("Choose or enter a confirmed Finnish delivery address before continuing.");
   }
 
@@ -331,38 +315,26 @@ export default function Home() {
     }
   }
 
-  function selectDeliveryAddress(address: SavedAddress) {
-    setSelectedAddressId(address.id);
-    setAddressLine1(address.addressLine1);
-    setCity(address.city);
-    setPostalCode(address.postalCode ?? "");
-    setDeliveryCheckStatus("idle");
-    if (address.latitude != null && address.longitude != null) setSelectedLocation({ label: `${address.label ? `${address.label} · ` : ""}${address.addressLine1}, ${address.city}`, latitude: address.latitude, longitude: address.longitude, countryCode: "FI" });
-    if (checkout) void validateCartDelivery(address.id);
-  }
-
   async function placeOrder(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); setOrderError(""); setPlacingOrder(true);
-    if (!user) { setCheckout(false); router.push("/signin?returnTo=%2F%3Fcart%3Dopen"); return; }
+    event.preventDefault(); if(orderSubmitLock.current) return; orderSubmitLock.current=true; setOrderError(""); setPlacingOrder(true);
+    if (!user) { orderSubmitLock.current=false;setPlacingOrder(false);setCheckout(false); router.push("/signin?returnTo=%2F%3Fcart%3Dopen"); return; }
     try {
       const deliverable = await validateCartDelivery();
       if (!deliverable) { setPlacingOrder(false); return; }
-      const response = await fetch("/api/orders", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lines: cart.map(({ dish, quantity }) => ({ menuItemId: dish.id, quantity })), addressId: selectedAddressId, addressLine1, city, postalCode, paymentMethod, notes: cartNotes }) });
+      const orderBody = {lines:cart.map(({dish,quantity})=>({menuItemId:dish.id,quantity})),addressId:selectedAddressId,paymentMethod,notes:cartNotes};
+      const signature=JSON.stringify(orderBody);
+      const attemptStorageKey = `homefoods:checkout-attempt:${user.id}`;
+      if(!checkoutAttempt.current) { try { checkoutAttempt.current=JSON.parse(sessionStorage.getItem(attemptStorageKey) ?? "null"); } catch {} }
+      if(checkoutAttempt.current?.signature!==signature) checkoutAttempt.current={signature,key:crypto.randomUUID()};
+      sessionStorage.setItem(attemptStorageKey,JSON.stringify(checkoutAttempt.current));
+      const response = await fetch("/api/orders", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...orderBody,idempotencyKey:checkoutAttempt.current.key})});
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error ?? "We couldn't place your order.");
       if (payload.checkoutUrl) { window.location.assign(payload.checkoutUrl); return; }
       setOrderNumbers((payload.orders ?? []).map((order: { orderNumber: string }) => order.orderNumber));
-      const addressesResponse = await fetch("/api/addresses", { cache: "no-store" });
-      if (addressesResponse.ok) {
-        const addressData = await addressesResponse.json();
-        const addresses = (addressData.addresses ?? []) as SavedAddress[];
-        setSavedAddresses(addresses);
-        const preferred = addresses.find((address) => address.isDefault) ?? addresses[0];
-        if (preferred) selectDeliveryAddress(preferred);
-      }
-      setCart([]); setCheckout(false); setComplete(true);
+      setCart([]); setCheckout(false); setComplete(true); checkoutAttempt.current=null; sessionStorage.removeItem(`homefoods:checkout-attempt:${user.id}`);
     } catch (error) { setOrderError(error instanceof Error ? error.message : "Order service unavailable."); }
-    finally { setPlacingOrder(false); }
+    finally { setPlacingOrder(false); orderSubmitLock.current=false; }
   }
 
   async function signOut() { await fetch("/api/auth", { method: "DELETE" }); window.dispatchEvent(new Event("homefoods:account-change")); router.replace("/"); }
@@ -375,6 +347,7 @@ export default function Home() {
       const response = await fetch("/api/favorites", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ menuItemId: dish.id }) });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error ?? "Couldn't save that favorite.");
+      publishFavoritesChange();
       if (payload.saved === wasSaved) setFavorites((current) => payload.saved ? [...new Set([...current, dish.id])] : current.filter((id) => id !== dish.id));
       setFavoriteError("");
     } catch (error) { setFavorites((current) => wasSaved ? [...new Set([...current, dish.id])] : current.filter((id) => id !== dish.id)); setFavoriteError(error instanceof Error ? error.message : "Couldn't save that favorite."); }
@@ -388,6 +361,7 @@ export default function Home() {
       const response = await fetch("/api/favorites", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ shopId: shop.id }) });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error ?? "Couldn't update your kitchen favorites.");
+      publishFavoritesChange();
       if (payload.saved === wasSaved) setFavoriteShops((current) => payload.saved ? [...new Set([...current, shop.id])] : current.filter((id) => id !== shop.id));
       setFavoriteError("");
     } catch (error) { setFavoriteShops((current) => wasSaved ? [...new Set([...current, shop.id])] : current.filter((id) => id !== shop.id)); setFavoriteError(error instanceof Error ? error.message : "Couldn't update your kitchen favorites."); }
@@ -409,27 +383,27 @@ export default function Home() {
     <main id="main-content" tabIndex={-1}>
       <div className="market-shell">
         <header className="site-header market-topbar">
-          <button className="mobile-menu-toggle" type="button" aria-expanded={mobileMenuOpen} aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"} onClick={() => setMobileMenuOpen((open) => !open)}>{mobileMenuOpen ? "×" : "☰"}</button>
+          <button ref={menuTriggerRef} className="mobile-menu-toggle" type="button" aria-expanded={mobileMenuOpen} aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"} onClick={() => setMobileMenuOpen((open) => !open)}>{mobileMenuOpen ? "×" : "☰"}</button>
           <Brand href="#top" />
           <LocationSelector onSelect={(location, address) => { setSelectedLocation(location); if (address) { setAddressLine1(address.addressLine1); setCity(address.city); setPostalCode(address.postalCode ?? ""); if (address.id) setSelectedAddressId(address.id); } else setSelectedAddressId(null); }} />
           <div className="top-search-wrap" ref={searchWrapRef}>
             <div className="top-search"><span aria-hidden="true">⌕</span><input value={query} onFocus={() => setSearchOpen(true)} onKeyDown={handleSearchKeyDown} onChange={(event) => { setQuery(event.target.value); setActiveSuggestion(-1); setSearchOpen(true); }} placeholder="Search dishes, kitchens, and more" aria-label="Search all of HomeFoods" aria-expanded={searchOpen} aria-controls="homefoods-search-suggestions" role="combobox" aria-autocomplete="list"/>{query && <button className="search-clear" type="button" aria-label="Clear search" onClick={() => { setQuery(""); setActiveSuggestion(-1); setSearchOpen(true); }}>×</button>}</div>
             {searchOpen && <div className="search-results top-search-results" id="homefoods-search-suggestions" role="listbox" aria-label="Search suggestions">{query.trim().length < 2 ? <><strong>Popular searches</strong><div className="popular-searches">{["Beef Bhuna", "Chicken Curry", "Biryani", "Khichuri"].map((term) => <button type="button" key={term} onClick={() => { setQuery(term); setSearchOpen(true); document.getElementById("discover")?.scrollIntoView({ behavior: "smooth" }); }}>{term}</button>)}</div><strong>Popular categories</strong><div className="popular-searches">{categories.slice(1).map((item) => <button type="button" key={item} onClick={() => { chooseCategory(item); setSearchOpen(false); document.getElementById("discover")?.scrollIntoView({ behavior: "smooth" }); }}>{item}</button>)}</div></> : <>{searchSuggestions.map((dish, index) => <button type="button" role="option" aria-selected={activeSuggestion === index} key={`dish-${dish.id}`} onMouseEnter={() => setActiveSuggestion(index)} onClick={() => router.push(`/kitchens/${dish.shopId}?item=${dish.id}`)}><span><HighlightedMatch text={dish.name} query={query}/></span><small>{dish.shop} · {money(dish.price)}</small></button>)}{kitchenMatches.map((shop, index) => <button type="button" className="search-kitchen-option" role="option" aria-selected={activeSuggestion === searchSuggestions.length + index} key={`shop-${shop.id}`} onMouseEnter={() => setActiveSuggestion(searchSuggestions.length + index)} onClick={() => router.push(`/kitchens/${shop.id}`)}><span className="search-kitchen-thumb"><MarketImage src={shop.coverImageUrl ?? shop.logoUrl} alt="" fallbackSrc="https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=120&q=75"/></span><span className="search-kitchen-copy"><span><HighlightedMatch text={shop.name} query={query}/></span><small>{shop.cuisine || "Home kitchen"} · {shop.city || "Finland"}{shop.deliveryFee == null ? "" : ` · ${shop.deliveryFee === 0 ? "Free delivery" : money(shop.deliveryFee) + " delivery"}`}</small></span></button>)}{siteSearchMatches.map((item) => <a key={item.href} href={item.href} onClick={() => { setQuery(""); setSearchOpen(false); }}><span><HighlightedMatch text={item.title} query={query}/></span><small>{item.description}</small></a>)}{!searchSuggestions.length && !kitchenMatches.length && !siteSearchMatches.length && <p>{catalogLoading ? "Finding something lovely…" : "No matching dishes or kitchens. Try “biryani”, “chicken”, or a cook’s name."}</p>}</>}</div>}
           </div>
-          <div className="header-actions">{!user ? <><button className="text-button account-link" onClick={() => router.push("/signin")}>Sign in</button><button className="join-button" onClick={() => router.push("/join")}>Join</button></> : <button className="header-profile-button" onClick={() => router.push("/workspace#profile")} aria-label={`Open ${user.name || "your"} profile`} title="Your account">{user.name?.trim().split(/\s+/).map((part) => part[0]).slice(0, 2).join("").toUpperCase() || "HF"}</button>}<button ref={cartTriggerRef} className="cart-button" onClick={() => setCartOpen(true)} aria-label={`Open cart${itemCount ? `, ${itemCount} items` : ""}`}><svg className="cart-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 3.5h2.2l2.1 11.2a2 2 0 0 0 2 1.6h8.8a2 2 0 0 0 1.9-1.4l2-7.2H6"/><circle cx="9.3" cy="20" r="1.2"/><circle cx="18" cy="20" r="1.2"/></svg>{itemCount > 0 && <span className="cart-count">{itemCount}</span>}</button></div>
+          <div className="header-actions">{!user ? <><button className="text-button account-link" onClick={() => router.push("/signin")}>Sign in</button><button className="join-button" onClick={() => router.push("/join")}>Join</button></> : <button className="header-profile-button" onClick={() => router.push("/workspace#profile")} aria-label={`Open ${user.name || "your"} profile`} title="Your account">{user.name?.trim().split(/\s+/).map((part) => part[0]).slice(0, 2).join("").toUpperCase() || "HF"}</button>}<button ref={cartTriggerRef} className="cart-button" onClick={() => setCartOpen(open=>!open)} aria-label={`Open cart${itemCount ? `, ${itemCount} items` : ""}`}><svg className="cart-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 3.5h2.2l2.1 11.2a2 2 0 0 0 2 1.6h8.8a2 2 0 0 0 1.9-1.4l2-7.2H6"/><circle cx="9.3" cy="20" r="1.2"/><circle cx="18" cy="20" r="1.2"/></svg>{itemCount > 0 && <span className="cart-count">{itemCount}</span>}</button></div>
         </header>
-        <aside className={`market-sidebar ${mobileMenuOpen ? "menu-open" : ""}`}>
+        <OverlayLayer open={mobileMenuOpen} className="sidebar-layer" dialogClassName="market-sidebar menu-open" dialogRef={sidebarRef} triggerRef={menuTriggerRef} onClose={() => setMobileMenuOpen(false)} swipeToClose="left" label="HomeFoods navigation" initialFocusSelector=".sidebar-close-button" dismissOnBackdrop>
+          <div className="sidebar-close-row"><button type="button" className="sidebar-close-button" onClick={() => setMobileMenuOpen(false)} aria-label="Close navigation">Close <span aria-hidden="true">×</span></button></div>
           {user ? <><a className="sidebar-profile" href="/workspace#profile" onClick={() => setMobileMenuOpen(false)} aria-label="Open profile and settings"><span className="profile-avatar">{user.name?.trim().split(/\s+/).map((part) => part[0]).slice(0, 2).join("").toUpperCase() || "HF"}</span><span className="profile-copy"><b>{user.name || "HomeFoods member"}</b><small>{user.email}</small><small className="profile-role">{{ CUSTOMER: "Customer", SELLER: "Seller / Kitchen Owner", RIDER: "Delivery Rider", ADMIN: "Administrator" }[user.role]}</small><span className="profile-manage">Manage account →</span></span></a><div className="sidebar-rule"/></> : null}
           <div className="sidebar-label">DISCOVER</div><a className="sidebar-link active" href="#top" onClick={() => setMobileMenuOpen(false)}><span>⌂</span>Home</a><a className="sidebar-link" href="#home-sections" onClick={() => setMobileMenuOpen(false)}><span>⌕</span>Explore kitchens</a>
-          {user && <><div className="sidebar-label sidebar-section-label">YOUR HOMEFOODS</div><a className="sidebar-link" href="/orders" onClick={() => setMobileMenuOpen(false)}><span>▤</span>Orders</a>{user.role === "CUSTOMER" && <a className="sidebar-link" href="/workspace#favorites" onClick={() => setMobileMenuOpen(false)}><span>♡</span>Favorites</a>}</>}
+          {user && <><div className="sidebar-label sidebar-section-label">YOUR HOMEFOODS</div><a className="sidebar-link" href="/orders" onClick={() => setMobileMenuOpen(false)}><span>▤</span>Orders</a>{user.role === "CUSTOMER" && <a className="sidebar-link" href="/favorites" onClick={() => setMobileMenuOpen(false)}><span>♡</span>Favorites</a>}</>}
           {user?.role === "SELLER" && <a className="sidebar-link dashboard-link" href="/workspace#seller-dashboard" onClick={() => setMobileMenuOpen(false)}><span>▦</span>Your Kitchen</a>}
           {user?.role === "RIDER" && <a className="sidebar-link dashboard-link" href="/workspace#rider-dashboard" onClick={() => setMobileMenuOpen(false)}><span>➜</span>Deliver</a>}
           {user?.role === "ADMIN" && <a className="sidebar-link dashboard-link" href="/workspace#admin-dashboard" onClick={() => setMobileMenuOpen(false)}><span>⚙</span>Workspace</a>}
           {!user && <><div className="sidebar-rule"/><div className="sidebar-label">JOIN HOMEFOODS</div><button className="sidebar-link" onClick={() => { setMobileMenuOpen(false); router.push("/join?role=SELLER"); }}><span>＋</span>Become a cook</button><button className="sidebar-link" onClick={() => { setMobileMenuOpen(false); router.push("/join?role=RIDER"); }}><span>➜</span>Deliver with us</button></>}
           {user && <button className="sidebar-link sidebar-logout" onClick={() => { setMobileMenuOpen(false); void signOut(); }}><span>↪</span>Sign out</button>}
           <div className="sidebar-bottom"><span className="sidebar-promise">✳ Made with care,<br/>right around the corner.</span><ThemeToggle/><a href="#faq">Help & FAQs</a></div>
-        </aside>
-        {mobileMenuOpen && <button className="sidebar-scrim" aria-label="Close navigation" onClick={() => setMobileMenuOpen(false)}/>}
+        </OverlayLayer>
         <div className="market-main">
         <div className="category-strip" aria-label="Browse by cuisine or dish"><div className="category-strip-inner" role="group" aria-label="Food categories">{categories.map((item, index) => <button key={item} type="button" className={`category-chip ${category === item ? "selected" : ""}`} aria-pressed={category === item} tabIndex={category === item ? 0 : -1} onClick={() => chooseCategory(item)} onKeyDown={(event) => {
           const buttons = Array.from(event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>(".category-chip") ?? []);
@@ -460,7 +434,20 @@ export default function Home() {
 
 
       {favoriteError && <div className="favorite-toast" role="alert">{favoriteError}<button type="button" onClick={() => setFavoriteError("")} aria-label="Dismiss message">×</button></div>}
-      {cartOpen && <div className="drawer-backdrop" onClick={() => setCartOpen(false)}><aside ref={drawerRef} className="cart-drawer" onClick={(event) => event.stopPropagation()} aria-label="Your basket" role="dialog" aria-modal="true"><div className="drawer-head"><div><span className="eyebrow">YOUR LITTLE HAUL</span><h2>Your basket <span>({itemCount})</span></h2></div><button className="close-button" onClick={() => setCartOpen(false)} aria-label="Close basket">×</button></div>{cart.length ? <><div className="cart-note">From {new Set(cart.map((line) => line.dish.shopId)).size} home {new Set(cart.map((line) => line.dish.shopId)).size === 1 ? "cook" : "cooks"} · each kitchen gets its own order</div><div className="cart-lines">{cart.map(({ dish, quantity }) => <div className="cart-line" key={dish.id}><FoodImage dish={dish} className="cart-thumb"/><div className="cart-line-main"><strong>{dish.name}</strong><span>{dish.shop}</span><div className="quantity-control"><button onClick={() => changeQuantity(dish.id, -1)} aria-label={`Remove one ${dish.name}`}>−</button><span>{quantity}</span><button onClick={() => changeQuantity(dish.id, 1)} aria-label={`Add ${dish.name}`}>+</button></div></div><div className="cart-line-price"><b>{money(dish.price * quantity)}</b><button type="button" onClick={() => setCart((current) => current.filter((line) => line.dish.id !== dish.id))} aria-label={`Remove ${dish.name} from basket`}>Remove</button></div></div>)}</div><label className="cart-instructions">Kitchen instructions<textarea maxLength={500} value={cartNotes} onChange={(event) => setCartNotes(event.target.value)} placeholder="Allergies or delivery notes for the kitchen (optional)"/></label><form className="cart-promo" onSubmit={(event) => { event.preventDefault(); setPromoMessage("Promo codes are not active yet. No discount was applied."); }}><label htmlFor="basket-promo">Promo code</label><div><input id="basket-promo" value={promoCode} onChange={(event) => setPromoCode(event.target.value)} placeholder="Enter a code"/><button type="submit">Apply</button></div>{promoMessage && <small role="status">{promoMessage}</small>}</form><div className="cart-totals"><div><span>Food subtotal</span><b>{money(subtotal)}</b></div><div><span>Delivery</span><b>{money(deliveryTotal)}</b></div><div><span>Service fee</span><b>{money(serviceFee)}</b></div><div className="total-line"><span>Total</span><b>{money(cartTotal)}</b></div></div><button className="checkout-button" onClick={openCheckout}>{user ? "Continue to checkout" : "Sign in to checkout"} <span>→</span></button></> : <div className="empty-cart"><span>♡</span><h3>A little room for something lovely</h3><p>Your basket is empty. Let’s find something delicious.</p><button onClick={() => setCartOpen(false)}>Explore the menu</button></div>}</aside></div>}      {checkout && <div className="modal-backdrop" onClick={() => setCheckout(false)}><section className="checkout-modal" onClick={(event) => event.stopPropagation()} aria-label="Checkout"><button className="close-button modal-close" onClick={() => setCheckout(false)} aria-label="Close checkout">×</button><div className="eyebrow"><span className="eyebrow-line" /> ALMOST AT YOUR DOOR</div><h2>Where should we <em>bring it?</em></h2><p className="checkout-summary">{itemCount} items · {money(cartTotal)} total</p><form onSubmit={placeOrder} className="checkout-form">{savedAddresses.length > 0 && <label>Delivery address<select value={selectedAddressId ?? "custom"} onChange={(event) => { const selected = savedAddresses.find((address) => address.id === Number(event.target.value)); if (selected) selectDeliveryAddress(selected); else setSelectedAddressId(null); }}><option value="custom">Enter a different address</option>{savedAddresses.map((address) => <option key={address.id} value={address.id}>{address.label || "Saved address"}{address.isDefault ? " · Default" : ""} — {address.addressLine1}, {address.city}</option>)}</select></label>}<label>Street address<input required minLength={5} value={addressLine1} onChange={(event) => { setSelectedAddressId(null); setDeliveryCheckStatus("idle"); setAddressLine1(event.target.value); }} placeholder="Street and house number" autoComplete="street-address" /></label><label>City<input required minLength={2} value={city} onChange={(event) => { setSelectedAddressId(null); setDeliveryCheckStatus("idle"); setCity(event.target.value); }} placeholder="City" autoComplete="address-level2" /></label><label>Postcode<input value={postalCode} onChange={(event) => { setSelectedAddressId(null); setDeliveryCheckStatus("idle"); setPostalCode(event.target.value); }} placeholder="Postcode" autoComplete="postal-code" /></label><label>Payment method<select value={paymentMethod} onChange={(event) => setPaymentMethod(event.target.value)}><option value="CASH">Cash on delivery</option><option value="CARD">Card via Stripe</option></select></label>{deliveryCheckStatus === "checking" && <p className="location-search-status" role="status">Checking driving distance for each kitchen…</p>}{deliveryCheckStatus === "ready" && <p className="location-search-status" role="status">Delivery is available from every kitchen in your basket{locationStatus?.nationwideDevelopmentMode ? " for Finland-wide development testing. Long-distance delivery is not a real service commitment." : " within 20 km by road."}.</p>}{orderError && <p className="form-error" role="alert">{orderError}</p>}<OriginButton className="checkout-button" type="submit" loading={placingOrder || deliveryCheckStatus === "checking"} loadingText={deliveryCheckStatus === "checking" ? "Checking delivery…" : "Placing your order…"} disabled={placingOrder || deliveryCheckStatus === "checking"}>{paymentMethod === "CARD" ? "Continue to secure payment" : "Place order"} <span>→</span></OriginButton><p className="payment-footnote">Your saved address is ready to use. You can select another or edit it above. Card payments open Stripe Checkout.</p></form></section></div>}
+      <OverlayLayer open={cartOpen} className="drawer-backdrop" dialogClassName="cart-drawer" dialogRef={drawerRef} triggerRef={cartTriggerRef} onClose={() => setCartOpen(false)} label="Your basket" swipeToClose="right" dismissOnBackdrop><div className="drawer-head"><div><span className="eyebrow">YOUR LITTLE HAUL</span><h2>Your basket <span>({itemCount})</span></h2></div><button className="close-button" onClick={() => setCartOpen(false)} aria-label="Close basket">×</button></div>{cart.length ? <><div className="basket-body"><div className="cart-note">From {new Set(cart.map((line) => line.dish.shopId)).size} home {new Set(cart.map((line) => line.dish.shopId)).size === 1 ? "cook" : "cooks"} · each kitchen gets its own order</div><div className="cart-lines">{cart.map(({ dish, quantity }) => <div className="cart-line" key={dish.id}><FoodImage dish={dish} className="cart-thumb"/><div className="cart-line-main"><strong>{dish.name}</strong><span>{dish.shop}</span><div className="quantity-control"><button onClick={() => changeQuantity(dish.id, -1)} aria-label={`Remove one ${dish.name}`}>−</button><span>{quantity}</span><button onClick={() => changeQuantity(dish.id, 1)} aria-label={`Add ${dish.name}`}>+</button></div></div><div className="cart-line-price"><b>{money(dish.price * quantity)}</b><button type="button" onClick={() => setCart((current) => current.filter((line) => line.dish.id !== dish.id))} aria-label={`Remove ${dish.name} from basket`}>Remove</button></div></div>)}</div><label className="cart-instructions">Kitchen instructions<textarea maxLength={500} value={cartNotes} onChange={(event) => setCartNotes(event.target.value)} placeholder="Allergies or delivery notes for the kitchen (optional)"/></label><form className="cart-promo" onSubmit={(event) => { event.preventDefault(); setPromoMessage("Promo codes are not active yet. No discount was applied."); }}><label htmlFor="basket-promo">Promo code</label><div><input id="basket-promo" value={promoCode} onChange={(event) => setPromoCode(event.target.value)} placeholder="Enter a code"/><button type="submit">Apply</button></div>{promoMessage && <small role="status">{promoMessage}</small>}</form><div className="cart-totals"><div><span>Food subtotal</span><b>{money(subtotal)}</b></div><div><span>Delivery</span><b>{money(deliveryTotal)}</b></div><div><span>Service fee</span><b>{money(serviceFee)}</b></div><div className="total-line"><span>Total</span><b>{money(cartTotal)}</b></div></div></div><footer className="basket-footer"><div><span>Total</span><strong>{money(cartTotal)}</strong></div><button className="checkout-button" onClick={openCheckout}>{user ? "Continue to checkout" : "Sign in to checkout"} <span>→</span></button></footer></> : <div className="empty-cart"><span>♡</span><h3>A little room for something lovely</h3><p>Your basket is empty. Let’s find something delicious.</p><button onClick={() => setCartOpen(false)}>Explore the menu</button></div>}</OverlayLayer>      <OverlayLayer open={checkout} className="modal-backdrop checkout-overlay" dialogClassName="checkout-modal" dialogRef={checkoutDialogRef} triggerRef={checkoutTriggerRef} onClose={() => setCheckout(false)} label="Checkout" initialFocusSelector=".modal-close">
+        <header className="checkout-head"><div><span className="eyebrow">A GOOD MEAL, ALMOST HOME</span><h2>Checkout</h2><p>{itemCount} items · {new Set(cart.map(line=>line.dish.shopId)).size} home kitchens</p></div><button className="close-button modal-close" onClick={() => setCheckout(false)} aria-label="Close checkout">×</button></header>
+        <form onSubmit={placeOrder} className="checkout-form" id="homefoods-checkout">
+          <div className="checkout-body"><div className="checkout-details">
+            <section className="checkout-section"><h3><span>01</span> Delivery address</h3>
+              {selectedAddressId ? <div className="checkout-address-card"><span className="address-symbol" aria-hidden="true">⌖</span><div><strong>{addressLine1}</strong>{selectedLocation.address?.addressLine2 && <p>{selectedLocation.address.addressLine2}</p>}<p>{postalCode} {city} · Finland</p><small>{selectedLocation.address?.status === "sandbox" ? "Sandbox address · fictional delivery" : selectedLocation.address?.status === "verified" ? "Verified Finnish address" : "We'll verify this saved address before ordering."}</small></div></div> : <p>Choose where you would like your food delivered.</p>}
+              <LocationSelector triggerLabel={selectedAddressId ? "Change delivery address" : "Choose a Finnish delivery address"} onSelect={(location,address)=>{setSelectedLocation(location);if(address){setAddressLine1(address.addressLine1);setCity(address.city);setPostalCode(address.postalCode??"");setSelectedAddressId(address.id??null);setDeliveryCheckStatus("idle");setOrderError("");}}}/>
+            </section>
+            <section className="checkout-section"><h3><span>02</span> Payment</h3><fieldset className="payment-choices"><legend className="sr-only">Payment method</legend>{[{value:"CASH",title:"Cash on delivery",note:"Pay when your food arrives",icon:"€"},{value:"CARD",title:"Card via Stripe",note:"Continue to secure payment",icon:"▤"}].map(method=><label key={method.value} className={paymentMethod===method.value?"selected":""}><input type="radio" name="paymentMethod" value={method.value} checked={paymentMethod===method.value} onChange={()=>setPaymentMethod(method.value)}/><span className="payment-icon" aria-hidden="true">{method.icon}</span><span><b>{method.title}</b><small>{method.note}</small></span><span className="payment-check" aria-hidden="true">{paymentMethod===method.value?"✓":""}</span></label>)}</fieldset></section>
+            {cartNotes && <section className="checkout-section"><h3>Kitchen instructions</h3><p>{cartNotes}</p></section>}
+          </div><section className="checkout-order-summary"><h3>Your order <span>{itemCount} items</span></h3>{[...new Set(cart.map(line=>line.dish.shopId))].map(shopId=><div className="checkout-kitchen-group" key={shopId}><h4>{cart.find(line=>line.dish.shopId===shopId)?.dish.shop}</h4>{cart.filter(line=>line.dish.shopId===shopId).map(({dish,quantity})=><div className="checkout-food" key={dish.id}><FoodImage dish={dish} className="checkout-food-photo"/><div><b>{dish.name}</b><small>Quantity {quantity}</small></div><strong>{money(dish.price*quantity)}</strong></div>)}</div>)}<div className="checkout-summary-breakdown"><div><span>Food subtotal</span><b>{money(subtotal)}</b></div><div><span>Delivery fees</span><b>{money(deliveryTotal)}</b></div><div><span>Service fee</span><b>{money(serviceFee)}</b></div><div className="checkout-summary-total"><span>Total</span><b>{money(cartTotal)}</b></div></div></section></div>
+          <footer className="checkout-footer">{orderError&&<p className="form-error" role="alert">{orderError}</p>}{deliveryCheckStatus==="checking"&&<p role="status">Checking your address and kitchen availability…</p>}<div className="checkout-footer-row"><div><span>Final total</span><strong>{money(cartTotal)}</strong><small>{locationStatus?.nationwideDevelopmentMode?"Sandbox order · no real delivery":"Your basket stays saved until your order is confirmed."}</small></div><OriginButton className="checkout-button" type="submit" loading={placingOrder||deliveryCheckStatus==="checking"} loadingText={deliveryCheckStatus==="checking"?"Checking delivery…":"Placing your order…"} disabled={!selectedAddressId||placingOrder||deliveryCheckStatus==="checking"}>{paymentMethod==="CARD"?"Continue to secure payment":"Place order"}<span>→</span></OriginButton></div></footer>
+        </form>
+      </OverlayLayer>
 
       {complete && <div className="modal-backdrop" onClick={() => setComplete(false)}><section className="success-modal" onClick={(event) => event.stopPropagation()}><button className="close-button modal-close" onClick={() => setComplete(false)} aria-label="Close confirmation">×</button><span className="success-mark">✓</span><div className="eyebrow">ORDER RECEIVED</div><h2>That’s the <em>spirit.</em></h2><p>Your order{orderNumbers.length > 1 ? "s are" : " is"} with {orderNumbers.map((number) => <strong key={number}> {number}</strong>)}. {orderNumbers.length > 1 ? "Each home kitchen will confirm its own part." : "Your home cook will confirm it shortly."}</p><a className="checkout-button success-link" href="/orders">Track your order <span>→</span></a><button className="success-dismiss" onClick={() => setComplete(false)}>Keep browsing</button></section></div>}
 

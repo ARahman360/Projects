@@ -1,8 +1,8 @@
 import { db } from "@/src/prisma/db";
 import { getSession, jsonError } from "@/src/lib/auth";
 import { createSubscriptionCheckout, updateStripeSubscription } from "@/src/lib/stripe";
-import { isDevelopmentSandboxEnabled, isDevelopmentTestSeller, isNationwideDevelopmentMode, isNationwideDevelopmentSeller } from "@/src/lib/feature-flags";
-import { getKitchenDeliveryDistance, verifyAddressText, verifyCoordinates } from "@/src/lib/location";
+import { isKitchenLocationAllowed, isDevelopmentSandboxEnabled, isNationwideDevelopmentSeller, isNationwideDevelopmentMode } from "@/src/lib/feature-flags";
+import { assertFinnishKitchen, getKitchenDeliveryDistance, verifySavedFinnishAddress } from "@/src/lib/location";
 import { isDeliveryRadiusEnforced } from "@/src/lib/feature-flags";
 
 export const runtime = "nodejs";
@@ -11,8 +11,8 @@ const intervals = { DAILY: { interval: "day", count: 1 }, THREE_DAY: { interval:
 export async function GET() {
   const session = await getSession();
   try {
-    const plans = await db.orm.public.SubscriptionPlan.where({ isActive: true }).include("shop", (shop) => shop.select("id", "name", "city", "status").include("seller", (seller) => seller.select("name", "email"))).include("items", (items) => items.include("menuItem", (item) => item.select("id", "name", "imageUrl", "price"))).all();
-    const activePlans = plans.filter((plan) => plan.items.length > 0 && plan.shop?.status === "ACTIVE" && (!isNationwideDevelopmentMode() || isNationwideDevelopmentSeller(plan.shop.seller)));
+    const plans = await db.orm.public.SubscriptionPlan.where({ isActive: true }).include("shop", (shop) => shop.select("id", "name", "city", "status", "address").include("seller", (seller) => seller.select("name", "email"))).include("items", (items) => items.include("menuItem", (item) => item.select("id", "name", "imageUrl", "price"))).all();
+    const activePlans = plans.filter((plan) => plan.items.length > 0 && plan.shop?.status === "ACTIVE" && isKitchenLocationAllowed(plan.shop.address) && (!isNationwideDevelopmentMode() || isNationwideDevelopmentSeller(plan.shop.seller)));
     if (!session || session.role !== "CUSTOMER") return Response.json({ plans: activePlans, subscriptions: [] });
     const subscriptions = await db.orm.public.Subscription.where({ customerId: session.userId }).include("plan", (plan) => plan.include("shop", (shop) => shop.select("id", "name")).include("items", (items) => items.include("menuItem", (item) => item.select("id", "name", "imageUrl")))).include("address").include("scheduledMeals", (meals) => meals.include("order", (order) => order.include("shop", (shop) => shop.select("id", "name", "city")).include("items", (items) => items.include("menuItem", (item) => item.select("imageUrl"))).include("delivery", (delivery) => delivery.include("rider", (rider) => rider.include("user", (user) => user.select("name", "phone")))).include("statusEvents")).orderBy((meal) => meal.scheduledAt.asc())).orderBy((subscription) => subscription.createdAt.desc()).all();
     return Response.json({ plans: activePlans, subscriptions });
@@ -55,19 +55,18 @@ export async function POST(request: Request) {
     if (!process.env.STRIPE_SECRET_KEY) return jsonError("Recurring card billing is not configured yet. Ask the administrator to configure Stripe.", 503);
     if (process.env.NODE_ENV === "development" && (!isDevelopmentSandboxEnabled() || !process.env.STRIPE_SECRET_KEY.startsWith("sk_test_"))) return jsonError("Development subscriptions require sandbox payments and a Stripe test key.", 503);
     const [plan, address] = await Promise.all([
-      db.orm.public.SubscriptionPlan.where({ id: planId, isActive: true }).include("shop", (shop) => shop.select("id", "status", "latitude", "longitude", "name").include("seller", (seller) => seller.select("name", "email"))).include("items", (items) => items.include("menuItem")).first(),
-      db.orm.public.Address.where({ id: addressId, userId: session.userId }).first(),
+      db.orm.public.SubscriptionPlan.where({ id: planId, isActive: true }).include("shop", (shop) => shop.select("id", "status", "latitude", "longitude", "name", "address").include("seller", (seller) => seller.select("name", "email"))).include("items", (items) => items.include("menuItem")).first(),
+      db.orm.public.Address.where({ id: addressId, userId: session.userId, isArchived: false }).first(),
     ]);
     if (!plan || !plan.shop || plan.shop.status !== "ACTIVE") return jsonError("That meal plan is unavailable.", 404);
-    if (isNationwideDevelopmentMode() && !isDevelopmentTestSeller(plan.shop.seller)) return jsonError("Nationwide test subscriptions are limited to fictional development kitchens.", 403);
+    if (isNationwideDevelopmentMode() && !isNationwideDevelopmentSeller(plan.shop.seller)) return jsonError("This kitchen is unavailable in the current development catalog.", 403);
     if (!address) return jsonError("Choose one of your saved delivery addresses.", 404);
     if (!plan.items.length) return jsonError("This kitchen has not selected the dishes included in this meal plan yet.", 409);
     let verifiedAddress;
     try {
-      verifiedAddress = address.latitude != null && address.longitude != null
-        ? await verifyCoordinates(address.latitude, address.longitude)
-        : await verifyAddressText(`${address.addressLine1}${address.addressLine2 ? ` ${address.addressLine2}` : ""}, ${address.postalCode ?? ""} ${address.city}, Finland`);
-    } catch (error) { return jsonError(error instanceof Error ? error.message : "We couldn't verify this Finnish address.", 422); }
+      await assertFinnishKitchen(plan.shop);
+      verifiedAddress = await verifySavedFinnishAddress(address);
+    } catch (error) { const message = error instanceof Error ? error.message : "We couldn't verify this Finnish address."; return jsonError(message, message.includes("not available in this country") ? 422 : 503); }
     if (isDeliveryRadiusEnforced() && !isNationwideDevelopmentMode()) {
       if (plan.shop.latitude == null || plan.shop.longitude == null) return jsonError("This kitchen has not verified its delivery location yet.", 422);
       try {

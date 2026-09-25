@@ -1,3 +1,4 @@
+import { passwordInputError } from "@/src/lib/login-policy";
 import { db } from "@/src/prisma/db";
 import { clearSession, getSession, hashPassword, jsonError, setSession, verifyPassword } from "@/src/lib/auth";
 import { isSameOriginRequest } from "@/src/lib/request-security";
@@ -26,7 +27,8 @@ export async function POST(request: Request) {
     const role = body.role === "SELLER" || body.role === "RIDER" ? body.role : "CUSTOMER";
     if (!/^\S+@\S+\.\S+$/.test(email) || email.length > 254) return jsonError("Enter a valid email address.");
     const isDevelopmentFixtureLogin = process.env.NODE_ENV === "development" && intent === "login" && email.endsWith("@homefoods.test") && password === "password";
-    if ((password.length < 10 && !isDevelopmentFixtureLogin) || password.length > 200) return jsonError("Use a password between 10 and 200 characters.");
+    const passwordError=passwordInputError(password,intent);
+    if(passwordError)return jsonError(passwordError);
 
     if (intent === "login") {
       if (process.env.NODE_ENV !== "development" && email.endsWith("@homefoods.test")) return jsonError("Email or password is incorrect.", 401);

@@ -6,6 +6,11 @@ import "./home-sections.css";
 import "./page-experience.css";
 import "./auth.css";
 import "./ui-components.css";
+import "./favorites.css";
+import "./addresses.css";
+import "./theme-system.css";
+import "./customer-collections.css";
+import "./operations.css";
 
 export const metadata: Metadata = {
   title: "HomeFoods — Homemade happiness, delivered",
@@ -16,8 +21,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className="h-full antialiased"
     >
+      <head><script dangerouslySetInnerHTML={{__html:"try{document.documentElement.dataset.theme=localStorage.getItem('home-foods-theme')==='dark'?'dark':'light'}catch{}"}}/></head>
       <body className="min-h-full flex flex-col"><SiteEnhancements />{children}</body>
     </html>
   );

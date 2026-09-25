@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
-export async function createCheckoutSession(input: { amount: number; orderIds: number[]; customerId: number; origin: string }) {
+export async function createCheckoutSession(input: { amount: number; orderIds: number[]; customerId: number; origin: string; idempotencyKey?: string }) {
   const secret = process.env.STRIPE_SECRET_KEY;
   if (!secret) throw new Error("STRIPE_NOT_CONFIGURED");
   const form = new URLSearchParams();
@@ -16,7 +16,7 @@ export async function createCheckoutSession(input: { amount: number; orderIds: n
   form.set("payment_intent_data[metadata][order_ids]", input.orderIds.join(","));
   const response = await fetch("https://api.stripe.com/v1/checkout/sessions", {
     method: "POST",
-    headers: { Authorization: `Bearer ${secret}`, "Content-Type": "application/x-www-form-urlencoded" },
+    headers: { Authorization: `Bearer ${secret}`, "Content-Type": "application/x-www-form-urlencoded", ...(input.idempotencyKey ? { "Idempotency-Key": input.idempotencyKey } : {}) },
     body: form,
     cache: "no-store",
   });

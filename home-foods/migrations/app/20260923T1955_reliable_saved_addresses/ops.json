@@ -1,0 +1,332 @@
+[
+  {
+    "id": "table.checkoutRequest",
+    "label": "Create table \"checkoutRequest\"",
+    "summary": "Creates table \"checkoutRequest\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "checkoutRequest"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"checkoutRequest\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"checkoutRequest\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"checkoutRequest\"",
+        "sql": "CREATE TABLE \"public\".\"checkoutRequest\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" text NOT NULL,\n  \"requestHash\" text NOT NULL,\n  \"result\" text,\n  \"userId\" int4 NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"checkoutRequest\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"checkoutRequest\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.address.countryCode",
+    "label": "Add column \"countryCode\" to \"address\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "countryCode",
+        "table": "address"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"countryCode\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "address",
+          "countryCode"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"countryCode\"",
+        "sql": "ALTER TABLE \"public\".\"address\" ADD COLUMN \"countryCode\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"countryCode\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "address",
+          "countryCode"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.address.isArchived",
+    "label": "Add column \"isArchived\" to \"address\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "isArchived",
+        "table": "address"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"isArchived\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "address",
+          "isArchived"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"isArchived\"",
+        "sql": "ALTER TABLE \"public\".\"address\" ADD COLUMN \"isArchived\" bool DEFAULT false NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"isArchived\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "address",
+          "isArchived"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.address.verificationHash",
+    "label": "Add column \"verificationHash\" to \"address\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "verificationHash",
+        "table": "address"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"verificationHash\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "address",
+          "verificationHash"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"verificationHash\"",
+        "sql": "ALTER TABLE \"public\".\"address\" ADD COLUMN \"verificationHash\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"verificationHash\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "address",
+          "verificationHash"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.address.verificationSource",
+    "label": "Add column \"verificationSource\" to \"address\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "verificationSource",
+        "table": "address"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"verificationSource\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "address",
+          "verificationSource"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"verificationSource\"",
+        "sql": "ALTER TABLE \"public\".\"address\" ADD COLUMN \"verificationSource\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"verificationSource\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "address",
+          "verificationSource"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.address.verifiedAt",
+    "label": "Add column \"verifiedAt\" to \"address\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "verifiedAt",
+        "table": "address"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"verifiedAt\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "address",
+          "verifiedAt"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"verifiedAt\"",
+        "sql": "ALTER TABLE \"public\".\"address\" ADD COLUMN \"verifiedAt\" timestamptz"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"verifiedAt\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "address",
+          "verifiedAt"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.order.isSandbox",
+    "label": "Add column \"isSandbox\" to \"order\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "isSandbox",
+        "table": "order"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"isSandbox\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "order",
+          "isSandbox"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"isSandbox\"",
+        "sql": "ALTER TABLE \"public\".\"order\" ADD COLUMN \"isSandbox\" bool DEFAULT false NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"isSandbox\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "order",
+          "isSandbox"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.checkoutRequest.checkoutRequest_userId_idx_a489d58a",
+    "label": "Create index \"checkoutRequest_userId_idx_a489d58a\" on \"checkoutRequest\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "checkoutRequest_userId_idx_a489d58a",
+        "table": "checkoutRequest"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"checkoutRequest_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"checkoutRequest_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"checkoutRequest_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"checkoutRequest_userId_idx_a489d58a\" ON \"public\".\"checkoutRequest\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"checkoutRequest_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"checkoutRequest_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,20 @@
+{
+  "passed": [
+    "non-fixture registered Finnish seller is eligible nationwide; radius stays disabled",
+    "new customer Orders and Favourites empty states load in persisted dark theme",
+    "food/kitchen favourites and theme switching preserve the selected tab",
+    "basket quantity controls and truthful promo feedback work",
+    "checkout overlays header; close stays fixed while scrolling; closing preserves basket",
+    "actual browser sandbox checkout succeeds for the formerly rejected seller account type",
+    "customer, seller and admin see the order; polling shows actual preparation status",
+    "rider workflow reaches Delivered; history details and Order Again work",
+    "left sidebar closes on a left swipe/drag",
+    "mobile basket and checkout have visible close and primary action controls",
+    "removing a favourite persists and shows the food-specific empty state"
+  ],
+  "order": "HF-C16B546C",
+  "shopId": 52,
+  "itemId": 1246,
+  "customerId": 85,
+  "errors": []
+}

@@ -1,5 +1,7 @@
 "use client";
 
+function publishFavoritesChange(){localStorage.setItem("homefoods:favorites-updated",String(Date.now()));window.dispatchEvent(new Event("homefoods:favorites-change"));}
+
 import { useEffect, useMemo, useState } from "react";
 import Brand from "@/src/components/brand";
 import Link from "next/link";
@@ -81,14 +83,15 @@ export default function KitchenPage({ id }: { id: string }) {
 
   useEffect(() => {
     let active = true;
-    void fetch("/api/auth", { cache: "no-store" }).then((response) => response.json()).then(async (auth) => {
+    const refresh=()=>{void fetch("/api/auth", { cache: "no-store" }).then((response) => response.json()).then(async (auth) => {
       if (!active || auth.user?.role !== "CUSTOMER") return;
       setIsCustomer(true);
       const response = await fetch("/api/favorites", { cache: "no-store" });
       const data = await response.json();
       if (active && response.ok) { setFavoriteIds((data.favorites ?? []).map((row: { menuItemId: number }) => row.menuItemId)); setIsKitchenFavorite((data.favoriteKitchens ?? []).some((row: { shopId: number }) => row.shopId === Number(id))); }
     }).catch(() => undefined);
-    return () => { active = false; };
+    };refresh();const storage=(e:StorageEvent)=>{if(e.key==="homefoods:favorites-updated")refresh();};window.addEventListener("focus",refresh);window.addEventListener("storage",storage);
+    return () => { active = false;window.removeEventListener("focus",refresh);window.removeEventListener("storage",storage); };
   }, [id]);
 
   const categories = useMemo(() => ["All", ...new Set((kitchen?.menuItems ?? []).map((item) => item.category?.name || "Other"))], [kitchen]);
@@ -122,6 +125,7 @@ export default function KitchenPage({ id }: { id: string }) {
       const response = await fetch("/api/favorites", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ menuItemId: item.id }) });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error ?? "Couldn’t update your favorites.");
+      publishFavoritesChange();
       if (payload.saved === wasSaved) setFavoriteIds((current) => payload.saved ? [...new Set([...current, item.id])] : current.filter((id) => id !== item.id));
       setNotice(payload.saved ? `${item.name} saved to favorites.` : `${item.name} removed from favorites.`);
     } catch (cause) {
@@ -140,6 +144,7 @@ export default function KitchenPage({ id }: { id: string }) {
       const response = await fetch("/api/favorites", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ shopId: kitchen.id }) });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error ?? "Couldn’t update your kitchen favorites.");
+      publishFavoritesChange();
       if (payload.saved === wasSaved) setIsKitchenFavorite(payload.saved);
       setNotice(payload.saved ? `${kitchen.name} saved to favorites.` : `${kitchen.name} removed from favorites.`);
     } catch (cause) { setIsKitchenFavorite(wasSaved); setNotice(cause instanceof Error ? cause.message : "Couldn’t update your kitchen favorites."); }

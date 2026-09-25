@@ -1,0 +1,41 @@
+import assert from 'node:assert/strict';
+import { randomUUID } from 'node:crypto';
+import { writeFile } from 'node:fs/promises';
+const base='http://localhost:3000';const results=[];
+class Client {
+ cookie='';
+ async call(path,body,method='POST',expected=200){const r=await fetch(base+path,{method:body?method:'GET',headers:{'Content-Type':'application/json',Origin:base,...(this.cookie?{Cookie:this.cookie}:{})},body:body?JSON.stringify(body):undefined,signal:AbortSignal.timeout(45000)});const c=r.headers.get('set-cookie');if(c)this.cookie=c.split(';')[0];const d=await r.json();assert.equal(r.status,expected,`${path}: ${r.status} ${JSON.stringify(d)}`);return d;}
+ async login(email){return this.call('/api/auth',{email,password:'password'});}
+}
+function pass(name){results.push(name);console.log('PASS '+name);}
+const guest=new Client();const config=await guest.call('/api/location/resolve');assert.ok(config.nationwideDevelopmentMode&&config.sandboxPaymentsEnabled);await guest.call('/api/addresses',undefined,'GET',401);pass('development guards and guest address ownership');
+const a=new Client(), b=new Client(), seller=new Client(), rider=new Client(), admin=new Client();
+const suffix=Date.now();await a.call('/api/auth',{intent:'signup',email:`location-qa-${suffix}@homefoods.test`,password:'Location-QA-only-2026!',name:'[TEST] Location QA',role:'CUSTOMER'},'POST',201);
+assert.equal((await a.call('/api/addresses')).addresses.length,0);await b.login('customer2@homefoods.test');await seller.login('seller01@homefoods.test');await rider.login('rider1@homefoods.test');await admin.login('admin@homefoods.test');pass('fresh registration and customer/seller/rider/admin login');
+const suggestion=(await guest.call('/api/location/suggest?q=Ruopankatu%203%20Lahti')).suggestions[0];assert.ok(suggestion?.verificationToken);assert.equal(suggestion.location.countryCode,'FI');
+const helsinki=(await guest.call('/api/location/suggest?q=Mannerheimintie%209%20Helsinki')).suggestions.find(s=>s.location.houseNumber==='9');assert.ok(helsinki);assert.equal(helsinki.location.postalCode,'00100');
+const gps=await guest.call('/api/location/resolve',{latitude:60.1699,longitude:24.9384,candidateOnly:true});assert.equal(gps.countryCode,'FI');assert.ok(gps.verificationToken);await guest.call('/api/location/resolve',{latitude:59.3293,longitude:18.0686,candidateOnly:true},'POST',422);pass('live autocomplete, reverse geocoding, leading-zero postcode and foreign rejection');
+const draft=s=>({...s.location,verificationToken:s.verificationToken,label:'[TEST] QA Home',addressLine2:'E 38'});
+let home=(await a.call('/api/addresses',draft(suggestion),'POST',201)).address;assert.equal(home.status,'verified');assert.ok(home.isDefault);
+let work=(await a.call('/api/addresses',{...draft(helsinki),label:'[TEST] QA Work'},'POST',201)).address;assert.equal(work.isDefault,false);
+await b.call('/api/addresses',{id:home.id,action:'default'},'PATCH',404);await b.call('/api/addresses',{id:home.id},'DELETE',404);
+await seller.call('/api/addresses',undefined,'GET',403);await rider.call('/api/addresses',undefined,'GET',403);await admin.call('/api/addresses',undefined,'GET',403);
+await a.call('/api/addresses',{id:work.id,action:'default'},'PATCH');assert.equal((await a.call('/api/addresses')).addresses.find(x=>x.id===work.id).isDefault,true);pass('add multiple addresses, set default and reject cross-account/role access');
+const shopData=await seller.call('/api/seller');const item=shopData.items.find(i=>i.isAvailable);assert.ok(item);const shopId=shopData.shop.id;
+const check=await a.call('/api/location/delivery-check',{shopIds:[shopId],addressId:home.id});assert.ok(check.checks[0].eligible);
+const body={lines:[{menuItemId:item.id,quantity:1}],addressId:home.id,paymentMethod:'CASH',notes:'[TEST] Location integration QA — fictional sandbox only',idempotencyKey:randomUUID()};
+const [one,two]=await Promise.all([a.call('/api/orders',body,'POST',201),a.call('/api/orders',body,'POST',201)]);assert.equal(one.orders[0].orderId,two.orders[0].orderId);const orderId=one.orders[0].orderId;
+let orders=(await a.call('/api/orders')).orders;assert.equal(orders.filter(o=>o.id===orderId).length,1);assert.ok(orders.find(o=>o.id===orderId).isSandbox);assert.ok((await seller.call('/api/seller')).orders.some(o=>o.id===orderId));pass('sandbox order created once on concurrent double submission; visible to customer and seller');
+const original=orders.find(o=>o.id===orderId).address;
+await a.call('/api/addresses',{...draft(helsinki),id:home.id,label:'[TEST] Edited Home'},'PATCH');
+orders=(await a.call('/api/orders')).orders;assert.equal(orders.find(o=>o.id===orderId).address.addressLine1,original.addressLine1);assert.equal(orders.find(o=>o.id===orderId).address.addressLine2,'E 38');
+await a.call('/api/addresses',{id:home.id},'DELETE');await a.call('/api/location/delivery-check',{shopIds:[shopId],addressId:home.id},'POST',400);pass('address editing/deletion preserves historical order snapshot and invalidates checkout selection');
+await a.call('/api/addresses',{id:work.id},'DELETE');assert.equal((await a.call('/api/addresses')).addresses.length,0);
+let x=(await a.call('/api/addresses',draft(suggestion),'POST',201)).address;let y=(await a.call('/api/addresses',draft(helsinki),'POST',201)).address;await a.call('/api/addresses',{id:x.id},'DELETE');assert.ok((await a.call('/api/addresses')).addresses.find(r=>r.id===y.id).isDefault);await a.call('/api/addresses',{id:y.id},'DELETE');pass('nondefault, default and last-address deletion with deterministic replacement');
+for(const email of ['customer1@homefoods.test','customer2@homefoods.test']){const c=new Client();await c.login(email);const before=(await c.call('/api/addresses')).addresses;const addr=(await c.call('/api/addresses',draft(helsinki),'POST',201)).address;await c.call('/api/addresses',{...addr,label:'[TEST] Edited label',addressLine2:'B 25'},'PATCH');const placed=await c.call('/api/orders',{...body,addressId:addr.id,idempotencyKey:randomUUID()},'POST',201);assert.ok((await c.call('/api/orders')).orders.some(o=>o.id===placed.orders[0].orderId));await c.call('/api/addresses',{id:addr.id},'DELETE');assert.equal((await c.call('/api/addresses')).addresses.length,before.length);}pass('two existing fictional customer accounts add/edit/order/delete successfully');
+const sandbox=(await a.call('/api/addresses',{addressLine1:'Sandboxkatu 10',city:'Helsinki',postalCode:'00100',countryCode:'FI',label:'[TEST] Sandbox',sandboxConfirmation:true},'POST',201)).address;assert.equal(sandbox.status,'sandbox');assert.equal(sandbox.latitude,null);await a.call('/api/orders',{...body,addressId:sandbox.id,idempotencyKey:randomUUID()},'POST',201);await a.call('/api/orders',{...body,addressId:sandbox.id,paymentMethod:'CARD',idempotencyKey:randomUUID()},'POST',503);
+await a.call('/api/addresses',{...draft(helsinki),countryCode:'SE',sandboxConfirmation:true},'POST',422);await a.call('/api/addresses',{...draft(helsinki),postalCode:'1250'},'POST',422);pass('explicit sandbox fallback, foreign-country and malformed-postcode rejection');
+for(const status of ['CONFIRMED','PREPARING','READY_FOR_PICKUP'])await seller.call('/api/seller/orders',{orderId,status},'PATCH');
+await rider.call('/api/rider',{isAvailable:true},'PATCH');const job=(await rider.call('/api/rider')).jobs.find(d=>d.orderId===orderId);assert.ok(job);await rider.call('/api/rider',{deliveryId:job.id,status:'ACCEPTED'},'PATCH');const assigned=(await rider.call('/api/rider')).assigned.find(d=>d.orderId===orderId);assert.equal(assigned.order.address.addressLine1,original.addressLine1);assert.ok(assigned.order.shop.address);const overview=await admin.call('/api/admin');assert.ok(overview.orders.some(o=>o.id===orderId));await rider.call('/api/rider',{isAvailable:false},'PATCH');pass('seller preparation, rider assigned pickup/delivery address and administrator order visibility');
+await writeFile('tests/location-integration-results.json',JSON.stringify({at:new Date().toISOString(),passed:results,orderNumbers:one.orders.map(o=>o.orderNumber),newTestCustomer:`location-qa-${suffix}@homefoods.test`},null,2));
+console.log('ALL '+results.length+' INTEGRATION GROUPS PASSED');

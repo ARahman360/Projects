@@ -1,0 +1,920 @@
+[
+  {
+    "role": "public",
+    "path": "/",
+    "width": 1440,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Homemade Happiness,Delivered to Your Door.",
+      "Craving Homemade Food?",
+      "Real kitchens.Really good food.",
+      "Good things, made simple.",
+      "A few good questions."
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/",
+    "width": 768,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Homemade Happiness,Delivered to Your Door.",
+      "Craving Homemade Food?",
+      "Real kitchens.Really good food.",
+      "Good things, made simple.",
+      "A few good questions."
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/",
+    "width": 390,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Homemade Happiness,Delivered to Your Door.",
+      "Craving Homemade Food?",
+      "Real kitchens.Really good food.",
+      "Good things, made simple.",
+      "A few good questions."
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/kitchens/4?item=18",
+    "width": 1440,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Old Dhaka Biryani House",
+      "Today’s menu"
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/kitchens/4?item=18",
+    "width": 768,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Old Dhaka Biryani House",
+      "Today’s menu"
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/kitchens/4?item=18",
+    "width": 390,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Old Dhaka Biryani House",
+      "Today’s menu"
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/collections/popular",
+    "width": 1440,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Collection"
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/collections/popular",
+    "width": 768,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Collection"
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/collections/popular",
+    "width": 390,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Collection"
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/signin",
+    "width": 1440,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Welcome home.",
+      "From their kitchento your table."
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/signin",
+    "width": 768,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Welcome home.",
+      "From their kitchento your table."
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/signin",
+    "width": 390,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Welcome home.",
+      "From their kitchento your table."
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/join",
+    "width": 1440,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Good food starts here.",
+      "From their kitchento your table."
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/join",
+    "width": 768,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Good food starts here.",
+      "From their kitchento your table."
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/join",
+    "width": 390,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Good food starts here.",
+      "From their kitchento your table."
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/forgot-password",
+    "width": 1440,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Let’s get you back in.",
+      "From their kitchento your table."
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/forgot-password",
+    "width": 768,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Let’s get you back in.",
+      "From their kitchento your table."
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/forgot-password",
+    "width": 390,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Let’s get you back in.",
+      "From their kitchento your table."
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/reset-password",
+    "width": 1440,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Choose a new password."
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/reset-password",
+    "width": 768,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Choose a new password."
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/reset-password",
+    "width": 390,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Choose a new password."
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/account-recovery",
+    "width": 1440,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Let’s get you back in.",
+      "From their kitchento your table."
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/account-recovery",
+    "width": 768,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Let’s get you back in.",
+      "From their kitchento your table."
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/account-recovery",
+    "width": 390,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Let’s get you back in.",
+      "From their kitchento your table."
+    ],
+    "errors": []
+  },
+  {
+    "role": "customer",
+    "path": "/orders",
+    "width": 1440,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Your orders",
+      "Order HF-9C87459E",
+      "Order HF-TEST-0001"
+    ],
+    "errors": []
+  },
+  {
+    "role": "customer",
+    "path": "/orders",
+    "width": 768,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Your orders",
+      "Order HF-9C87459E",
+      "Order HF-TEST-0001"
+    ],
+    "errors": []
+  },
+  {
+    "role": "customer",
+    "path": "/orders",
+    "width": 390,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Your orders",
+      "Order HF-9C87459E",
+      "Order HF-TEST-0001"
+    ],
+    "errors": []
+  },
+  {
+    "role": "customer",
+    "path": "/favorites",
+    "width": 1440,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Your Favourites",
+      "Kacchi Biryani",
+      "Butter Chicken",
+      "Butter Chicken",
+      "Butter Chicken"
+    ],
+    "errors": []
+  },
+  {
+    "role": "customer",
+    "path": "/favorites",
+    "width": 768,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Your Favourites",
+      "Kacchi Biryani",
+      "Butter Chicken",
+      "Butter Chicken",
+      "Butter Chicken"
+    ],
+    "errors": []
+  },
+  {
+    "role": "customer",
+    "path": "/favorites",
+    "width": 390,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Your Favourites",
+      "Kacchi Biryani",
+      "Butter Chicken",
+      "Butter Chicken",
+      "Butter Chicken"
+    ],
+    "errors": []
+  },
+  {
+    "role": "customer",
+    "path": "/meal-plans",
+    "width": 1440,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Your meal plans",
+      "No meal plans yet"
+    ],
+    "errors": []
+  },
+  {
+    "role": "customer",
+    "path": "/meal-plans",
+    "width": 768,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Your meal plans",
+      "No meal plans yet"
+    ],
+    "errors": []
+  },
+  {
+    "role": "customer",
+    "path": "/meal-plans",
+    "width": 390,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Your meal plans",
+      "No meal plans yet"
+    ],
+    "errors": []
+  },
+  {
+    "role": "customer",
+    "path": "/workspace#addresses",
+    "width": 1440,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Aino Korhonen",
+      "Recent orders",
+      "Your favorites",
+      "Saved addresses"
+    ],
+    "errors": []
+  },
+  {
+    "role": "customer",
+    "path": "/workspace#addresses",
+    "width": 768,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Aino Korhonen",
+      "Recent orders",
+      "Your favorites",
+      "Saved addresses"
+    ],
+    "errors": []
+  },
+  {
+    "role": "customer",
+    "path": "/workspace#addresses",
+    "width": 390,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Aino Korhonen",
+      "Recent orders",
+      "Your favorites",
+      "Saved addresses"
+    ],
+    "errors": []
+  },
+  {
+    "role": "customer",
+    "path": "/workspace#profile",
+    "width": 1440,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Aino Korhonen",
+      "Recent orders",
+      "Your favorites",
+      "Saved addresses"
+    ],
+    "errors": []
+  },
+  {
+    "role": "customer",
+    "path": "/workspace#profile",
+    "width": 768,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Aino Korhonen",
+      "Recent orders",
+      "Your favorites",
+      "Saved addresses"
+    ],
+    "errors": []
+  },
+  {
+    "role": "customer",
+    "path": "/workspace#profile",
+    "width": 390,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Aino Korhonen",
+      "Recent orders",
+      "Your favorites",
+      "Saved addresses"
+    ],
+    "errors": []
+  },
+  {
+    "role": "seller",
+    "path": "/workspace#seller-dashboard",
+    "width": 1440,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Dhaka Home Kitchen owner",
+      "Orders this week",
+      "Opening your kitchen…",
+      "Orders to prepare"
+    ],
+    "errors": []
+  },
+  {
+    "role": "seller",
+    "path": "/workspace#seller-dashboard",
+    "width": 768,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Dhaka Home Kitchen owner",
+      "Orders this week",
+      "Dhaka Home Kitchen",
+      "Orders to prepare"
+    ],
+    "errors": []
+  },
+  {
+    "role": "seller",
+    "path": "/workspace#seller-dashboard",
+    "width": 390,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Dhaka Home Kitchen owner",
+      "Orders this week",
+      "Dhaka Home Kitchen",
+      "Orders to prepare"
+    ],
+    "errors": []
+  },
+  {
+    "role": "seller",
+    "path": "/workspace#orders",
+    "width": 1440,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Dhaka Home Kitchen owner",
+      "Orders this week",
+      "Dhaka Home Kitchen",
+      "Orders to prepare"
+    ],
+    "errors": []
+  },
+  {
+    "role": "seller",
+    "path": "/workspace#orders",
+    "width": 768,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Dhaka Home Kitchen owner",
+      "Orders this week",
+      "Dhaka Home Kitchen",
+      "Orders to prepare"
+    ],
+    "errors": []
+  },
+  {
+    "role": "seller",
+    "path": "/workspace#orders",
+    "width": 390,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Dhaka Home Kitchen owner",
+      "Orders this week",
+      "Dhaka Home Kitchen",
+      "Orders to prepare"
+    ],
+    "errors": []
+  },
+  {
+    "role": "rider",
+    "path": "/workspace#rider-dashboard",
+    "width": 1440,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Leena Salmi",
+      "Ready when you are",
+      "Your deliveries"
+    ],
+    "errors": []
+  },
+  {
+    "role": "rider",
+    "path": "/workspace#rider-dashboard",
+    "width": 768,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Leena Salmi",
+      "Ready when you are",
+      "Your deliveries"
+    ],
+    "errors": []
+  },
+  {
+    "role": "rider",
+    "path": "/workspace#rider-dashboard",
+    "width": 390,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Leena Salmi",
+      "Ready when you are",
+      "Your deliveries"
+    ],
+    "errors": []
+  },
+  {
+    "role": "rider",
+    "path": "/workspace#deliveries",
+    "width": 1440,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Leena Salmi",
+      "Ready when you are",
+      "Your deliveries"
+    ],
+    "errors": []
+  },
+  {
+    "role": "rider",
+    "path": "/workspace#deliveries",
+    "width": 768,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Leena Salmi",
+      "Ready when you are",
+      "Your deliveries"
+    ],
+    "errors": []
+  },
+  {
+    "role": "rider",
+    "path": "/workspace#deliveries",
+    "width": 390,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Leena Salmi",
+      "Ready when you are",
+      "Your deliveries"
+    ],
+    "errors": []
+  },
+  {
+    "role": "admin",
+    "path": "/workspace#admin-dashboard",
+    "width": 1440,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Development Administrator",
+      "Meal-plan schedules",
+      "Home kitchen applications",
+      "Unassigned & recovery jobs"
+    ],
+    "errors": []
+  },
+  {
+    "role": "admin",
+    "path": "/workspace#admin-dashboard",
+    "width": 768,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Development Administrator",
+      "Meal-plan schedules",
+      "Home kitchen applications",
+      "Unassigned & recovery jobs"
+    ],
+    "errors": []
+  },
+  {
+    "role": "admin",
+    "path": "/workspace#admin-dashboard",
+    "width": 390,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Development Administrator",
+      "Meal-plan schedules",
+      "Home kitchen applications",
+      "Unassigned & recovery jobs"
+    ],
+    "errors": []
+  },
+  {
+    "role": "admin",
+    "path": "/workspace#kitchens",
+    "width": 1440,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Development Administrator",
+      "Meal-plan schedules",
+      "Home kitchen applications",
+      "Unassigned & recovery jobs"
+    ],
+    "errors": []
+  },
+  {
+    "role": "admin",
+    "path": "/workspace#kitchens",
+    "width": 768,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Development Administrator",
+      "Meal-plan schedules",
+      "Home kitchen applications",
+      "Unassigned & recovery jobs"
+    ],
+    "errors": []
+  },
+  {
+    "role": "admin",
+    "path": "/workspace#kitchens",
+    "width": 390,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Development Administrator",
+      "Meal-plan schedules",
+      "Home kitchen applications",
+      "Unassigned & recovery jobs"
+    ],
+    "errors": []
+  },
+  {
+    "role": "admin",
+    "path": "/workspace#deliveries",
+    "width": 1440,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Development Administrator",
+      "Meal-plan schedules",
+      "Home kitchen applications",
+      "Unassigned & recovery jobs"
+    ],
+    "errors": []
+  },
+  {
+    "role": "admin",
+    "path": "/workspace#deliveries",
+    "width": 768,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Development Administrator",
+      "Meal-plan schedules",
+      "Home kitchen applications",
+      "Unassigned & recovery jobs"
+    ],
+    "errors": []
+  },
+  {
+    "role": "admin",
+    "path": "/workspace#deliveries",
+    "width": 390,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Development Administrator",
+      "Meal-plan schedules",
+      "Home kitchen applications",
+      "Unassigned & recovery jobs"
+    ],
+    "errors": []
+  },
+  {
+    "role": "admin",
+    "path": "/workspace#orders",
+    "width": 1440,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Development Administrator",
+      "Meal-plan schedules",
+      "Home kitchen applications",
+      "Unassigned & recovery jobs"
+    ],
+    "errors": []
+  },
+  {
+    "role": "admin",
+    "path": "/workspace#orders",
+    "width": 768,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Development Administrator",
+      "Meal-plan schedules",
+      "Home kitchen applications",
+      "Unassigned & recovery jobs"
+    ],
+    "errors": []
+  },
+  {
+    "role": "admin",
+    "path": "/workspace#orders",
+    "width": 390,
+    "overflow": false,
+    "theme": "dark",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Development Administrator",
+      "Meal-plan schedules",
+      "Home kitchen applications",
+      "Unassigned & recovery jobs"
+    ],
+    "errors": []
+  }
+]

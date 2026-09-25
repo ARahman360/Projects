@@ -1,0 +1,206 @@
+[
+  {
+    "id": "table.adminAuditLog",
+    "label": "Create table \"adminAuditLog\"",
+    "summary": "Creates table \"adminAuditLog\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "adminAuditLog"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"adminAuditLog\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"adminAuditLog\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"adminAuditLog\"",
+        "sql": "CREATE TABLE \"public\".\"adminAuditLog\" (\n  \"action\" text NOT NULL,\n  \"actorId\" int4 NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"entityId\" int4 NOT NULL,\n  \"entityType\" text NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"nextValue\" text,\n  \"previousValue\" text,\n  \"reason\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"adminAuditLog\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"adminAuditLog\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.rider.isVerified",
+    "label": "Add column \"isVerified\" to \"rider\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "isVerified",
+        "table": "rider"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"isVerified\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "rider",
+          "isVerified"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"isVerified\"",
+        "sql": "ALTER TABLE \"public\".\"rider\" ADD COLUMN \"isVerified\" bool DEFAULT false NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"isVerified\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "rider",
+          "isVerified"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.shop.isOnline",
+    "label": "Add column \"isOnline\" to \"shop\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "isOnline",
+        "table": "shop"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"isOnline\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "shop",
+          "isOnline"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"isOnline\"",
+        "sql": "ALTER TABLE \"public\".\"shop\" ADD COLUMN \"isOnline\" bool DEFAULT true NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"isOnline\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "shop",
+          "isOnline"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.user.accountStatus",
+    "label": "Add column \"accountStatus\" to \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "accountStatus",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"accountStatus\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "accountStatus"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"accountStatus\"",
+        "sql": "ALTER TABLE \"public\".\"user\" ADD COLUMN \"accountStatus\" text DEFAULT 'ACTIVE' NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"accountStatus\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "accountStatus"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.adminAuditLog.adminAuditLog_entityType_entityId_createdAt_idx_e9eb579f",
+    "label": "Create index \"adminAuditLog_entityType_entityId_createdAt_idx_e9eb579f\" on \"adminAuditLog\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "adminAuditLog_entityType_entityId_createdAt_idx_e9eb579f",
+        "table": "adminAuditLog"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"adminAuditLog_entityType_entityId_createdAt_idx_e9eb579f\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"adminAuditLog_entityType_entityId_createdAt_idx_e9eb579f\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"adminAuditLog_entityType_entityId_createdAt_idx_e9eb579f\"",
+        "sql": "CREATE INDEX \"adminAuditLog_entityType_entityId_createdAt_idx_e9eb579f\" ON \"public\".\"adminAuditLog\" (\"entityType\", \"entityId\", \"createdAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"adminAuditLog_entityType_entityId_createdAt_idx_e9eb579f\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"adminAuditLog_entityType_entityId_createdAt_idx_e9eb579f\""
+        ]
+      }
+    ]
+  }
+]

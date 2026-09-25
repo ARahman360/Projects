@@ -1,0 +1,27 @@
+⚠ Warning: Next.js ignored package-lock.json in C:\Users\arahm because it is outside the current Git repository (C:\Users\arahm\WORKSPACE\Projects).
+ To use this directory, set `turbopack.root` in your Next.js config.
+
+◇ injected env (0) from .env
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+◇ injected env (0) from .env
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] Uncaught Error: prompt() is not supported.
+    at onClick (app/workspace/page.tsx:142:3967)
+    at button (<anonymous>)
+    at <unknown> (app/workspace/page.tsx:142:3890)
+    at Array.map (<anonymous>)
+    at WorkspacePage (app/workspace/page.tsx:142:2453)
+  140 | ...
+  141 | ...
+> 142 | ...TRANSIT"].includes(String(delivery.status)) && <><button type="button" disabled={busy} onClick={() => { const reason = window.prompt("Share a short delay update for the customer", "Traffic delay"); if (reason === null) return;...
+      |                                                                                                                     ^
+  143 | ...
+  144 | ...? "Kitchen")}</b><span>Order {String(order.orderNumber)} · {[safeRow(order.address).addressLine1, safeRow(order.address).addressLine2, safeRow(order.address).postalCode, safeRow(order.address).city].filter(Boolean).join(", ") ...
+  145 | ...

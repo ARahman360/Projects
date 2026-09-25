@@ -1,0 +1,13 @@
+{
+  "passed": [
+    "checkout address trigger readable, nested selector opens and returns selected saved address",
+    "actual browser cash sandbox checkout confirms backend order and Orders page displays it",
+    "deleting the selected address in another tab invalidates unfinished checkout without clearing basket",
+    "tablet autocomplete, Escape closes only suggestions, click-outside dismisses list",
+    "account switch isolates basket and saved addresses"
+  ],
+  "orderNumbers": [
+    "HF-B3C47B4D"
+  ],
+  "errors": []
+}

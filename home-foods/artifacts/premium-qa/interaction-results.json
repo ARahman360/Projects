@@ -1,0 +1,8 @@
+{
+  "passed": [
+    "Native touch swipe left closes sidebar; vertical scroll does not",
+    "Dark theme persists on reload and standalone authentication navigation",
+    "Light theme persists on reload",
+    "Mobile homepage fits viewport; drawer keyboard focus and Escape work"
+  ]
+}

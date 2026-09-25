@@ -1,8 +1,10 @@
+import { verificationFields } from "../src/lib/address-policy.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  assertFinnishKitchen, GEOAPIFY_AUTH_MESSAGE, GEOAPIFY_FORBIDDEN_MESSAGE, GEOAPIFY_RATE_LIMIT_MESSAGE, GEOAPIFY_REQUEST_MESSAGE,
   OUTSIDE_FINLAND_MESSAGE, ROUTING_UNAVAILABLE_MESSAGE, distanceKm, getDrivingDistanceMeters,
-  getKitchenDeliveryDistance, getKitchenDeliveryDistances, getLocationConfiguration, isWithinDeliveryRadius, suggestFinnishAddresses, verifyAddressText, verifyCoordinates,
+  SAVED_ADDRESS_REVERIFY_MESSAGE, getKitchenDeliveryDistance, getKitchenDeliveryDistances, getLocationConfiguration, isWithinDeliveryRadius, locationFromSavedFinnishAddress, suggestFinnishAddresses, verifyAddressText, verifyCoordinates, verifySavedFinnishAddress,
 } from "../src/lib/location.ts";
 
 const helsinki = {
@@ -17,6 +19,44 @@ test("20 km driving-distance boundary is inclusive and rejects anything farther"
   assert.equal(isWithinDeliveryRadius(19_900), true);
   assert.equal(isWithinDeliveryRadius(20_000), true);
   assert.equal(isWithinDeliveryRadius(20_100), false);
+});
+
+test("saved verified Finnish addresses reuse their stored coordinates without geocoding again", () => {
+  const fields = { addressLine1: "Ruopankatu 3 E 38", city: "Lahti", postalCode: "15100", latitude: 60.982, longitude: 25.661 };
+  const saved = locationFromSavedFinnishAddress({...fields,...verificationFields(fields)});
+  assert.equal(saved.countryCode, "FI");
+  assert.equal(saved.latitude, 60.982);
+  assert.equal(saved.longitude, 25.661);
+  assert.match(saved.formattedAddress, /15100, Lahti, Finland/);
+  assert.equal(locationFromSavedFinnishAddress({ addressLine1: "Street 1", city: "Lahti", latitude: null, longitude: null }), null);
+});
+
+test("legacy saved Finnish addresses are verified once and cache normalized coordinates", async () => {
+  let calls = 0;
+  let saved = { id: 35, userId: 12, addressLine1: "Mannerheimintie 1", city: "Helsinki", postalCode: "00100", latitude: null, longitude: null };
+  await withGeoapify((url) => {
+    calls++;
+    assert.equal(url.pathname, "/v1/geocode/search");
+    return Response.json({ results: [helsinki] });
+  }, async () => {
+    const verified = await verifySavedFinnishAddress(saved, async (result) => { saved = { ...saved, addressLine1: result.addressLine1, city: result.city, postalCode: result.postalCode, latitude: result.latitude, longitude: result.longitude }; saved = {...saved,...verificationFields(saved)}; });
+    assert.equal(verified.countryCode, "FI");
+    assert.equal(saved.latitude, 60.1699);
+    assert.equal(saved.longitude, 24.9384);
+    assert.equal(locationFromSavedFinnishAddress(saved).latitude, 60.1699);
+    await verifySavedFinnishAddress(saved, async () => { throw new Error("A cached saved address should not be written again."); });
+    assert.equal(calls, 1);
+  });
+});
+
+test("a legacy saved address explains when first-time geocoding is blocked", async () => {
+  await withGeoapify(() => Response.json({ message: "Invalid apiKey=secret-detail" }, { status: 401 }), async () => {
+    await assert.rejects(() => verifySavedFinnishAddress({ addressLine1: "Mannerheimintie 1", city: "Helsinki", postalCode: "00100" }), (error) => {
+      assert.equal(error.message, SAVED_ADDRESS_REVERIFY_MESSAGE);
+      assert.equal(error.message.includes("secret-detail"), false);
+      return true;
+    });
+  });
 });
 
 async function withGeoapify(responseFor, run) {
@@ -63,6 +103,22 @@ test("Finnish autocomplete requests are country restricted and include attributi
     assert.equal(results[0].location.countryCode, "FI");
     assert.match(results[0].text, /Helsinki/);
   });
+});
+
+test("Geoapify provider failures remain distinguishable without exposing provider response details", async () => {
+  const originalError = console.error;
+  console.error = () => {};
+  try {
+    for (const [status, expected] of [[401, GEOAPIFY_AUTH_MESSAGE], [403, GEOAPIFY_FORBIDDEN_MESSAGE], [429, GEOAPIFY_RATE_LIMIT_MESSAGE], [400, GEOAPIFY_REQUEST_MESSAGE]]) {
+      await withGeoapify(() => Response.json({ message: "Invalid apiKey=private-customer-data" }, { status }), async () => {
+        await assert.rejects(() => suggestFinnishAddresses("Riihimäki"), (error) => {
+          assert.equal(error.message, expected);
+          assert.equal(error.message.includes("private-customer-data"), false);
+          return true;
+        });
+      });
+    }
+  } finally { console.error = originalError; }
 });
 
 test("Geoapify JSON autocomplete records with flat address fields display a complete label", async () => {
@@ -112,11 +168,11 @@ test("foreign addresses and reverse-geocoded GPS locations are rejected", async 
 test("invalid coordinates and provider failures fail closed", async () => {
   await assert.rejects(verifyCoordinates(91, 0), /coordinates are invalid/i);
   await withGeoapify(() => new Response("forbidden", { status: 403 }), async () => {
-    await assert.rejects(verifyAddressText("Helsinki, Finland"), /rejected the API key/i);
+    await assert.rejects(verifyAddressText("Helsinki, Finland"), new RegExp(GEOAPIFY_FORBIDDEN_MESSAGE.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   });
   const old = process.env.GEOAPIFY_API_KEY;
   delete process.env.GEOAPIFY_API_KEY;
-  try { assert.equal(getLocationConfiguration().geoapifyConfigured, false); await assert.rejects(verifyCoordinates(60, 25), /set GEOAPIFY_API_KEY/i); }
+  try { assert.equal(getLocationConfiguration().geoapifyConfigured, false); await assert.rejects(verifyCoordinates(60, 25), /look up this address/i); }
   finally { if (old !== undefined) process.env.GEOAPIFY_API_KEY = old; }
 });
 
@@ -193,4 +249,26 @@ test("route matrix outages and unroutable kitchen pairs remain unavailable", asy
 test("distance utility remains a pure estimate and returns zero for identical points", () => {
   const point = { latitude: 60.1699, longitude: 24.9384 };
   assert.equal(distanceKm(point, point), 0);
+});
+
+test("concatenated environment settings are rejected before sending a provider request", async () => {
+  const previousKey = process.env.GEOAPIFY_API_KEY;
+  const previousFetch = globalThis.fetch;
+  let requests = 0;
+  globalThis.fetch = async () => { requests++; throw new Error("Unexpected network request"); };
+  process.env.GEOAPIFY_API_KEY = "test-keyHOMEFOODS_ENABLE_TEST_DATA=true";
+  try {
+    await assert.rejects(verifyAddressText("Mannerheimintie 9, Helsinki"), new RegExp(GEOAPIFY_AUTH_MESSAGE));
+    assert.equal(requests, 0);
+  } finally {
+    if (previousKey === undefined) delete process.env.GEOAPIFY_API_KEY;
+    else process.env.GEOAPIFY_API_KEY = previousKey;
+    globalThis.fetch = previousFetch;
+  }
+});
+
+test("kitchen country checks reject foreign or missing coordinates without routing",async()=>{
+ await assert.rejects(assertFinnishKitchen({latitude:null,longitude:null}),/save its Finnish location/);
+ await withGeoapify(url=>{assert.equal(url.pathname,"/v1/geocode/reverse");return Response.json({results:[{...helsinki.properties,country_code:"se",country:"Sweden",lat:59.33,lon:18.07}]});},async()=>await assert.rejects(assertFinnishKitchen({latitude:59.33,longitude:18.07}),new RegExp(OUTSIDE_FINLAND_MESSAGE)));
+ let calls=0;await withGeoapify(url=>{calls++;assert.equal(url.pathname,"/v1/geocode/reverse");return Response.json({results:[helsinki]});},async()=>{await assertFinnishKitchen({latitude:60.17001,longitude:24.93841});await assertFinnishKitchen({latitude:60.17001,longitude:24.93841});assert.equal(calls,1);});
 });

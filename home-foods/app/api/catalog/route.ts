@@ -1,6 +1,6 @@
 import { db } from "@/src/prisma/db";
 import { getKitchenDeliveryDistances, isWithinDeliveryRadius, MAX_DELIVERY_DISTANCE_METERS } from "@/src/lib/location";
-import { isDeliveryRadiusEnforced, isNationwideDevelopmentMode, isNationwideDevelopmentSeller } from "@/src/lib/feature-flags";
+import { isDeliveryRadiusEnforced, isNationwideDevelopmentMode, isNationwideDevelopmentSeller, isKitchenLocationAllowed } from "@/src/lib/feature-flags";
 import { normalizeCatalogSearchText } from "@/src/lib/catalog-filter";
 
 export const runtime = "nodejs";
@@ -25,7 +25,7 @@ export async function GET(request: Request) {
       .include("seller", (seller) => seller.select("name", "email"))
       .orderBy((shop) => shop.name.asc())
       .all();
-    const allShops = shopRows.filter((shop) => !isNationwideDevelopmentMode() || isNationwideDevelopmentSeller(shop.seller));
+    const allShops = shopRows.filter((shop) => isKitchenLocationAllowed(shop.address) && (!isNationwideDevelopmentMode() || isNationwideDevelopmentSeller(shop.seller)));
     const deliveryChecks = new Map<number, { eligible: boolean; distanceKm: number | null; unavailableReason?: string }>();
     let routeCheckFailed = false;
     if (customerLocation && isDeliveryRadiusEnforced()) {

@@ -1,0 +1,1675 @@
+[
+  {
+    "role": "public",
+    "path": "/",
+    "width": 1440,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": " > small.",
+        "color": "rgb(137, 144, 135)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 3.25
+      },
+      {
+        "selector": "home-carousel-see-all > span.",
+        "color": "rgb(199, 115, 80)",
+        "bg": "rgb(248, 246, 239)",
+        "ratio": 3.24
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      }
+    ],
+    "headings": [
+      "Homemade Happiness,Delivered to Your Door.",
+      "Craving Homemade Food?",
+      "Top Picks for You",
+      "Popular Right Now",
+      "Homemade Favourites"
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/",
+    "width": 768,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": "home-carousel-see-all > span.",
+        "color": "rgb(199, 115, 80)",
+        "bg": "rgb(248, 246, 239)",
+        "ratio": 3.24
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      },
+      {
+        "selector": "carousel-food-meta > span.",
+        "color": "rgb(120, 128, 120)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.03
+      }
+    ],
+    "headings": [
+      "Homemade Happiness,Delivered to Your Door.",
+      "Craving Homemade Food?",
+      "Top Picks for You",
+      "Popular Right Now",
+      "Homemade Favourites"
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/",
+    "width": 390,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": "home-carousel-see-all > span.",
+        "color": "rgb(199, 115, 80)",
+        "bg": "rgb(248, 246, 239)",
+        "ratio": 3.24
+      }
+    ],
+    "headings": [
+      "Homemade Happiness,Delivered to Your Door.",
+      "Craving Homemade Food?",
+      "Top Picks for You",
+      "Popular Right Now",
+      "Homemade Favourites"
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/kitchens/4?item=18",
+    "width": 1440,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": " > small.",
+        "color": "rgb(137, 144, 135)",
+        "bg": "rgb(241, 243, 236)",
+        "ratio": 2.93
+      }
+    ],
+    "headings": [
+      "Old Dhaka Biryani House",
+      "Today’s menu"
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/kitchens/4?item=18",
+    "width": 768,
+    "overflow": false,
+    "theme": "light",
+    "issues": [],
+    "headings": [
+      "Old Dhaka Biryani House",
+      "Today’s menu"
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/kitchens/4?item=18",
+    "width": 390,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": "homefoods-wordmark > b.",
+        "color": "rgb(209, 122, 82)",
+        "bg": "rgb(255, 255, 255)",
+        "ratio": 3.17
+      }
+    ],
+    "headings": [
+      "Old Dhaka Biryani House",
+      "Today’s menu"
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/collections/popular",
+    "width": 1440,
+    "overflow": false,
+    "theme": "light",
+    "issues": [],
+    "headings": [
+      "Collection"
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/collections/popular",
+    "width": 768,
+    "overflow": false,
+    "theme": "light",
+    "issues": [],
+    "headings": [
+      "Collection"
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/collections/popular",
+    "width": 390,
+    "overflow": false,
+    "theme": "light",
+    "issues": [],
+    "headings": [
+      "Collection"
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/signin",
+    "width": 1440,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": " > em.",
+        "color": "rgb(216, 120, 78)",
+        "bg": "rgb(248, 246, 239)",
+        "ratio": 2.89
+      },
+      {
+        "selector": " > span.",
+        "color": "rgb(115, 125, 116)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.23
+      },
+      {
+        "selector": " > span.",
+        "color": "rgb(115, 125, 116)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.23
+      },
+      {
+        "selector": " > span.",
+        "color": "rgb(115, 125, 116)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.23
+      },
+      {
+        "selector": " > span.",
+        "color": "rgb(115, 125, 116)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.23
+      },
+      {
+        "selector": " > span.",
+        "color": "rgb(115, 125, 116)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.23
+      },
+      {
+        "selector": " > span.",
+        "color": "rgb(115, 125, 116)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.23
+      }
+    ],
+    "headings": [
+      "Welcome home.",
+      "From their kitchento your table."
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/signin",
+    "width": 768,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": " > em.",
+        "color": "rgb(216, 120, 78)",
+        "bg": "rgb(248, 246, 239)",
+        "ratio": 2.89
+      },
+      {
+        "selector": " > span.",
+        "color": "rgb(115, 125, 116)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.23
+      },
+      {
+        "selector": " > span.",
+        "color": "rgb(115, 125, 116)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.23
+      },
+      {
+        "selector": " > span.",
+        "color": "rgb(115, 125, 116)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.23
+      },
+      {
+        "selector": " > span.",
+        "color": "rgb(115, 125, 116)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.23
+      },
+      {
+        "selector": " > span.",
+        "color": "rgb(115, 125, 116)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.23
+      },
+      {
+        "selector": " > span.",
+        "color": "rgb(115, 125, 116)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.23
+      },
+      {
+        "selector": " > span.",
+        "color": "rgb(115, 125, 116)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.23
+      }
+    ],
+    "headings": [
+      "Welcome home.",
+      "From their kitchento your table."
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/signin",
+    "width": 390,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": "auth-wordmark > span.auth-brand-mark",
+        "color": "rgb(240, 165, 119)",
+        "bg": "rgb(248, 246, 239)",
+        "ratio": 1.88
+      },
+      {
+        "selector": " > b.",
+        "color": "rgb(233, 140, 96)",
+        "bg": "rgb(248, 246, 239)",
+        "ratio": 2.32
+      },
+      {
+        "selector": " > em.",
+        "color": "rgb(216, 120, 78)",
+        "bg": "rgb(248, 246, 239)",
+        "ratio": 2.89
+      },
+      {
+        "selector": " > span.",
+        "color": "rgb(115, 125, 116)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.23
+      },
+      {
+        "selector": " > span.",
+        "color": "rgb(115, 125, 116)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.23
+      },
+      {
+        "selector": " > span.",
+        "color": "rgb(115, 125, 116)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.23
+      },
+      {
+        "selector": " > span.",
+        "color": "rgb(115, 125, 116)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.23
+      },
+      {
+        "selector": " > span.",
+        "color": "rgb(115, 125, 116)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.23
+      },
+      {
+        "selector": " > span.",
+        "color": "rgb(115, 125, 116)",
+        "bg": "rgb(255, 254, 250)",
+        "ratio": 4.23
+      }
+    ],
+    "headings": [
+      "Welcome home.",
+      "From their kitchento your table."
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/join",
+    "width": 1440,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": " > em.",
+        "color": "rgb(216, 120, 78)",
+        "bg": "rgb(248, 246, 239)",
+        "ratio": 2.89
+      }
+    ],
+    "headings": [
+      "Good food starts here.",
+      "From their kitchento your table."
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/join",
+    "width": 768,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": " > em.",
+        "color": "rgb(216, 120, 78)",
+        "bg": "rgb(248, 246, 239)",
+        "ratio": 2.89
+      }
+    ],
+    "headings": [
+      "Good food starts here.",
+      "From their kitchento your table."
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/join",
+    "width": 390,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": "auth-wordmark > span.auth-brand-mark",
+        "color": "rgb(240, 165, 119)",
+        "bg": "rgb(248, 246, 239)",
+        "ratio": 1.88
+      },
+      {
+        "selector": " > b.",
+        "color": "rgb(233, 140, 96)",
+        "bg": "rgb(248, 246, 239)",
+        "ratio": 2.32
+      },
+      {
+        "selector": " > em.",
+        "color": "rgb(216, 120, 78)",
+        "bg": "rgb(248, 246, 239)",
+        "ratio": 2.89
+      }
+    ],
+    "headings": [
+      "Good food starts here.",
+      "From their kitchento your table."
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/forgot-password",
+    "width": 1440,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": " > em.",
+        "color": "rgb(216, 120, 78)",
+        "bg": "rgb(248, 246, 239)",
+        "ratio": 2.89
+      }
+    ],
+    "headings": [
+      "Let’s get you back in.",
+      "From their kitchento your table."
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/forgot-password",
+    "width": 768,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": " > em.",
+        "color": "rgb(216, 120, 78)",
+        "bg": "rgb(248, 246, 239)",
+        "ratio": 2.89
+      }
+    ],
+    "headings": [
+      "Let’s get you back in.",
+      "From their kitchento your table."
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/forgot-password",
+    "width": 390,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": "auth-wordmark > span.auth-brand-mark",
+        "color": "rgb(240, 165, 119)",
+        "bg": "rgb(248, 246, 239)",
+        "ratio": 1.88
+      },
+      {
+        "selector": " > b.",
+        "color": "rgb(233, 140, 96)",
+        "bg": "rgb(248, 246, 239)",
+        "ratio": 2.32
+      },
+      {
+        "selector": " > em.",
+        "color": "rgb(216, 120, 78)",
+        "bg": "rgb(248, 246, 239)",
+        "ratio": 2.89
+      }
+    ],
+    "headings": [
+      "Let’s get you back in.",
+      "From their kitchento your table."
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/reset-password",
+    "width": 1440,
+    "overflow": false,
+    "theme": "light",
+    "issues": [],
+    "headings": [
+      "Choose a new password."
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/reset-password",
+    "width": 768,
+    "overflow": false,
+    "theme": "light",
+    "issues": [],
+    "headings": [
+      "Choose a new password."
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/reset-password",
+    "width": 390,
+    "overflow": false,
+    "theme": "light",
+    "issues": [],
+    "headings": [
+      "Choose a new password."
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/account-recovery",
+    "width": 1440,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": " > em.",
+        "color": "rgb(216, 120, 78)",
+        "bg": "rgb(248, 246, 239)",
+        "ratio": 2.89
+      }
+    ],
+    "headings": [
+      "Let’s get you back in.",
+      "From their kitchento your table."
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/account-recovery",
+    "width": 768,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": " > em.",
+        "color": "rgb(216, 120, 78)",
+        "bg": "rgb(248, 246, 239)",
+        "ratio": 2.89
+      }
+    ],
+    "headings": [
+      "Let’s get you back in.",
+      "From their kitchento your table."
+    ],
+    "errors": []
+  },
+  {
+    "role": "public",
+    "path": "/account-recovery",
+    "width": 390,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": "auth-wordmark > span.auth-brand-mark",
+        "color": "rgb(240, 165, 119)",
+        "bg": "rgb(248, 246, 239)",
+        "ratio": 1.88
+      },
+      {
+        "selector": " > b.",
+        "color": "rgb(233, 140, 96)",
+        "bg": "rgb(248, 246, 239)",
+        "ratio": 2.32
+      },
+      {
+        "selector": " > em.",
+        "color": "rgb(216, 120, 78)",
+        "bg": "rgb(248, 246, 239)",
+        "ratio": 2.89
+      }
+    ],
+    "headings": [
+      "Let’s get you back in.",
+      "From their kitchento your table."
+    ],
+    "errors": []
+  },
+  {
+    "role": "customer",
+    "path": "/orders",
+    "width": 1440,
+    "overflow": false,
+    "theme": "light",
+    "issues": [],
+    "headings": [
+      "Your orders",
+      "Order HF-9C87459E",
+      "Order HF-TEST-0001"
+    ],
+    "errors": []
+  },
+  {
+    "role": "customer",
+    "path": "/orders",
+    "width": 768,
+    "overflow": false,
+    "theme": "light",
+    "issues": [],
+    "headings": [
+      "Your orders",
+      "Order HF-9C87459E",
+      "Order HF-TEST-0001"
+    ],
+    "errors": []
+  },
+  {
+    "role": "customer",
+    "path": "/orders",
+    "width": 390,
+    "overflow": false,
+    "theme": "light",
+    "issues": [],
+    "headings": [
+      "Your orders",
+      "Order HF-9C87459E",
+      "Order HF-TEST-0001"
+    ],
+    "errors": []
+  },
+  {
+    "role": "customer",
+    "path": "/favorites",
+    "width": 1440,
+    "overflow": false,
+    "theme": "light",
+    "issues": [],
+    "headings": [
+      "Your Favourites",
+      "Kacchi Biryani",
+      "Butter Chicken",
+      "Butter Chicken",
+      "Butter Chicken"
+    ],
+    "errors": []
+  },
+  {
+    "role": "customer",
+    "path": "/favorites",
+    "width": 768,
+    "overflow": false,
+    "theme": "light",
+    "issues": [],
+    "headings": [
+      "Your Favourites",
+      "Kacchi Biryani",
+      "Butter Chicken",
+      "Butter Chicken",
+      "Butter Chicken"
+    ],
+    "errors": []
+  },
+  {
+    "role": "customer",
+    "path": "/favorites",
+    "width": 390,
+    "overflow": false,
+    "theme": "light",
+    "issues": [],
+    "headings": [
+      "Your Favourites",
+      "Kacchi Biryani",
+      "Butter Chicken",
+      "Butter Chicken",
+      "Butter Chicken"
+    ],
+    "errors": []
+  },
+  {
+    "role": "customer",
+    "path": "/meal-plans",
+    "width": 1440,
+    "overflow": false,
+    "theme": "light",
+    "issues": [],
+    "headings": [
+      "Your meal plans",
+      "No meal plans yet"
+    ],
+    "errors": []
+  },
+  {
+    "role": "customer",
+    "path": "/meal-plans",
+    "width": 768,
+    "overflow": false,
+    "theme": "light",
+    "issues": [],
+    "headings": [
+      "Your meal plans",
+      "No meal plans yet"
+    ],
+    "errors": []
+  },
+  {
+    "role": "customer",
+    "path": "/meal-plans",
+    "width": 390,
+    "overflow": false,
+    "theme": "light",
+    "issues": [],
+    "headings": [
+      "Your meal plans",
+      "No meal plans yet"
+    ],
+    "errors": []
+  },
+  {
+    "role": "customer",
+    "path": "/workspace#addresses",
+    "width": 1440,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": " > small.",
+        "color": "rgb(120, 132, 124)",
+        "bg": "rgb(255, 255, 255)",
+        "ratio": 3.9
+      }
+    ],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Aino Korhonen",
+      "Recent orders",
+      "Your favorites",
+      "Saved addresses"
+    ],
+    "errors": []
+  },
+  {
+    "role": "customer",
+    "path": "/workspace#addresses",
+    "width": 768,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": " > small.",
+        "color": "rgb(120, 132, 124)",
+        "bg": "rgb(255, 255, 255)",
+        "ratio": 3.9
+      }
+    ],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Aino Korhonen",
+      "Recent orders",
+      "Your favorites",
+      "Saved addresses"
+    ],
+    "errors": []
+  },
+  {
+    "role": "customer",
+    "path": "/workspace#addresses",
+    "width": 390,
+    "overflow": false,
+    "theme": "light",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Aino Korhonen",
+      "Recent orders",
+      "Your favorites",
+      "Saved addresses"
+    ],
+    "errors": []
+  },
+  {
+    "role": "customer",
+    "path": "/workspace#profile",
+    "width": 1440,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": " > small.",
+        "color": "rgb(120, 132, 124)",
+        "bg": "rgb(255, 255, 255)",
+        "ratio": 3.9
+      }
+    ],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Aino Korhonen",
+      "Recent orders",
+      "Your favorites",
+      "Saved addresses"
+    ],
+    "errors": []
+  },
+  {
+    "role": "customer",
+    "path": "/workspace#profile",
+    "width": 768,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": " > small.",
+        "color": "rgb(120, 132, 124)",
+        "bg": "rgb(255, 255, 255)",
+        "ratio": 3.9
+      }
+    ],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Aino Korhonen",
+      "Recent orders",
+      "Your favorites",
+      "Saved addresses"
+    ],
+    "errors": []
+  },
+  {
+    "role": "customer",
+    "path": "/workspace#profile",
+    "width": 390,
+    "overflow": false,
+    "theme": "light",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Aino Korhonen",
+      "Recent orders",
+      "Your favorites",
+      "Saved addresses"
+    ],
+    "errors": []
+  },
+  {
+    "role": "seller",
+    "path": "/workspace#seller-dashboard",
+    "width": 1440,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": " > small.",
+        "color": "rgb(120, 132, 124)",
+        "bg": "rgb(255, 255, 255)",
+        "ratio": 3.9
+      }
+    ],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Dhaka Home Kitchen owner",
+      "Orders this week",
+      "Dhaka Home Kitchen",
+      "Orders to prepare"
+    ],
+    "errors": []
+  },
+  {
+    "role": "seller",
+    "path": "/workspace#seller-dashboard",
+    "width": 768,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": " > small.",
+        "color": "rgb(120, 132, 124)",
+        "bg": "rgb(255, 255, 255)",
+        "ratio": 3.9
+      }
+    ],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Dhaka Home Kitchen owner",
+      "Orders this week",
+      "Dhaka Home Kitchen",
+      "Orders to prepare"
+    ],
+    "errors": []
+  },
+  {
+    "role": "seller",
+    "path": "/workspace#seller-dashboard",
+    "width": 390,
+    "overflow": false,
+    "theme": "light",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Dhaka Home Kitchen owner",
+      "Orders this week",
+      "Dhaka Home Kitchen",
+      "Orders to prepare"
+    ],
+    "errors": []
+  },
+  {
+    "role": "seller",
+    "path": "/workspace#orders",
+    "width": 1440,
+    "overflow": false,
+    "theme": "light",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Dhaka Home Kitchen owner",
+      "Orders this week",
+      "Dhaka Home Kitchen",
+      "Orders to prepare"
+    ],
+    "errors": []
+  },
+  {
+    "role": "seller",
+    "path": "/workspace#orders",
+    "width": 768,
+    "overflow": false,
+    "theme": "light",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Dhaka Home Kitchen owner",
+      "Orders this week",
+      "Dhaka Home Kitchen",
+      "Orders to prepare"
+    ],
+    "errors": []
+  },
+  {
+    "role": "seller",
+    "path": "/workspace#orders",
+    "width": 390,
+    "overflow": false,
+    "theme": "light",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Dhaka Home Kitchen owner",
+      "Orders this week",
+      "Dhaka Home Kitchen",
+      "Orders to prepare"
+    ],
+    "errors": []
+  },
+  {
+    "role": "rider",
+    "path": "/workspace#rider-dashboard",
+    "width": 1440,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": " > small.",
+        "color": "rgb(120, 132, 124)",
+        "bg": "rgb(255, 255, 255)",
+        "ratio": 3.9
+      }
+    ],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Leena Salmi",
+      "Ready when you are",
+      "Your deliveries"
+    ],
+    "errors": []
+  },
+  {
+    "role": "rider",
+    "path": "/workspace#rider-dashboard",
+    "width": 768,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": " > small.",
+        "color": "rgb(120, 132, 124)",
+        "bg": "rgb(255, 255, 255)",
+        "ratio": 3.9
+      }
+    ],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Leena Salmi",
+      "Ready when you are",
+      "Your deliveries"
+    ],
+    "errors": []
+  },
+  {
+    "role": "rider",
+    "path": "/workspace#rider-dashboard",
+    "width": 390,
+    "overflow": false,
+    "theme": "light",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Leena Salmi",
+      "Ready when you are",
+      "Your deliveries"
+    ],
+    "errors": []
+  },
+  {
+    "role": "rider",
+    "path": "/workspace#deliveries",
+    "width": 1440,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": " > small.",
+        "color": "rgb(120, 132, 124)",
+        "bg": "rgb(255, 255, 255)",
+        "ratio": 3.9
+      }
+    ],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Leena Salmi",
+      "Ready when you are",
+      "Your deliveries"
+    ],
+    "errors": []
+  },
+  {
+    "role": "rider",
+    "path": "/workspace#deliveries",
+    "width": 768,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": " > small.",
+        "color": "rgb(120, 132, 124)",
+        "bg": "rgb(255, 255, 255)",
+        "ratio": 3.9
+      }
+    ],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Leena Salmi",
+      "Ready when you are",
+      "Your deliveries"
+    ],
+    "errors": []
+  },
+  {
+    "role": "rider",
+    "path": "/workspace#deliveries",
+    "width": 390,
+    "overflow": false,
+    "theme": "light",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Leena Salmi",
+      "Ready when you are",
+      "Your deliveries"
+    ],
+    "errors": []
+  },
+  {
+    "role": "admin",
+    "path": "/workspace#admin-dashboard",
+    "width": 1440,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": " > small.",
+        "color": "rgb(120, 132, 124)",
+        "bg": "rgb(255, 255, 255)",
+        "ratio": 3.9
+      }
+    ],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Development Administrator",
+      "Meal-plan schedules",
+      "Home kitchen applications",
+      "Unassigned & recovery jobs"
+    ],
+    "errors": []
+  },
+  {
+    "role": "admin",
+    "path": "/workspace#admin-dashboard",
+    "width": 768,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": " > small.",
+        "color": "rgb(120, 132, 124)",
+        "bg": "rgb(255, 255, 255)",
+        "ratio": 3.9
+      }
+    ],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Development Administrator",
+      "Meal-plan schedules",
+      "Home kitchen applications",
+      "Unassigned & recovery jobs"
+    ],
+    "errors": []
+  },
+  {
+    "role": "admin",
+    "path": "/workspace#admin-dashboard",
+    "width": 390,
+    "overflow": false,
+    "theme": "light",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Development Administrator",
+      "Meal-plan schedules",
+      "Home kitchen applications",
+      "Unassigned & recovery jobs"
+    ],
+    "errors": []
+  },
+  {
+    "role": "admin",
+    "path": "/workspace#kitchens",
+    "width": 1440,
+    "overflow": false,
+    "theme": "light",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Development Administrator",
+      "Meal-plan schedules",
+      "Home kitchen applications",
+      "Unassigned & recovery jobs"
+    ],
+    "errors": []
+  },
+  {
+    "role": "admin",
+    "path": "/workspace#kitchens",
+    "width": 768,
+    "overflow": false,
+    "theme": "light",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Development Administrator",
+      "Meal-plan schedules",
+      "Home kitchen applications",
+      "Unassigned & recovery jobs"
+    ],
+    "errors": []
+  },
+  {
+    "role": "admin",
+    "path": "/workspace#kitchens",
+    "width": 390,
+    "overflow": false,
+    "theme": "light",
+    "issues": [],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Development Administrator",
+      "Meal-plan schedules",
+      "Home kitchen applications",
+      "Unassigned & recovery jobs"
+    ],
+    "errors": []
+  },
+  {
+    "role": "admin",
+    "path": "/workspace#deliveries",
+    "width": 1440,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": "homefoods-wordmark > b.",
+        "color": "rgb(209, 122, 82)",
+        "bg": "rgb(248, 246, 239)",
+        "ratio": 2.93
+      }
+    ],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Development Administrator",
+      "Meal-plan schedules",
+      "Home kitchen applications",
+      "Unassigned & recovery jobs"
+    ],
+    "errors": []
+  },
+  {
+    "role": "admin",
+    "path": "/workspace#deliveries",
+    "width": 768,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": "homefoods-wordmark > b.",
+        "color": "rgb(209, 122, 82)",
+        "bg": "rgb(248, 246, 239)",
+        "ratio": 2.93
+      }
+    ],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Development Administrator",
+      "Meal-plan schedules",
+      "Home kitchen applications",
+      "Unassigned & recovery jobs"
+    ],
+    "errors": []
+  },
+  {
+    "role": "admin",
+    "path": "/workspace#deliveries",
+    "width": 390,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": "homefoods-wordmark > b.",
+        "color": "rgb(209, 122, 82)",
+        "bg": "rgb(248, 246, 239)",
+        "ratio": 2.93
+      }
+    ],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Development Administrator",
+      "Meal-plan schedules",
+      "Home kitchen applications",
+      "Unassigned & recovery jobs"
+    ],
+    "errors": []
+  },
+  {
+    "role": "admin",
+    "path": "/workspace#orders",
+    "width": 1440,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": "homefoods-wordmark > b.",
+        "color": "rgb(209, 122, 82)",
+        "bg": "rgb(248, 246, 239)",
+        "ratio": 2.93
+      }
+    ],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Development Administrator",
+      "Meal-plan schedules",
+      "Home kitchen applications",
+      "Unassigned & recovery jobs"
+    ],
+    "errors": []
+  },
+  {
+    "role": "admin",
+    "path": "/workspace#orders",
+    "width": 768,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": "homefoods-wordmark > b.",
+        "color": "rgb(209, 122, 82)",
+        "bg": "rgb(248, 246, 239)",
+        "ratio": 2.93
+      }
+    ],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Development Administrator",
+      "Meal-plan schedules",
+      "Home kitchen applications",
+      "Unassigned & recovery jobs"
+    ],
+    "errors": []
+  },
+  {
+    "role": "admin",
+    "path": "/workspace#orders",
+    "width": 390,
+    "overflow": false,
+    "theme": "light",
+    "issues": [
+      {
+        "selector": "homefoods-wordmark > b.",
+        "color": "rgb(209, 122, 82)",
+        "bg": "rgb(248, 246, 239)",
+        "ratio": 2.93
+      }
+    ],
+    "headings": [
+      "Hello, [TEST].",
+      "[TEST] Development Administrator",
+      "Meal-plan schedules",
+      "Home kitchen applications",
+      "Unassigned & recovery jobs"
+    ],
+    "errors": []
+  }
+]

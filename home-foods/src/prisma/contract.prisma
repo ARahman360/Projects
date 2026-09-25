@@ -79,6 +79,7 @@ model User {
   phone       String?
   role        UserRole @default(CUSTOMER)
   avatarUrl   String?
+  accountStatus String @default("ACTIVE")
 
   shops       Shop[]
   addresses   Address[]
@@ -109,6 +110,7 @@ model Shop {
   latitude        Float?
   longitude       Float?
   status          ShopStatus @default(PENDING)
+  isOnline        Boolean @default(true)
   minimumOrder    Float?
   deliveryFee     Float?
   estimatedMinutes Int?
@@ -201,6 +203,11 @@ model Address {
   latitude    Float?
   longitude   Float?
   isDefault   Boolean     @default(false)
+    isArchived  Boolean     @default(false)
+    countryCode String?
+    verificationSource String?
+    verificationHash String?
+    verifiedAt  TimestamptzString?
 
   user        User        @relation(fields: [userId], references: [id])
   orders      Order[]
@@ -247,6 +254,7 @@ model Order {
   customerId      Int
   shopId          Int
   addressId       Int?
+    isSandbox       Boolean       @default(false)
 
   status          OrderStatus   @default(PENDING)
   subtotal        Float
@@ -273,6 +281,16 @@ model Order {
   @@index([customerId])
   @@index([shopId])
   @@index([status])
+}
+
+// A committed response is reused when a checkout is retried, including across servers.
+model CheckoutRequest {
+  id          String @id
+  userId      Int
+  requestHash String
+  result      String?
+  createdAt   TimestamptzString @default(now())
+  @@index([userId])
 }
 
 model OrderItem {
@@ -332,6 +350,7 @@ model Rider {
   id              Int      @id @default(autoincrement())
   userId          Int      @unique
   isAvailable     Boolean  @default(false)
+  isVerified      Boolean  @default(false)
   vehicleType     String?
   vehicleNumber   String?
   currentLatitude Float?
@@ -533,4 +552,19 @@ model NewsletterSubscriber {
   consentAt TimestamptzString  @default(now())
   createdAt TimestamptzString  @default(now())
   updatedAt temporal.updatedAtString()
+}
+
+// Append-only administration history. Never stores credentials or payment tokens.
+model AdminAuditLog {
+  id Int @id @default(autoincrement())
+  actorId Int
+  entityType String
+  entityId Int
+  action String
+  reason String
+  previousValue String?
+  nextValue String?
+  createdAt TimestamptzString @default(now())
+
+  @@index([entityType, entityId, createdAt])
 }

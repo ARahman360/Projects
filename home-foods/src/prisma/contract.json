@@ -8,12 +8,20 @@
       "model": "Address",
       "namespace": "public"
     },
+    "adminAuditLog": {
+      "model": "AdminAuditLog",
+      "namespace": "public"
+    },
     "cart": {
       "model": "Cart",
       "namespace": "public"
     },
     "cartItem": {
       "model": "CartItem",
+      "namespace": "public"
+    },
+    "checkoutRequest": {
+      "model": "CheckoutRequest",
       "namespace": "public"
     },
     "delivery": {
@@ -347,6 +355,13 @@
                   "kind": "scalar"
                 }
               },
+              "countryCode": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "createdAt": {
                 "nullable": false,
                 "type": {
@@ -358,6 +373,13 @@
                 "nullable": false,
                 "type": {
                   "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "isArchived": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
                   "kind": "scalar"
                 }
               },
@@ -422,6 +444,27 @@
                   "codecId": "pg/int4@1",
                   "kind": "scalar"
                 }
+              },
+              "verificationHash": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "verificationSource": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "verifiedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
               }
             },
             "relations": {
@@ -483,11 +526,17 @@
                 "city": {
                   "column": "city"
                 },
+                "countryCode": {
+                  "column": "countryCode"
+                },
                 "createdAt": {
                   "column": "createdAt"
                 },
                 "id": {
                   "column": "id"
+                },
+                "isArchived": {
+                  "column": "isArchived"
                 },
                 "isDefault": {
                   "column": "isDefault"
@@ -512,10 +561,120 @@
                 },
                 "userId": {
                   "column": "userId"
+                },
+                "verificationHash": {
+                  "column": "verificationHash"
+                },
+                "verificationSource": {
+                  "column": "verificationSource"
+                },
+                "verifiedAt": {
+                  "column": "verifiedAt"
                 }
               },
               "namespaceId": "public",
               "table": "address"
+            }
+          },
+          "AdminAuditLog": {
+            "fields": {
+              "action": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "actorId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "entityId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "entityType": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "nextValue": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "previousValue": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "reason": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "action": {
+                  "column": "action"
+                },
+                "actorId": {
+                  "column": "actorId"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "entityId": {
+                  "column": "entityId"
+                },
+                "entityType": {
+                  "column": "entityType"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "nextValue": {
+                  "column": "nextValue"
+                },
+                "previousValue": {
+                  "column": "previousValue"
+                },
+                "reason": {
+                  "column": "reason"
+                }
+              },
+              "namespaceId": "public",
+              "table": "adminAuditLog"
             }
           },
           "Cart": {
@@ -713,6 +872,67 @@
               },
               "namespaceId": "public",
               "table": "cartItem"
+            }
+          },
+          "CheckoutRequest": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "requestHash": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "result": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "userId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "requestHash": {
+                  "column": "requestHash"
+                },
+                "result": {
+                  "column": "result"
+                },
+                "userId": {
+                  "column": "userId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "checkoutRequest"
             }
           },
           "Delivery": {
@@ -1644,6 +1864,13 @@
                   "kind": "scalar"
                 }
               },
+              "isSandbox": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
               "notes": {
                 "nullable": true,
                 "type": {
@@ -1870,6 +2097,9 @@
                 },
                 "id": {
                   "column": "id"
+                },
+                "isSandbox": {
+                  "column": "isSandbox"
                 },
                 "notes": {
                   "column": "notes"
@@ -2547,6 +2777,13 @@
                   "kind": "scalar"
                 }
               },
+              "isVerified": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
               "updatedAt": {
                 "nullable": false,
                 "type": {
@@ -2625,6 +2862,9 @@
                 },
                 "isAvailable": {
                   "column": "isAvailable"
+                },
+                "isVerified": {
+                  "column": "isVerified"
                 },
                 "updatedAt": {
                   "column": "updatedAt"
@@ -2995,6 +3235,13 @@
                   "kind": "scalar"
                 }
               },
+              "isOnline": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
               "latitude": {
                 "nullable": true,
                 "type": {
@@ -3216,6 +3463,9 @@
                 },
                 "id": {
                   "column": "id"
+                },
+                "isOnline": {
+                  "column": "isOnline"
                 },
                 "latitude": {
                   "column": "latitude"
@@ -3730,6 +3980,13 @@
           },
           "User": {
             "fields": {
+              "accountStatus": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "avatarUrl": {
                 "nullable": true,
                 "type": {
@@ -3955,6 +4212,9 @@
             },
             "storage": {
               "fields": {
+                "accountStatus": {
+                  "column": "accountStatus"
+                },
                 "avatarUrl": {
                   "column": "avatarUrl"
                 },
@@ -4020,6 +4280,11 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "countryCode": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "createdAt": {
                   "codecId": "pg/timestamptz-string@1",
                   "default": {
@@ -4036,6 +4301,15 @@
                     "kind": "function"
                   },
                   "nativeType": "int4",
+                  "nullable": false
+                },
+                "isArchived": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nativeType": "bool",
                   "nullable": false
                 },
                 "isDefault": {
@@ -4091,6 +4365,21 @@
                   "codecId": "pg/int4@1",
                   "nativeType": "int4",
                   "nullable": false
+                },
+                "verificationHash": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "verificationSource": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "verifiedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
                 }
               },
               "foreignKeys": [
@@ -4118,6 +4407,82 @@
                   ],
                   "name": "address_userId_idx_a489d58a",
                   "prefix": "address_userId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "adminAuditLog": {
+              "columns": {
+                "action": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "actorId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "entityId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "entityType": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "nextValue": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "previousValue": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "reason": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [
+                {
+                  "columns": [
+                    "entityType",
+                    "entityId",
+                    "createdAt"
+                  ],
+                  "name": "adminAuditLog_entityType_entityId_createdAt_idx_e9eb579f",
+                  "prefix": "adminAuditLog_entityType_entityId_createdAt_idx",
                   "unique": false
                 }
               ],
@@ -4290,6 +4655,56 @@
                   ],
                   "name": "cartItem_menuItemId_idx_715cce4c",
                   "prefix": "cartItem_menuItemId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "checkoutRequest": {
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "requestHash": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "result": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "userId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [
+                {
+                  "columns": [
+                    "userId"
+                  ],
+                  "name": "checkoutRequest_userId_idx_a489d58a",
+                  "prefix": "checkoutRequest_userId_idx",
                   "unique": false
                 }
               ],
@@ -5111,6 +5526,15 @@
                   "nativeType": "int4",
                   "nullable": false
                 },
+                "isSandbox": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
                 "notes": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -5864,6 +6288,15 @@
                   "nativeType": "bool",
                   "nullable": false
                 },
+                "isVerified": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
                 "updatedAt": {
                   "codecId": "pg/timestamptz-string@1",
                   "nativeType": "timestamptz",
@@ -6237,6 +6670,15 @@
                     "kind": "function"
                   },
                   "nativeType": "int4",
+                  "nullable": false
+                },
+                "isOnline": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": true
+                  },
+                  "nativeType": "bool",
                   "nullable": false
                 },
                 "latitude": {
@@ -6773,6 +7215,15 @@
                 }
               ],
               "columns": {
+                "accountStatus": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "ACTIVE"
+                  },
+                  "nativeType": "text",
+                  "nullable": false
+                },
                 "avatarUrl": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -6948,7 +7399,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "42700e96dd0a086cdc56de8e4702a3a84565634c4bb1eec6273535d8b4d83a62"
+    "storageHash": "9eceda9b225dd63549754bab80b6e3f7be12106a9c15e93f43ffbbebe2aa6007"
   },
   "execution": {
     "executionHash": "6a798fe5863219e1a94434be9b3689a946ed07045dc95c60387dff0fc37be662",

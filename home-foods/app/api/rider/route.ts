@@ -1,7 +1,7 @@
 import { db } from "@/src/prisma/db";
 import { getSession, jsonError } from "@/src/lib/auth";
 import { getKitchenDeliveryDistance } from "@/src/lib/location";
-import { isDeliveryRadiusEnforced, isDevelopmentTestSeller, isNationwideDevelopmentMode } from "@/src/lib/feature-flags";
+import { isKitchenLocationAllowed, isDeliveryRadiusEnforced, isNationwideDevelopmentSeller, isNationwideDevelopmentMode } from "@/src/lib/feature-flags";
 
 export const runtime = "nodejs";
 const HEARTBEAT_STALE_MS = 2 * 60 * 1000;
@@ -21,14 +21,16 @@ export async function GET() {
     }
     if (!rider) return jsonError("Rider profile not found.", 404);
     const pendingJobs = rider.isAvailable ? await db.orm.public.Delivery.where({ status: "UNASSIGNED" })
-      .include("order", (order) => order.include("shop", (shop) => shop.select("id", "name", "city", "latitude", "longitude").include("seller", (seller) => seller.select("name", "email"))).include("address", (address) => address.select("city", "latitude", "longitude")).include("items"))
+      .include("order", (order) => order.include("shop", (shop) => shop.select("id", "name", "city", "latitude", "longitude", "address").include("seller", (seller) => seller.select("name", "email"))).include("address", (address) => address.select("city", "latitude", "longitude")).include("items"))
       .orderBy((delivery) => delivery.createdAt.asc())
       .limit(30)
       .all() : [];
     const jobs = (await Promise.all(pendingJobs.filter((delivery) => delivery.order?.status === "READY_FOR_PICKUP").map(async (delivery) => {
+      if (delivery.order?.isSandbox && !isNationwideDevelopmentMode()) return null;
       const shop = delivery.order?.shop;
       const address = delivery.order?.address;
-      if (!isDeliveryRadiusEnforced()) return isDevelopmentTestSeller(shop?.seller) ? { ...delivery, developmentTestDelivery: isNationwideDevelopmentMode() } : null;
+      if (!shop || !isKitchenLocationAllowed(shop.address)) return null;
+      if (!isDeliveryRadiusEnforced()) return isNationwideDevelopmentSeller(shop?.seller) ? { ...delivery, developmentTestDelivery: isNationwideDevelopmentMode() } : null;
       if (!shop || !address || shop.latitude == null || shop.longitude == null || address.latitude == null || address.longitude == null) return null;
       try {
         const distance = await getKitchenDeliveryDistance({ latitude: address.latitude, longitude: address.longitude }, { latitude: shop.latitude, longitude: shop.longitude });
@@ -40,7 +42,7 @@ export async function GET() {
       .orderBy((delivery) => delivery.createdAt.desc())
       .limit(30)
       .all();
-    return Response.json({ rider, jobs, assigned });
+    return Response.json({ rider, jobs, assigned: assigned.filter(d => !d.order?.isSandbox || isNationwideDevelopmentMode()) });
   } catch (error) {
     console.error("Rider workspace request failed", error);
     return jsonError("Rider jobs are unavailable. Check the database setup.", 503);
@@ -68,6 +70,8 @@ export async function PATCH(request: Request) {
     if (!Number.isInteger(deliveryId) || typeof body.status !== "string") return jsonError("Choose a delivery and status.");
     const delivery = await db.orm.public.Delivery.where({ id: deliveryId }).first();
     if (!delivery) return jsonError("Delivery not found.", 404);
+    const deliveryOrder = await db.orm.public.Order.where({id:delivery.orderId}).select("isSandbox").first();
+    if (deliveryOrder?.isSandbox && !isNationwideDevelopmentMode()) return jsonError("Sandbox deliveries are unavailable outside development.",403);
     if (delivery.riderId === rider.id && body.status === "DELAYED" && ["PICKED_UP", "IN_TRANSIT"].includes(delivery.status)) {
       const reason = typeof body.reason === "string" ? body.reason.trim().slice(0, 300) : "Rider reported a delay";
       await db.transaction(async (tx) => {
@@ -102,12 +106,12 @@ export async function PATCH(request: Request) {
     if (body.status === "ACCEPTED" && delivery.status === "UNASSIGNED") {
       if (!rider.isAvailable) return jsonError("Go online before accepting a delivery.", 409);
       const order = await db.orm.public.Order.where({ id: delivery.orderId, status: "READY_FOR_PICKUP" }).first();
-      if (!order) return jsonError("The home cook has not marked this order ready yet.", 409);
+      if (!order || (order.isSandbox && !isNationwideDevelopmentMode())) return jsonError("This order is not available for delivery in the current environment.", 409);
       const [shop, address] = await Promise.all([
         db.orm.public.Shop.where({ id: order.shopId }).include("seller", (seller) => seller.select("name", "email")).first(),
         db.orm.public.Address.where({ id: order.addressId }).first(),
       ]);
-      if (isNationwideDevelopmentMode() && !isDevelopmentTestSeller(shop?.seller)) return jsonError("Nationwide test deliveries are limited to fictional development kitchens.", 403);
+      if (isNationwideDevelopmentMode() && !isNationwideDevelopmentSeller(shop?.seller)) return jsonError("This kitchen is unavailable in the current development catalog.", 403);
       if (isDeliveryRadiusEnforced()) {
         if (!shop || !address || shop.latitude == null || shop.longitude == null || address.latitude == null || address.longitude == null) return jsonError("This delivery no longer has verified route locations and can't be assigned.", 409);
         try {

@@ -1,6 +1,6 @@
 import { db } from "@/src/prisma/db";
 import { getSession, jsonError } from "@/src/lib/auth";
-import { verifyAddressText } from "@/src/lib/location";
+import { verifyAddressText, isLocationServiceUnavailableMessage, OUTSIDE_FINLAND_MESSAGE } from "@/src/lib/location";
 
 export const runtime = "nodejs";
 
@@ -84,20 +84,24 @@ export async function PATCH(request: Request) {
       const updated = await db.orm.public.MenuItem.where({ id: itemId }).update(update);
       return Response.json({ item: updated });
     }
-    const update: { name?: string; description?: string | null; phone?: string | null; address?: string | null; city?: string | null; deliveryFee?: number; estimatedMinutes?: number; logoUrl?: string | null; coverImageUrl?: string | null } = {};
+    const update: { name?: string; description?: string | null; phone?: string | null; address?: string | null; city?: string | null; latitude?:number; longitude?:number; deliveryFee?: number; estimatedMinutes?: number; logoUrl?: string | null; coverImageUrl?: string | null } = {};
     if (typeof body.name === "string" && body.name.trim().length > 1) update.name = body.name.trim().slice(0, 100);
     if (typeof body.description === "string") update.description = body.description.trim().slice(0, 1200);
     if (typeof body.phone === "string") update.phone = body.phone.trim().slice(0, 40);
     if (typeof body.logoUrl === "string") update.logoUrl = body.logoUrl.trim().slice(0, 500) || null;
     if (typeof body.coverImageUrl === "string") update.coverImageUrl = body.coverImageUrl.trim().slice(0, 500) || null;
-    if (typeof body.address === "string") update.address = body.address.trim().slice(0, 180);
-    if (typeof body.city === "string") update.city = body.city.trim().slice(0, 80);
+    if ((typeof body.address === "string" && body.address.trim() !== shop.address) || (typeof body.city === "string" && body.city.trim() !== shop.city)) {
+      const verified = await verifyAddressText(`${body.address ?? shop.address ?? ""}, ${body.city ?? shop.city ?? ""}`);
+      update.address = verified.formattedAddress; update.city = verified.city; update.latitude = verified.latitude; update.longitude = verified.longitude;
+    }
     if (typeof body.deliveryFee === "number" && Number.isFinite(body.deliveryFee) && body.deliveryFee >= 0 && body.deliveryFee <= 50) update.deliveryFee = Math.round(body.deliveryFee * 100) / 100;
     if (typeof body.estimatedMinutes === "number" && Number.isInteger(body.estimatedMinutes) && body.estimatedMinutes >= 10 && body.estimatedMinutes <= 240) update.estimatedMinutes = body.estimatedMinutes;
     const updated = await db.orm.public.Shop.where({ id: shop.id, sellerId: session.userId }).update(update);
     return Response.json({ shop: updated });
   } catch (error) {
     console.error("Seller update failed", error);
+    if (error instanceof Error && isLocationServiceUnavailableMessage(error.message)) return jsonError(error.message, 503);
+    if (error instanceof Error && (error.message === OUTSIDE_FINLAND_MESSAGE || error.message.startsWith("Enter a complete delivery") || error.message.startsWith("Add a building number") || error.message.startsWith("Geoapify did not return"))) return jsonError(error.message, 422);
     return jsonError("Couldn't save those shop changes.", 503);
   }
 }

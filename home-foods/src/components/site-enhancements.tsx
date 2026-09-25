@@ -1,5 +1,6 @@
 "use client";
 
+import OrderNotifications from "./order-notifications";
 import { useEffect, useState } from "react";
 
 export default function SiteEnhancements() {
@@ -10,6 +11,9 @@ export default function SiteEnhancements() {
   const supportEmail = process.env.NEXT_PUBLIC_SUPPORT_EMAIL;
 
   useEffect(() => {
+    const applyTheme = () => { document.documentElement.dataset.theme = localStorage.getItem("home-foods-theme") === "dark" ? "dark" : "light"; };
+    applyTheme();
+    window.addEventListener("storage", applyTheme);
     queueMicrotask(() => setCookieVisible(!window.localStorage.getItem("home-foods-cookie-choice")));
 
     const updateScroll = () => {
@@ -35,7 +39,7 @@ export default function SiteEnhancements() {
     tagOutboundLinks();
     const observer = new MutationObserver(tagOutboundLinks);
     observer.observe(document.body, { childList: true, subtree: true });
-    return () => { window.removeEventListener("scroll", updateScroll); observer.disconnect(); };
+    return () => { window.removeEventListener("storage", applyTheme); window.removeEventListener("scroll", updateScroll); observer.disconnect(); };
   }, []);
 
   function dismissCookies(choice: "accepted" | "rejected") {
@@ -43,7 +47,7 @@ export default function SiteEnhancements() {
     setCookieVisible(false);
   }
 
-  return <>
+  return <><OrderNotifications/>
     <a className="skip-link" href="#main-content">Skip to content</a>
     <div className="scroll-progress" style={{ width: `${progress}%` }} aria-hidden="true" />
     <div className="floating-tools" aria-label="Site tools">
@@ -61,6 +65,9 @@ export function ThemeToggle() {
     const saved = window.localStorage.getItem("home-foods-theme") === "dark" ? "dark" : "light";
     queueMicrotask(() => setTheme(saved));
     document.documentElement.dataset.theme = saved;
+    const sync=()=>setTheme(document.documentElement.dataset.theme==="dark"?"dark":"light");
+    const observer=new MutationObserver(sync);observer.observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+    return ()=>observer.disconnect();
   }, []);
   function toggleTheme() {
     const next = theme === "dark" ? "light" : "dark";

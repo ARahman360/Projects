@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --experimental-strip-types --import dotenv/config --test tests/catalog-filter.test.mjs tests/location.test.mjs tests/feature-flags.test.mjs tests/request-security.test.mjs tests/session-secret.test.mjs",
+    "test": "tsx --import dotenv/config --test tests/*.test.mjs",
     "db:migrate": "prisma db migrate",
     "seed:marketplace": "tsx scripts/seed-marketplace.ts",
     "repair:fixture-plans": "tsx scripts/repair-fixture-plans.ts",
@@ -27,6 +27,7 @@
     "react-dom": "19.2.8"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@prisma/cli-engine": "^0.4.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",

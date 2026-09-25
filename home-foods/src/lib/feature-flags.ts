@@ -12,9 +12,17 @@ export function isNationwideDevelopmentMode() {
 export function isDeliveryRadiusEnforced() {
   return !isNationwideDevelopmentMode();
 }
+export function isKitchenLocationAllowed(address: string | null | undefined) {
+  return !address?.startsWith("[SANDBOX LOCATION]") || isNationwideDevelopmentMode();
+}
 
 export function isDevelopmentSandboxEnabled() {
   return process.env.NODE_ENV === "development" && process.env.HOMEFOODS_ENABLE_TEST_DATA === "true" && process.env.HOMEFOODS_SANDBOX_PAYMENTS === "true";
+}
+
+export function isSandboxAddressFallbackEnabled() {
+  return isNationwideDevelopmentMode() && isDevelopmentSandboxEnabled()
+    && process.env.HOMEFOODS_SANDBOX_ADDRESS_FALLBACK === "true";
 }
 
 export function isDevelopmentNotificationSandbox() {

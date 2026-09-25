@@ -1,6 +1,6 @@
 import { db } from "@/src/prisma/db";
 import { getKitchenDeliveryDistance, ROUTING_UNAVAILABLE_MESSAGE } from "@/src/lib/location";
-import { isDeliveryRadiusEnforced, isNationwideDevelopmentMode, isNationwideDevelopmentSeller } from "@/src/lib/feature-flags";
+import { isDeliveryRadiusEnforced, isNationwideDevelopmentMode, isNationwideDevelopmentSeller, isKitchenLocationAllowed } from "@/src/lib/feature-flags";
 
 export const runtime = "nodejs";
 
@@ -15,14 +15,15 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       .include("reviews", (reviews) => reviews.select("rating").orderBy((review) => review.createdAt.desc()).limit(100))
       .include("seller", (seller) => seller.select("name", "email"))
       .first();
-    if (!shop) return Response.json({ error: "This kitchen is not available." }, { status: 404 });
+    if (!shop || !isKitchenLocationAllowed(shop.address)) return Response.json({ error: "This kitchen is not available." }, { status: 404 });
     if (isNationwideDevelopmentMode() && !isNationwideDevelopmentSeller(shop.seller)) return Response.json({ error: "This kitchen is not part of the nationwide development test catalog." }, { status: 404 });
     const url = new URL(request.url);
     const latitude = Number(url.searchParams.get("lat"));
     const longitude = Number(url.searchParams.get("lng"));
     let deliveryCheck: { status: "available" | "too_far" | "unknown" | "unconfigured"; distanceKm?: number; message?: string } | null = null;
     if (url.searchParams.has("lat") && url.searchParams.has("lng") && Number.isFinite(latitude) && Number.isFinite(longitude)) {
-      if (isNationwideDevelopmentMode()) deliveryCheck = { status: "available", message: "Available for Finland-wide development testing. Long-distance delivery is not a real service commitment." };
+      if (shop.latitude == null || shop.longitude == null) deliveryCheck = {status:"unknown",message:"This kitchen needs to save its Finnish location before accepting orders."};
+      else if (isNationwideDevelopmentMode()) deliveryCheck = { status: "available", message: "Available for Finland-wide development testing. Long-distance delivery is not a real service commitment." };
       else if (!isDeliveryRadiusEnforced()) deliveryCheck = { status: "available" };
       else if (!process.env.GEOAPIFY_API_KEY) deliveryCheck = { status: "unconfigured", message: "Delivery availability can't be checked until Geoapify is configured." };
       else if (shop.latitude == null || shop.longitude == null) deliveryCheck = { status: "unknown", message: "This kitchen hasn't saved its delivery location yet. Delivery availability can't be checked." };

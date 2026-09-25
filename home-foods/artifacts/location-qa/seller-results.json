@@ -1,0 +1,8 @@
+{
+  "passed": [
+    "new seller saves verified Finnish kitchen coordinates",
+    "foreign kitchen address rejected without overwriting previous location",
+    "general profile address edit revalidates and updates coordinates",
+    "incomplete kitchen address rejected"
+  ]
+}

@@ -1,8 +1,9 @@
+import { isSameOriginRequest } from "@/src/lib/request-security";
 import { db } from "@/src/prisma/db";
 import { getSession, jsonError } from "@/src/lib/auth";
 import { refundStripePayment } from "@/src/lib/stripe";
-import { getKitchenDeliveryDistance } from "@/src/lib/location";
-import { isDeliveryRadiusEnforced, isNationwideDevelopmentMode, isDevelopmentTestSeller } from "@/src/lib/feature-flags";
+import { getKitchenDeliveryDistance, verifyAddressText } from "@/src/lib/location";
+import { isKitchenLocationAllowed, isDeliveryRadiusEnforced, isNationwideDevelopmentMode, isNationwideDevelopmentSeller } from "@/src/lib/feature-flags";
 
 export const runtime = "nodejs";
 
@@ -16,7 +17,7 @@ export async function GET() {
       db.orm.public.Order.include("shop", (shop) => shop.select("id", "name")).include("payment").include("delivery", (delivery) => delivery.include("rider", (rider) => rider.include("user", (user) => user.select("name", "email")))).include("statusEvents").orderBy((order) => order.createdAt.desc()).limit(100).all(),
       db.orm.public.Rider.include("user", (user) => user.select("id", "name", "email")).all(),
       db.orm.public.User.select("id", "name", "email", "role", "createdAt").orderBy((user) => user.createdAt.desc()).limit(100).all(),
-      db.orm.public.Delivery.include("rider", (rider) => rider.select("id", "isAvailable").include("user", (user) => user.select("name", "email"))).include("order", (order) => order.include("shop", (shop) => shop.select("id", "name", "latitude", "longitude").include("seller", (seller) => seller.select("name", "email"))).include("address", (address) => address.select("city", "latitude", "longitude"))).orderBy((delivery) => delivery.createdAt.asc()).limit(200).all(),
+      db.orm.public.Delivery.include("rider", (rider) => rider.select("id", "isAvailable").include("user", (user) => user.select("name", "email"))).include("order", (order) => order.include("shop", (shop) => shop.select("id", "name", "latitude", "longitude").include("seller", (seller) => seller.select("name", "email"))).include("address", (address) => address.select("addressLine1", "addressLine2", "postalCode", "city", "latitude", "longitude"))).orderBy((delivery) => delivery.createdAt.asc()).limit(200).all(),
       db.orm.public.Subscription.include("plan", (plan) => plan.include("shop", (shop) => shop.select("id", "name"))).include("scheduledMeals", (meals) => meals.include("order", (order) => order.include("delivery")).orderBy((meal) => meal.scheduledAt.asc())).orderBy((subscription) => subscription.createdAt.desc()).limit(100).all(),
     ]);
     const staleRiders = initialRiders.filter((rider) => rider.isAvailable && Date.now() - new Date(rider.updatedAt).getTime() > 2 * 60 * 1000);
@@ -31,11 +32,21 @@ export async function GET() {
 }
 
 export async function PATCH(request: Request) {
+  if (!isSameOriginRequest(request)) return jsonError("Request origin could not be verified.",403);
   const session = await getSession();
   if (!session) return jsonError("Sign in to administer the marketplace.", 401);
   if (session.role !== "ADMIN") return jsonError("Administrator access is required.", 403);
   try {
-    const body = await request.json() as { action?: string; shopId?: number; deliveryId?: number; riderId?: number; orderId?: number; status?: string };
+    const body = await request.json() as { action?: string; shopId?: number; deliveryId?: number; riderId?: number; orderId?: number; status?: string; address?: string };
+    if (body.action === "set-development-location") {
+      if (!isNationwideDevelopmentMode()) return jsonError("Example locations are only available in isolated development mode.",403);
+      const shopId=Number(body.shopId);
+      const shop=await db.orm.public.Shop.where({id:shopId}).first();
+      if(!shop || typeof body.address!=="string") return jsonError("Choose a kitchen and Finnish example address.",422);
+      const location=await verifyAddressText(body.address);
+      await db.orm.public.Shop.where({id:shopId}).update({address:`[SANDBOX LOCATION] ${location.formattedAddress}`,city:location.city,latitude:location.latitude,longitude:location.longitude});
+      return Response.json({success:true,location,developmentPlaceholder:true});
+    }
     if (body.action === "shop-status") {
       const shopId = Number(body.shopId);
       if (!Number.isInteger(shopId) || !["ACTIVE", "SUSPENDED", "CLOSED"].includes(body.status ?? "")) return jsonError("Choose a valid shop status.");
@@ -50,10 +61,11 @@ export async function PATCH(request: Request) {
       const canReassignOfflineRider = Boolean(delivery?.riderId && delivery.rider?.isAvailable === false && ["ASSIGNED", "ACCEPTED", "PICKED_UP", "IN_TRANSIT"].includes(delivery.status));
       if (!delivery || !["UNASSIGNED", "FAILED"].includes(delivery.status) && !canReassignOfflineRider || !rider) return jsonError("That delivery or rider is no longer available.", 409);
       const order = await db.orm.public.Order.where({ id: delivery.orderId }).first();
-      if (!order || ["CANCELLED", "REFUNDED", "DELIVERED"].includes(order.status)) return jsonError("This order can no longer be assigned.", 409);
+      if (!order || (order.isSandbox && !isNationwideDevelopmentMode()) || ["CANCELLED", "REFUNDED", "DELIVERED"].includes(order.status)) return jsonError("This order can no longer be assigned.", 409);
       const shop = await db.orm.public.Shop.where({ id: order.shopId }).include("seller", (seller) => seller.select("name", "email")).first();
       const address = order.addressId == null ? null : await db.orm.public.Address.where({ id: order.addressId }).first();
-      if (isNationwideDevelopmentMode() && !isDevelopmentTestSeller(shop?.seller)) return jsonError("Nationwide development assignments are limited to fictional test kitchens.", 403);
+      if (!shop || !isKitchenLocationAllowed(shop.address)) return jsonError("This kitchen needs its real Finnish location.",409);
+      if (isNationwideDevelopmentMode() && !isNationwideDevelopmentSeller(shop?.seller)) return jsonError("This kitchen is unavailable in the current development catalog.", 403);
       if (isDeliveryRadiusEnforced() && !isNationwideDevelopmentMode()) {
         if (!shop || !address || shop.latitude == null || shop.longitude == null || address.latitude == null || address.longitude == null) return jsonError("This delivery has no verified route locations.", 409);
         try {

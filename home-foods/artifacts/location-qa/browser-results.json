@@ -1,0 +1,13 @@
+{
+  "passed": [
+    "desktop: first address, live suggestions, keyboard selection, save and verified card",
+    "manage account edit retains verified address",
+    "browser geolocation granted and live reverse geocoding with accuracy confirmation",
+    "browser denied geolocation returns actionable error",
+    "browser timeout clears loading and offers manual search",
+    "reverse-geocoding outage is visible without stuck loading",
+    "mobile dark mode: responsive add-address and set-default controls",
+    "mobile delete confirmation, cancel and removal"
+  ],
+  "errors": []
+}
