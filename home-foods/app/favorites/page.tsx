@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ThemeToggle } from "@/src/components/site-enhancements";
 import Brand from "@/src/components/brand";
 import MarketImage from "@/src/components/market-image";
 
@@ -115,7 +114,7 @@ export default function FavoritesPage() {
   const hasAny = useMemo(() => foods.length + kitchens.length > 0, [foods.length, kitchens.length]);
 
   return <main className="favorites-page">
-    <header className="favorites-topbar"><Brand href="/"/><nav aria-label="Account navigation"><ThemeToggle/><Link href="/">Discover food</Link><Link href="/orders">Orders</Link></nav></header>
+    <header className="favorites-topbar"><Brand href="/"/><nav aria-label="Account navigation"><Link href="/">Discover food</Link><Link href="/orders">Orders</Link></nav></header>
     <div className="favorites-layout"><aside className="favorites-sidebar" aria-label="Customer account navigation"><div className="favorites-profile"><span>{text(profile?.name, "HF").split(/\s+/).map((part) => part[0]).slice(0, 2).join("").toUpperCase()}</span><div><b>{text(profile?.name, "HomeFoods member")}</b><small>{text(profile?.email, "Customer account")}</small></div></div><span className="favorites-sidebar-label">YOUR HOMEFOODS</span><Link href="/" className="favorites-side-link"><span aria-hidden="true">⌂</span>Discover food</Link><Link href="/orders" className="favorites-side-link"><span aria-hidden="true">▤</span>Your orders</Link><Link href="/favorites" className="favorites-side-link" aria-current="page"><span aria-hidden="true">♡</span>Favorites</Link><Link href="/workspace#profile" className="favorites-side-link"><span aria-hidden="true">◉</span>Manage account</Link></aside>
     <div className="favorites-content">
       <Link className="favorites-back" href="/">← <span>Back to HomeFoods</span></Link>

@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import OrderJourney from "@/src/components/order-journey";
 import MarketImage from "@/src/components/market-image";
-import { ThemeToggle } from "@/src/components/site-enhancements";
 import Brand from "@/src/components/brand";
 
 type Row = Record<string, unknown>;
@@ -92,7 +91,7 @@ export default function OrdersPage() {
   async function signOut() { await fetch("/api/auth", { method: "DELETE" }); router.replace("/"); }
 
   return <main className="orders-page">
-    <header className="orders-header"><Brand href="/"/><ThemeToggle/><Link href="/" className="orders-back">← HomeFoods</Link></header>
+    <header className="orders-header"><Brand href="/"/><Link href="/" className="orders-back">← HomeFoods</Link></header>
     <aside className="orders-sidebar" aria-label="Account navigation"><Link className="orders-profile" href="/workspace#profile"><span>{user?.name?.trim().split(/\s+/).map((part) => part[0]).slice(0, 2).join("").toUpperCase() || "HF"}</span><b>{user?.name || "HomeFoods member"}</b><small>{user?.email}</small></Link><Link href="/" className="orders-nav-link">⌂ <span>Home</span></Link><Link href="/orders" aria-current="page" className="orders-nav-link active">▤ <span>Orders</span></Link>{user?.role === "CUSTOMER" && <><Link href="/meal-plans" className="orders-nav-link">◷ <span>Meal plans</span></Link><Link href="/favorites" className="orders-nav-link">♡ <span>Favorites</span></Link></>}<Link href={dashboardHref} className="orders-nav-link">{user?.role === "SELLER" ? "▦" : user?.role === "RIDER" ? "➜" : "⚙"} <span>{user?.role === "SELLER" ? "Your Kitchen" : user?.role === "RIDER" ? "Deliver" : user?.role === "ADMIN" ? "Workspace" : "Account"}</span></Link><button className="orders-signout" onClick={() => void signOut()}>↪ <span>Log out</span></button></aside>
     <section className="orders-content">
       <span className="eyebrow"><span className="eyebrow-line"/> YOUR HOMEFOODS</span>
