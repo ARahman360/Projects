@@ -23,14 +23,14 @@ export async function POST(request: Request) {
     else return Response.json({ error: "Choose a confirmed Finnish delivery address first." }, { status: 400 });
 
     const ids = [...new Set(body.shopIds.map(Number).filter((id) => Number.isInteger(id) && id > 0))];
-    const shops = await db.orm.public.Shop.where((shop) => shop.id.in(ids)).select("id", "name", "address", "status", "latitude", "longitude").include("seller", (seller) => seller.select("name", "email")).all();
+    const shops = await db.orm.public.Shop.where((shop) => shop.id.in(ids)).select("id", "name", "address", "status", "isOnline", "latitude", "longitude").include("seller", (seller) => seller.select("name", "email")).all();
     const checks: Array<{ shopId: number; eligible: boolean; status: string; distanceKm?: number; message?: string }> = [];
     const locatedShops = shops.filter((shop) => ids.includes(shop.id) && shop.status === "ACTIVE" && shop.latitude != null && shop.longitude != null);
     const distances = isDeliveryRadiusEnforced() ? await getKitchenDeliveryDistances({latitude:address.latitude!,longitude:address.longitude!}, locatedShops.map((shop) => ({ latitude: shop.latitude!, longitude: shop.longitude! }))) : [];
     if (distances.some((distance) => distance === null)) throw new Error(ROUTING_UNAVAILABLE_MESSAGE);
     for (const shopId of ids) {
       const shop = shops.find((row) => row.id === shopId);
-      if (!shop || shop.status !== "ACTIVE") { checks.push({ shopId, eligible: false, status: "unavailable", message: "This kitchen is unavailable." }); continue; }
+      if (!shop || shop.status !== "ACTIVE" || !shop.isOnline) { checks.push({ shopId, eligible: false, status: "unavailable", message: "This kitchen is unavailable." }); continue; }
       if (isNationwideDevelopmentMode() && !isNationwideDevelopmentSeller(shop.seller)) { checks.push({ shopId, eligible: false, status: "unavailable", message: "This kitchen is outside the configured development storefront." }); continue; }
       await assertFinnishKitchen(shop);
       if (isNationwideDevelopmentMode()) { checks.push({ shopId, eligible: true, status: "available", message: "Available in Finland development testing; long-distance delivery is not a real service commitment." }); continue; }

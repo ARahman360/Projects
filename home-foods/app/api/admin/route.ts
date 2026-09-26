@@ -37,7 +37,7 @@ export async function PATCH(request: Request) {
   if (!session) return jsonError("Sign in to administer the marketplace.", 401);
   if (session.role !== "ADMIN") return jsonError("Administrator access is required.", 403);
   try {
-    const body = await request.json() as { action?: string; shopId?: number; deliveryId?: number; riderId?: number; orderId?: number; status?: string; address?: string };
+    const body = await request.json() as { action?: string; shopId?: number; deliveryId?: number; riderId?: number; reason?: string; orderId?: number; status?: string; address?: string };
     if (body.action === "set-development-location") {
       if (!isNationwideDevelopmentMode()) return jsonError("Example locations are only available in isolated development mode.",403);
       const shopId=Number(body.shopId);
@@ -47,17 +47,15 @@ export async function PATCH(request: Request) {
       await db.orm.public.Shop.where({id:shopId}).update({address:`[SANDBOX LOCATION] ${location.formattedAddress}`,city:location.city,latitude:location.latitude,longitude:location.longitude});
       return Response.json({success:true,location,developmentPlaceholder:true});
     }
-    if (body.action === "shop-status") {
-      const shopId = Number(body.shopId);
-      if (!Number.isInteger(shopId) || !["ACTIVE", "SUSPENDED", "CLOSED"].includes(body.status ?? "")) return jsonError("Choose a valid shop status.");
-      await db.orm.public.Shop.where({ id: shopId }).update({ status: body.status as "ACTIVE" | "SUSPENDED" | "CLOSED" });
-      return Response.json({ success: true });
-    }
+    if (body.action === "shop-status") return jsonError("Use the kitchen review workflow with a reason and audit record.",409);
     if (body.action === "assign-rider") {
+      if (!body.reason || body.reason.trim().length < 5) return jsonError("Provide a reason for this assignment.",422);
       const deliveryId = Number(body.deliveryId);
       const riderId = Number(body.riderId);
       if (!Number.isInteger(deliveryId) || !Number.isInteger(riderId)) return jsonError("Choose a delivery and rider.");
       const [delivery, rider] = await Promise.all([db.orm.public.Delivery.where({ id: deliveryId }).include("rider").first(), db.orm.public.Rider.where({ id: riderId, isAvailable: true }).first()]);
+      const riderAccount = rider ? await db.orm.public.User.where({id:rider.userId}).select("accountStatus").first() : null;
+      if (riderAccount?.accountStatus !== "ACTIVE") return jsonError("This rider account is not active.",409);
       const canReassignOfflineRider = Boolean(delivery?.riderId && delivery.rider?.isAvailable === false && ["ASSIGNED", "ACCEPTED", "PICKED_UP", "IN_TRANSIT"].includes(delivery.status));
       if (!delivery || !["UNASSIGNED", "FAILED"].includes(delivery.status) && !canReassignOfflineRider || !rider) return jsonError("That delivery or rider is no longer available.", 409);
       const order = await db.orm.public.Order.where({ id: delivery.orderId }).first();
@@ -74,13 +72,18 @@ export async function PATCH(request: Request) {
         } catch { return jsonError("Delivery distance could not be checked. Try again.", 503); }
       }
       await db.transaction(async (tx) => {
-        await tx.orm.public.Delivery.where({ id: delivery.id }).update({ riderId: rider.id, status: "ASSIGNED", ...(["FAILED", "PICKED_UP", "IN_TRANSIT", "ACCEPTED"].includes(delivery.status) ? { notes: "Reassigned by HomeFoods administrator" } : {}) });
+        const activeAccount = await tx.execute(tx.sql.public.user.update({updatedAt:new Date().toISOString()}).where((f,fn)=>fn.and(fn.eq(f.id,rider.userId),fn.eq(f.accountStatus,"ACTIVE"))).build());
+        if (!activeAccount.affectedRows) throw new Error("The rider is no longer active.");
+        const assigned = await tx.execute(tx.sql.public.delivery.update({riderId:rider.id,status:"ASSIGNED",pickedUpTime:null,notes:"Assigned by HomeFoods administrator",updatedAt:new Date().toISOString()}).where((f,fn)=>fn.and(fn.eq(f.id,delivery.id),fn.eq(f.status,delivery.status))).build());
+        if (!assigned.affectedRows) throw new Error("The delivery changed. Refresh before assigning it.");
         if (delivery.status !== "UNASSIGNED") await tx.orm.public.Order.where({ id: order.id }).update({ status: "READY_FOR_PICKUP" });
+        await tx.orm.public.AdminAuditLog.create({actorId:session.userId,entityType:"DELIVERY",entityId:delivery.id,action:"assign-rider",reason:body.reason!.trim().slice(0,500),nextValue:String(rider.id)});
         await tx.orm.public.OrderStatusEvent.create({ orderId: delivery.orderId, status: "REASSIGNED", domain: "DELIVERY", actorId: session.userId, actorRole: "ADMIN", message: delivery.status === "UNASSIGNED" ? "Administrator assigned a rider" : "Administrator reassigned delivery from a failed or offline rider" });
       });
       return Response.json({ success: true });
     }
     if (body.action === "refund-order") {
+      if (!body.reason || body.reason.trim().length < 5) return jsonError("Provide a refund reason.",422);
       const orderId = Number(body.orderId);
       if (!Number.isInteger(orderId)) return jsonError("Choose an order to refund.");
       const [order, payment] = await Promise.all([db.orm.public.Order.where({ id: orderId }).first(), db.orm.public.Payment.where({ orderId }).first()]);
@@ -90,6 +93,7 @@ export async function PATCH(request: Request) {
       await db.transaction(async (tx) => {
         await tx.orm.public.Payment.where({ id: payment.id }).update({ status: "REFUNDED" });
         await tx.orm.public.Order.where({ id: order.id }).update({ status: "REFUNDED" });
+        await tx.orm.public.AdminAuditLog.create({actorId:session.userId,entityType:"ORDER",entityId:order.id,action:"refund-order",reason:body.reason!.trim().slice(0,500)});
         await tx.orm.public.OrderStatusEvent.create({ orderId: order.id, status: "REFUNDED", domain: "ORDER", actorId: session.userId, actorRole: "ADMIN" });
       });
       return Response.json({ success: true });

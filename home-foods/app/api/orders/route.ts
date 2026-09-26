@@ -108,9 +108,9 @@ export async function POST(request: Request) {
       quantities.set(id, (quantities.get(id) ?? 0) + quantity);
     }
     const menuItems = await db.orm.public.MenuItem.where((item) => item.id.in([...quantities.keys()]))
-      .include("shop", (shop) => shop.select("id", "name", "address", "description", "status", "deliveryFee", "estimatedMinutes", "latitude", "longitude").include("seller", (seller) => seller.select("name", "email")))
+      .include("shop", (shop) => shop.select("id", "name", "address", "description", "status", "isOnline", "deliveryFee", "estimatedMinutes", "latitude", "longitude").include("seller", (seller) => seller.select("name", "email")))
       .all();
-    if (menuItems.length !== quantities.size || menuItems.some((item) => !item.isAvailable || !item.shop || item.shop.status !== "ACTIVE")) return jsonError("A cart item is no longer available. Refresh the menu and try again.", 409);
+    if (menuItems.length !== quantities.size || menuItems.some((item) => !item.isAvailable || !item.shop || item.shop.status !== "ACTIVE" || !item.shop.isOnline)) return jsonError("A kitchen is offline or an item is unavailable. Your basket has been kept.", 409);
     if (menuItems.some((item) => !item.shop)) return jsonError("A cart shop is unavailable. Refresh the menu and try again.", 409);
     if (isNationwideDevelopmentMode() && menuItems.some((item) => !isNationwideDevelopmentSeller(item.shop?.seller))) return jsonError("This kitchen is unavailable in the current development catalog.", 403);
     const byShop = new Map<number, typeof menuItems>();
@@ -140,6 +140,8 @@ export async function POST(request: Request) {
     const result = await db.transaction(async (tx) => {
       await tx.orm.public.CheckoutRequest.create({id:requestKey,userId:session.userId,requestHash});
       await tx.orm.public.User.where({id:session.userId}).update({updatedAt:new Date().toISOString()});
+      const customer = await tx.orm.public.User.where({ id: session.userId }).first();
+      if (customer?.accountStatus !== "ACTIVE") throw new Error("Your account cannot place new orders. Contact HomeFoods support.");
       let saved = hasSavedAddress ? await tx.orm.public.Address.where({id:selectedAddressId,userId:session.userId,isArchived:false}).first() : null;
       if (hasSavedAddress && (!saved || saved.verificationHash !== confirmed.verificationHash)) throw new Error("The delivery address changed or was removed. Choose it again before ordering.");
       if (!saved) {
@@ -151,6 +153,9 @@ export async function POST(request: Request) {
       const address = await tx.orm.public.Address.create({userId:session.userId,addressLine1,addressLine2,city,postalCode,latitude,longitude,countryCode,verificationSource,verificationHash,verifiedAt,label,isArchived:true,isDefault:false});
       const orders = [] as Array<{ orderId: number; orderNumber: string; shopName: string; total: number }>;
       for (const [shopId, items] of byShop) {
+        // Lock and recheck availability inside checkout, including concurrent pauses.
+        const currentShop = await tx.execute(tx.sql.public.shop.update({updatedAt:new Date().toISOString()}).where((f,fn)=>fn.and(fn.eq(f.id,shopId),fn.eq(f.status,"ACTIVE"),fn.eq(f.isOnline,true))).build());
+        if (!currentShop.affectedRows) throw new Error("This kitchen is no longer accepting new orders. Your basket has been kept.");
         const subtotal = items.reduce((sum, item) => sum + item.price * (quantities.get(item.id) ?? 0), 0);
         const firstShop = items[0]?.shop;
         const deliveryFee = firstShop?.deliveryFee ?? 2.5;

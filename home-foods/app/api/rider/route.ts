@@ -1,11 +1,12 @@
 import { db } from "@/src/prisma/db";
+import { isSameOriginRequest } from "@/src/lib/request-security";
+import { pickupTransition } from "@/src/lib/workspace-policy";
 import { getSession, jsonError } from "@/src/lib/auth";
 import { getKitchenDeliveryDistance } from "@/src/lib/location";
 import { isKitchenLocationAllowed, isDeliveryRadiusEnforced, isNationwideDevelopmentSeller, isNationwideDevelopmentMode } from "@/src/lib/feature-flags";
 
 export const runtime = "nodejs";
 const HEARTBEAT_STALE_MS = 2 * 60 * 1000;
-const nextStatus = { ACCEPTED: "PICKED_UP", PICKED_UP: "IN_TRANSIT", IN_TRANSIT: "DELIVERED" } as const;
 
 export async function GET() {
   const session = await getSession();
@@ -20,7 +21,8 @@ export async function GET() {
       rider = await db.orm.public.Rider.where({ id: rider.id }).update({ isAvailable: false });
     }
     if (!rider) return jsonError("Rider profile not found.", 404);
-    const pendingJobs = rider.isAvailable ? await db.orm.public.Delivery.where({ status: "UNASSIGNED" })
+    const riderAccount = await db.orm.public.User.where({id:session.userId}).select("accountStatus").first();
+    const pendingJobs = rider.isAvailable && riderAccount?.accountStatus === "ACTIVE" ? await db.orm.public.Delivery.where({ status: "UNASSIGNED" })
       .include("order", (order) => order.include("shop", (shop) => shop.select("id", "name", "city", "latitude", "longitude", "address").include("seller", (seller) => seller.select("name", "email"))).include("address", (address) => address.select("city", "latitude", "longitude")).include("items"))
       .orderBy((delivery) => delivery.createdAt.asc())
       .limit(30)
@@ -40,7 +42,6 @@ export async function GET() {
     const assigned = await db.orm.public.Delivery.where({ riderId: rider.id })
       .include("order", (order) => order.include("shop").include("address").include("items"))
       .orderBy((delivery) => delivery.createdAt.desc())
-      .limit(30)
       .all();
     return Response.json({ rider, jobs, assigned: assigned.filter(d => !d.order?.isSandbox || isNationwideDevelopmentMode()) });
   } catch (error) {
@@ -50,11 +51,14 @@ export async function GET() {
 }
 
 export async function PATCH(request: Request) {
+  if (!isSameOriginRequest(request)) return jsonError("Request origin could not be verified.", 403);
   const session = await getSession();
   if (!session) return jsonError("Sign in to update deliveries.", 401);
   if (session.role !== "RIDER") return jsonError("Only riders can update their delivery status.", 403);
   try {
     const body = await request.json() as { deliveryId?: number; status?: string; isAvailable?: boolean; reason?: string };
+    const account = await db.orm.public.User.where({ id: session.userId }).select("accountStatus").first();
+    if (account?.accountStatus !== "ACTIVE" && (body.isAvailable === true || body.status === "ACCEPTED" || body.status === "HEARTBEAT")) return jsonError("Your rider account is suspended. Existing deliveries remain available for resolution.", 403);
     let rider = await db.orm.public.Rider.where({ userId: session.userId }).first();
     if (!rider) return jsonError("Rider profile not found.", 404);
     if (body.status === "HEARTBEAT") {
@@ -98,7 +102,10 @@ export async function PATCH(request: Request) {
     if (body.status === "ACCEPTED" && delivery.status === "ASSIGNED" && delivery.riderId === rider.id) {
       if (!rider.isAvailable) return jsonError("Go online before accepting a delivery.", 409);
       await db.transaction(async (tx) => {
-        await tx.orm.public.Delivery.where({ id: deliveryId, riderId: rider.id }).update({ status: "ACCEPTED" });
+        const activeAccount = await tx.execute(tx.sql.public.user.update({updatedAt:new Date().toISOString()}).where((f,fn)=>fn.and(fn.eq(f.id,session.userId),fn.eq(f.accountStatus,"ACTIVE"))).build());
+        if (!activeAccount.affectedRows) throw new Error("Rider account is suspended.");
+        const changed = await tx.execute(tx.sql.public.delivery.update({status:"ACCEPTED",updatedAt:new Date().toISOString()}).where((f,fn)=>fn.and(fn.eq(f.id,deliveryId),fn.eq(f.riderId,rider.id),fn.eq(f.status,"ASSIGNED"))).build());
+        if (!changed.affectedRows) return;
         await tx.orm.public.OrderStatusEvent.create({ orderId: delivery.orderId, status: "ACCEPTED", domain: "DELIVERY", actorId: session.userId, actorRole: "RIDER", message: "Rider accepted the delivery" });
       });
       return Response.json({ success: true });
@@ -120,23 +127,29 @@ export async function PATCH(request: Request) {
         } catch { return jsonError("Delivery distance could not be checked. Try again later.", 503); }
       }
       await db.transaction(async (tx) => {
-        await tx.orm.public.Delivery.where({ id: deliveryId, status: "UNASSIGNED" }).update({ riderId: rider.id, status: "ACCEPTED" });
+        const account = await tx.execute(tx.sql.public.user.update({updatedAt:new Date().toISOString()}).where((f,fn)=>fn.and(fn.eq(f.id,session.userId),fn.eq(f.accountStatus,"ACTIVE"))).build());
+        if (!account.affectedRows) throw new Error("Rider account is suspended.");
+        const claimed = await tx.execute(tx.sql.public.delivery.update({riderId:rider.id,status:"ACCEPTED",updatedAt:new Date().toISOString()}).where((f,fn)=>fn.and(fn.eq(f.id,deliveryId),fn.eq(f.status,"UNASSIGNED"))).build());
+        if (!claimed.affectedRows) throw new Error("Another rider accepted this delivery.");
         await tx.orm.public.OrderStatusEvent.create({ orderId: delivery.orderId, status: "ACCEPTED", domain: "DELIVERY", actorId: session.userId, actorRole: "RIDER", message: "Rider accepted the delivery" });
       });
       return Response.json({ success: true });
     }
     if (delivery.riderId !== rider.id) return jsonError("This delivery is not assigned to you.", 403);
-    const expected = nextStatus[delivery.status as keyof typeof nextStatus];
-    if (expected !== body.status) return jsonError("That delivery status is out of order.", 409);
-    const orderStatus = body.status === "PICKED_UP" ? "PICKED_UP" : body.status === "IN_TRANSIT" ? "OUT_FOR_DELIVERY" : "DELIVERED";
+    const target = pickupTransition(delivery.status, body.status);
+    if (target === "ALREADY_APPLIED") return Response.json({ success: true, alreadyApplied: true });
+    if (!target) return jsonError("That delivery status is out of order.", 409);
+    const orderStatus = target === "IN_TRANSIT" ? "OUT_FOR_DELIVERY" : "DELIVERED";
     await db.transaction(async (tx) => {
-      await tx.orm.public.Delivery.where({ id: deliveryId, riderId: rider.id }).update({ status: body.status as "PICKED_UP" | "IN_TRANSIT" | "DELIVERED", ...(body.status === "PICKED_UP" ? { pickedUpTime: new Date().toISOString() } : {}), ...(body.status === "DELIVERED" ? { deliveredTime: new Date().toISOString() } : {}) });
+      const { affectedRows } = await tx.execute(tx.sql.public.delivery.update({ status: target, updatedAt: new Date().toISOString(), ...(target === "IN_TRANSIT" ? { pickedUpTime: delivery.pickedUpTime ?? new Date().toISOString() } : { deliveredTime: new Date().toISOString() }) }).where((f, fn) => fn.and(fn.eq(f.id, deliveryId), fn.eq(f.riderId, rider.id), fn.eq(f.status, delivery.status))).build());
+      if (!affectedRows) return;
       await tx.orm.public.Order.where({ id: delivery.orderId }).update({ status: orderStatus as "PICKED_UP" | "OUT_FOR_DELIVERY" | "DELIVERED" });
-      await tx.orm.public.OrderStatusEvent.create({ orderId: delivery.orderId, status: body.status!, domain: "DELIVERY", actorId: session.userId, actorRole: "RIDER" });
+      if (target === "IN_TRANSIT" && !delivery.pickedUpTime) await tx.orm.public.OrderStatusEvent.create({ orderId: delivery.orderId, status: "PICKED_UP", domain: "DELIVERY", actorId: session.userId, actorRole: "RIDER", message: "Rider confirmed pickup" });
+      await tx.orm.public.OrderStatusEvent.create({ orderId: delivery.orderId, status: target, domain: "DELIVERY", actorId: session.userId, actorRole: "RIDER" });
       const scheduled = await tx.orm.public.ScheduledMeal.where({ orderId: delivery.orderId }).first();
       if (scheduled) {
-        await tx.orm.public.ScheduledMeal.where({ id: scheduled.id }).update({ status: body.status!, ...(body.status === "DELIVERED" ? { deliveredAt: new Date().toISOString() } : {}) });
-        await tx.orm.public.ScheduledMealEvent.create({ scheduledMealId: scheduled.id, status: body.status!, actorId: session.userId, actorRole: "RIDER" });
+        await tx.orm.public.ScheduledMeal.where({ id: scheduled.id }).update({ status: target, ...(target === "DELIVERED" ? { deliveredAt: new Date().toISOString() } : {}) });
+        await tx.orm.public.ScheduledMealEvent.create({ scheduledMealId: scheduled.id, status: target, actorId: session.userId, actorRole: "RIDER" });
       }
       if (body.status === "DELIVERED") await tx.orm.public.Payment.where({ orderId: delivery.orderId, method: "CASH" }).update({ status: "PAID" });
       if (body.status === "DELIVERED") await tx.orm.public.Rider.where({ id: rider.id }).update({ isAvailable: false });

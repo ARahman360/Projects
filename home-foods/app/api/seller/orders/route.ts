@@ -1,4 +1,5 @@
 import { db } from "@/src/prisma/db";
+import { isSameOriginRequest } from "@/src/lib/request-security";
 import { getSession, jsonError } from "@/src/lib/auth";
 import { refundStripePayment } from "@/src/lib/stripe";
 
@@ -6,6 +7,7 @@ export const runtime = "nodejs";
 const allowed = ["CONFIRMED", "PREPARING", "READY_FOR_PICKUP", "CANCELLED"] as const;
 
 export async function PATCH(request: Request) {
+  if (!isSameOriginRequest(request)) return jsonError("Request origin could not be verified.", 403);
   const session = await getSession();
   if (!session) return jsonError("Sign in to manage shop orders.", 401);
   if (session.role !== "SELLER") return jsonError("Only the seller can update this order.", 403);

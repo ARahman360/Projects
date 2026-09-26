@@ -11,8 +11,8 @@ const intervals = { DAILY: { interval: "day", count: 1 }, THREE_DAY: { interval:
 export async function GET() {
   const session = await getSession();
   try {
-    const plans = await db.orm.public.SubscriptionPlan.where({ isActive: true }).include("shop", (shop) => shop.select("id", "name", "city", "status", "address").include("seller", (seller) => seller.select("name", "email"))).include("items", (items) => items.include("menuItem", (item) => item.select("id", "name", "imageUrl", "price"))).all();
-    const activePlans = plans.filter((plan) => plan.items.length > 0 && plan.shop?.status === "ACTIVE" && isKitchenLocationAllowed(plan.shop.address) && (!isNationwideDevelopmentMode() || isNationwideDevelopmentSeller(plan.shop.seller)));
+    const plans = await db.orm.public.SubscriptionPlan.where({ isActive: true }).include("shop", (shop) => shop.select("id", "name", "city", "status", "isOnline", "address").include("seller", (seller) => seller.select("name", "email"))).include("items", (items) => items.include("menuItem", (item) => item.select("id", "name", "imageUrl", "price"))).all();
+    const activePlans = plans.filter((plan) => plan.items.length > 0 && plan.shop?.status === "ACTIVE" && plan.shop.isOnline && isKitchenLocationAllowed(plan.shop.address) && (!isNationwideDevelopmentMode() || isNationwideDevelopmentSeller(plan.shop.seller)));
     if (!session || session.role !== "CUSTOMER") return Response.json({ plans: activePlans, subscriptions: [] });
     const subscriptions = await db.orm.public.Subscription.where({ customerId: session.userId }).include("plan", (plan) => plan.include("shop", (shop) => shop.select("id", "name")).include("items", (items) => items.include("menuItem", (item) => item.select("id", "name", "imageUrl")))).include("address").include("scheduledMeals", (meals) => meals.include("order", (order) => order.include("shop", (shop) => shop.select("id", "name", "city")).include("items", (items) => items.include("menuItem", (item) => item.select("imageUrl"))).include("delivery", (delivery) => delivery.include("rider", (rider) => rider.include("user", (user) => user.select("name", "phone")))).include("statusEvents")).orderBy((meal) => meal.scheduledAt.asc())).orderBy((subscription) => subscription.createdAt.desc()).all();
     return Response.json({ plans: activePlans, subscriptions });
@@ -55,10 +55,10 @@ export async function POST(request: Request) {
     if (!process.env.STRIPE_SECRET_KEY) return jsonError("Recurring card billing is not configured yet. Ask the administrator to configure Stripe.", 503);
     if (process.env.NODE_ENV === "development" && (!isDevelopmentSandboxEnabled() || !process.env.STRIPE_SECRET_KEY.startsWith("sk_test_"))) return jsonError("Development subscriptions require sandbox payments and a Stripe test key.", 503);
     const [plan, address] = await Promise.all([
-      db.orm.public.SubscriptionPlan.where({ id: planId, isActive: true }).include("shop", (shop) => shop.select("id", "status", "latitude", "longitude", "name", "address").include("seller", (seller) => seller.select("name", "email"))).include("items", (items) => items.include("menuItem")).first(),
+      db.orm.public.SubscriptionPlan.where({ id: planId, isActive: true }).include("shop", (shop) => shop.select("id", "status", "isOnline", "latitude", "longitude", "name", "address").include("seller", (seller) => seller.select("name", "email"))).include("items", (items) => items.include("menuItem")).first(),
       db.orm.public.Address.where({ id: addressId, userId: session.userId, isArchived: false }).first(),
     ]);
-    if (!plan || !plan.shop || plan.shop.status !== "ACTIVE") return jsonError("That meal plan is unavailable.", 404);
+    if (!plan || !plan.shop || plan.shop.status !== "ACTIVE" || !plan.shop.isOnline) return jsonError("That meal plan is unavailable.", 404);
     if (isNationwideDevelopmentMode() && !isNationwideDevelopmentSeller(plan.shop.seller)) return jsonError("This kitchen is unavailable in the current development catalog.", 403);
     if (!address) return jsonError("Choose one of your saved delivery addresses.", 404);
     if (!plan.items.length) return jsonError("This kitchen has not selected the dishes included in this meal plan yet.", 409);
@@ -74,7 +74,15 @@ export async function POST(request: Request) {
         if (!route.eligible) return jsonError("This meal plan kitchen is more than 20 km away by road.", 422);
       } catch { return jsonError("Delivery availability could not be checked. Try again shortly.", 503); }
     }
-    const subscription = await db.orm.public.Subscription.create({ customerId: session.userId, planId, status: "PAUSED", startDate: startDate.toISOString(), nextDelivery: startDate.toISOString(), autoRenew: true, addressId, deliveryTime, portions });
+    const account = await db.orm.public.User.where({ id: session.userId }).select("accountStatus").first();
+    if (account?.accountStatus !== "ACTIVE") return jsonError("Your account cannot purchase a new meal plan.",403);
+    const subscription = await db.transaction(async tx => {
+      const activeAccount = await tx.execute(tx.sql.public.user.update({updatedAt:new Date().toISOString()}).where((f,fn)=>fn.and(fn.eq(f.id,session.userId),fn.eq(f.accountStatus,"ACTIVE"))).build());
+      if (!activeAccount.affectedRows) throw new Error("This account cannot purchase a new meal plan.");
+      const activeShop = await tx.execute(tx.sql.public.shop.update({updatedAt:new Date().toISOString()}).where((f,fn)=>fn.and(fn.eq(f.id,plan.shop!.id),fn.eq(f.status,"ACTIVE"),fn.eq(f.isOnline,true))).build());
+      if (!activeShop.affectedRows) throw new Error("This kitchen is not accepting new meal-plan purchases.");
+      return tx.orm.public.Subscription.create({ customerId: session.userId, planId, status: "PAUSED", startDate: startDate.toISOString(), nextDelivery: startDate.toISOString(), autoRenew: true, addressId, deliveryTime, portions });
+    });
     try {
       const billing = intervals[plan.type];
       const checkout = await createSubscriptionCheckout({ planId, subscriptionId: subscription.id, customerId: session.userId, customerEmail: session.email, price: plan.price, currency: plan.currency === "GBP" ? "gbp" : "eur", interval: billing.interval, intervalCount: billing.count, origin: new URL(request.url).origin });

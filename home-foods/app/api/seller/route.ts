@@ -1,4 +1,5 @@
 import { db } from "@/src/prisma/db";
+import { isSameOriginRequest } from "@/src/lib/request-security";
 import { getSession, jsonError } from "@/src/lib/auth";
 import { verifyAddressText, isLocationServiceUnavailableMessage, OUTSIDE_FINLAND_MESSAGE } from "@/src/lib/location";
 
@@ -17,7 +18,7 @@ export async function GET() {
     if (!shop) return Response.json({ shop: null, items: [], categories: [], orders: [], plans: [], subscriptions: [] });
     const items = await db.orm.public.MenuItem.where({ shopId: shop.id }).orderBy((item) => item.createdAt.desc()).all();
     const categories = await db.orm.public.MenuCategory.where({ shopId: shop.id }).orderBy((category) => category.sortOrder.asc()).all();
-    const orders = await db.orm.public.Order.where({ shopId: shop.id }).include("items").include("payment").include("delivery").orderBy((order) => order.createdAt.desc()).limit(50).all();
+    const orders = await db.orm.public.Order.where({ shopId: shop.id }).include("items").include("payment").include("delivery").orderBy((order) => order.createdAt.desc()).all();
     const plans = await db.orm.public.SubscriptionPlan.where({ shopId: shop.id }).include("items").all();
     const planIds = plans.map((plan) => plan.id);
     const subscriptions = planIds.length ? await db.orm.public.Subscription.where((subscription) => subscription.planId.in(planIds)).include("customer", (customer) => customer.select("name", "email")).include("plan", (plan) => plan.select("id", "name")).include("scheduledMeals", (meal) => meal.include("order", (order) => order.include("items").include("delivery")).orderBy((meal) => meal.scheduledAt.asc())).all() : [];
@@ -29,6 +30,7 @@ export async function GET() {
 }
 
 export async function PATCH(request: Request) {
+  if (!isSameOriginRequest(request)) return jsonError("Request origin could not be verified.", 403);
   const session = await getSession();
   if (!session) return jsonError("Sign in to edit your shop.", 401);
   if (session.role !== "SELLER") return jsonError("This action is for sellers only.", 403);
@@ -36,6 +38,13 @@ export async function PATCH(request: Request) {
     const body = await request.json() as Record<string, unknown>;
     const shop = await ownedShop(session.userId);
     if (!shop) return jsonError("Shop application not found.", 404);
+    if (body.action === "availability") {
+      if (typeof body.isOnline !== "boolean") return jsonError("Choose online or offline.", 422);
+      if (body.isOnline && shop.status !== "ACTIVE") return jsonError("Only approved, unsuspended kitchens can accept new orders.", 409);
+      const { affectedRows } = await db.runtime().execute(db.sql.public.shop.update({isOnline:body.isOnline,updatedAt:new Date().toISOString()}).where((f,fn)=>fn.and(fn.eq(f.id,shop.id),fn.eq(f.sellerId,session.userId),fn.eq(f.status,shop.status))).build());
+      if (!affectedRows) return jsonError("Kitchen status changed. Refresh and retry.", 409);
+      return Response.json({ shop: await ownedShop(session.userId) });
+    }
     if (body.action === "set-location") {
       const address = typeof body.address === "string" ? body.address.trim() : "";
       const verified = await verifyAddressText(address);

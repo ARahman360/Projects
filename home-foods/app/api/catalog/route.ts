@@ -19,7 +19,7 @@ export async function GET(request: Request) {
     const hasLocation = latParam !== null && lngParam !== null && Number.isFinite(Number(latParam)) && Number.isFinite(Number(lngParam));
     const customerLocation = hasLocation ? { latitude: Number(latParam), longitude: Number(lngParam) } : null;
     const shopRows = await db.orm.public.Shop
-      .where({ status: "ACTIVE" })
+      .where({ status: "ACTIVE", isOnline: true })
       .include("menuItems", (items) => items.where({ isAvailable: true }).include("category", (category) => category.select("name")).orderBy((item) => item.sortOrder.asc()))
       .include("reviews", (reviews) => reviews.select("rating"))
       .include("seller", (seller) => seller.select("name", "email"))
