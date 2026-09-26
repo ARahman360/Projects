@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 dotenv.config({path:'.env.local',quiet:true}); dotenv.config({quiet:true});
 Object.assign(process.env,{NODE_ENV:'development'});
 import { checkLayout, checkAvailability, checkAddress, checkAction } from "./mobile-layout-checks";
+import { checkNavigation } from "./navigation-checks";
 import assert from 'node:assert/strict';
 import { createHmac, randomUUID } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -32,6 +33,9 @@ try {
   const fields={addressLine1:'Mannerheimintie 9',city:'Helsinki',postalCode:'00100',countryCode:'FI',latitude:60.1699,longitude:24.9384};
   const address=await db.orm.public.Address.create({userId:customer.user.id,...fields,...verificationFields(fields)});
   async function api(who:typeof admin,path:string,body?:unknown,expected=200,method=body?'PATCH':'GET') {const res=await who.context.request.fetch(base+path,{method,data:body,headers:{Origin:base},timeout:60000});const value=await res.json();assert.equal(res.status(),expected,`${path}: ${JSON.stringify(value)}`);return value;}
+  if (process.argv.includes('--navigation-only')) {
+    await api(admin,'/api/admin/operations',{action:'approve-kitchen',id:shopId,reason:'Temporary navigation regression fixture'});
+  } else {
   await api(customer,'/api/admin/operations',undefined,403);await api(seller,'/api/admin/operations',undefined,403);await api(rider,'/api/admin/operations',undefined,403);passed.push('Admin data is inaccessible to customer, seller and rider roles');
   const manage=async(action:string,id:number)=>api(admin,'/api/admin/operations',{action,id,reason:'Temporary sandbox regression verification'});
   await manage('approve-kitchen',shop.id);
@@ -88,6 +92,8 @@ try {
   for(const section of ['riders','customers','deliveries','orders','meal-plans','payments','reviews','support','reports','settings']){const response=page.waitForResponse(r=>r.url().endsWith('/api/admin/operations'));await page.goto(`${base}/workspace/admin/${section}`);assert.equal((await response).status(),200);await page.locator('.ops-heading h1').waitFor();assert.equal(await page.getByText('Management data could not be loaded.',{exact:false}).count(),0);}
   for(const who of [seller,other]){const p=await who.context.newPage();await p.goto(base+'/workspace');await p.locator('.ops-availability').waitFor();await p.screenshot({path:`artifacts/workspace-qa/${who.user.role.toLowerCase()}.png`,fullPage:true});}
   assert.deepEqual(browserErrors,[]);passed.push('Admin route rendering and 390/768/1440 light/dark viewport checks; seller/rider dashboard rendering');
+  }
+  for(const who of [admin,seller,customer,other])await checkNavigation(who.context,base,who.user.role,shopId);passed.push('Shared navigation across all four roles, migrated pages, three viewports and both themes');
   await writeFile('artifacts/workspace-qa/results.json',JSON.stringify({passed},null,2));console.log(JSON.stringify({passed},null,2));
 } catch(error) { console.error("WORKSPACE QA FAILED", error, {passed}); throw error; } finally {
   if(subscriptionId){const meals=await db.orm.public.ScheduledMeal.where({subscriptionId}).all();for(const m of meals){for(const e of await db.orm.public.ScheduledMealEvent.where({scheduledMealId:m.id}).all())await db.orm.public.ScheduledMealEvent.where({id:e.id}).delete();await db.orm.public.ScheduledMeal.where({id:m.id}).delete();}await db.orm.public.Subscription.where({id:subscriptionId}).delete();}

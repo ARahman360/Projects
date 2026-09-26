@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import Brand from "@/src/components/brand";
 
 type Row = Record<string, unknown>;
 const rows = (value: unknown): Row[] => Array.isArray(value) ? value as Row[] : [];
@@ -94,12 +93,11 @@ export default function MealPlansPage() {
   const mealFor = (date: Date) => monthMeals.get(dayKey(date));
   const shiftCursor = (direction: number) => setCursor((old) => { const next = new Date(old); if (view === "month") next.setMonth(old.getMonth() + direction); else next.setDate(old.getDate() + direction * 7); return next; });
 
-  async function signOut() { await fetch("/api/auth", { method: "DELETE" }); router.replace("/"); }
 
-  return <main className="orders-page meal-tracking-page">
-    <header className="orders-header"><Brand href="/"/><div className="meal-header-actions"><span className={connected ? "meal-connection" : "meal-connection offline"}>● {connected ? "Live updates" : "Reconnecting"}</span><Link href="/workspace">← Account</Link></div></header>
-    <aside className="orders-sidebar" aria-label="Account navigation"><Link className="orders-profile" href="/workspace"><span>HF</span><b>Your HomeFoods</b><small>Customer account</small></Link><Link href="/" className="orders-nav-link">⌂ <span>Home</span></Link><Link href="/orders" className="orders-nav-link">▤ <span>Orders</span></Link><Link href="/meal-plans" aria-current="page" className="orders-nav-link active">◷ <span>Meal plans</span></Link><button className="orders-signout" onClick={() => void signOut()}>↪ <span>Log out</span></button></aside>
-    <section className="meal-tracking-content"><span className="eyebrow"><span className="eyebrow-line"/> A LITTLE ROUTINE</span><h1>Your meal plans</h1><p className="orders-intro">Every delivery, kitchen update and completed meal in one place.</p>
+  return <main id="main-content" tabIndex={-1} className="orders-page meal-tracking-page">
+
+
+    <section className="meal-tracking-content"><p className={connected ? "meal-connection" : "meal-connection offline"} role="status">{connected ? "Live updates" : "Reconnecting"}</p><span className="eyebrow"><span className="eyebrow-line"/> A LITTLE ROUTINE</span><h1>Your meal plans</h1><p className="orders-intro">Every delivery, kitchen update and completed meal in one place.</p>
       {loading ? <div className="orders-loading" role="status">Loading your meal schedule…</div> : error ? <div className="orders-error" role="alert">{error}<button onClick={() => window.location.reload()}>Try again</button></div> : subscriptions.length === 0 ? <div className="orders-empty"><span>✦</span><h2>No meal plans yet</h2><p>Your purchased meal plans and delivery schedule will appear here.</p><Link href="/workspace">Explore meal plans →</Link></div> : <>
         <label className="meal-plan-picker">Choose a plan<select value={String(current?.id ?? "")} onChange={(event) => { setSelected(event.target.value); setSelectedMeal(null); }} aria-label="Choose a meal plan">{subscriptions.map((subscription) => { const choice = (subscription.plan as Row | undefined) ?? {}; const choiceShop = (choice.shop as Row | undefined) ?? {}; return <option key={String(subscription.id)} value={String(subscription.id)}>{String(choice.name ?? "Meal plan")} · {String(choiceShop.name ?? "Home kitchen")}</option>; })}</select></label>
         <article className="meal-summary-card"><div className="meal-summary-copy"><span className="eyebrow">YOUR PURCHASED PLAN</span><h2>{String(plan.name ?? "Meal plan")}</h2><p>{String(kitchen.name ?? "Home kitchen")} · {readable(plan.type)} · {readable(current?.status)}</p><div className="meal-summary-dates"><span>Started <b>{dateText(current?.startDate)}</b></span>{Boolean(current?.endDate) && <span>Ends <b>{dateText(current?.endDate)}</b></span>}<span>{Number(plan.mealsPerPeriod ?? meals.length)} meals per billing period</span></div></div><div className="meal-progress-ring" style={{ "--meal-progress": `${percent}%` } as CSSProperties}><div><b>{delivered}</b><span>of {meals.length}</span></div></div><div className="meal-progress-text"><b>{meals.length ? `${delivered} of ${meals.length} deliveries completed` : "Schedule being confirmed"}</b><div className="meal-progress-bar"><i style={{ width: `${percent}%` }}/></div><small>{nextMeal ? `Next · ${dateText(nextMeal.scheduledAt)} at ${new Date(String(nextMeal.scheduledAt)).toLocaleTimeString("fi-FI", { timeZone: HELSINKI, hour: "2-digit", minute: "2-digit" })}` : meals.length ? "Every scheduled meal is complete" : "A schedule appears after payment confirmation."}</small></div></article>

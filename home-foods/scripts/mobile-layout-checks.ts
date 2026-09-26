@@ -27,7 +27,7 @@ export async function checkLayout(context:BrowserContext,base:string) {
     await menu.click();await expect(p.getByRole('dialog',{name:'HomeFoods navigation'})).toBeVisible();
     await p.keyboard.press('Escape');await expect(menu).toBeFocused();
     await menu.click();await p.getByRole('button',{name:'Close navigation',exact:true}).click();
-    await menu.click();await p.locator('.sidebar-layer').click({position:{x:width-5,y:300}});await expect(p.getByRole('dialog',{name:'HomeFoods navigation'})).toHaveCount(0);
+    await menu.click();await p.locator('.app-drawer-layer').click({position:{x:width-5,y:300}});await expect(p.getByRole('dialog',{name:'HomeFoods navigation'})).toHaveCount(0);
     await p.screenshot({path:`artifacts/mobile-layout-qa/home-${width}-${theme}.png`});
   }
   await p.close();

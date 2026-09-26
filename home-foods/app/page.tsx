@@ -1,5 +1,4 @@
 "use client";
-import Link from "next/link";
 
 function publishFavoritesChange(){localStorage.setItem("homefoods:favorites-updated",String(Date.now()));window.dispatchEvent(new Event("homefoods:favorites-change"));}
 
@@ -8,7 +7,7 @@ import { useRouter } from "next/navigation";
 import OverlayLayer from "@/src/components/overlay-layer";
 import Brand from "@/src/components/brand";
 import LocationSelector, { type DeliveryLocation } from "@/src/components/location-selector";
-import { ThemeToggle } from "@/src/components/site-enhancements";
+import { AppHeader } from "@/src/components/app-shell";
 import HomeSections from "@/src/components/home-sections";
 import { OriginButton } from "@/src/components/ui/origin-button";
 import MarketImage from "@/src/components/market-image";
@@ -69,8 +68,6 @@ export default function Home() {
   const searchWrapRef = useRef<HTMLDivElement>(null);
   const drawerRef = useRef<HTMLElement>(null);
   const cartTriggerRef = useRef<HTMLButtonElement>(null);
-  const sidebarRef = useRef<HTMLElement>(null);
-  const menuTriggerRef = useRef<HTMLButtonElement>(null);
   const checkoutDialogRef = useRef<HTMLElement>(null);
   const checkoutTriggerRef = useRef<HTMLElement | null>(null);
   const [category, setCategory] = useState("All");
@@ -99,7 +96,6 @@ export default function Home() {
   const [checkout, setCheckout] = useState(false);
   const [placingOrder, setPlacingOrder] = useState(false);
   const [complete, setComplete] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [favorites, setFavorites] = useState<number[]>([]);
   const [favoriteShops, setFavoriteShops] = useState<number[]>([]);
@@ -141,6 +137,7 @@ export default function Home() {
   useEffect(() => {
     void Promise.resolve().then(() => {
       const params = new URLSearchParams(window.location.search);
+      if (params.get("q")) setQuery(params.get("q")!);
       if (params.get("cart") === "open") setCartOpen(true);
       const reorderNotice=sessionStorage.getItem("homefoods:reorder-notice");if(reorderNotice){setPromoMessage(reorderNotice);sessionStorage.removeItem("homefoods:reorder-notice");}
       if (params.get("signin") === "1") { router.replace("/signin"); }
@@ -234,11 +231,7 @@ export default function Home() {
     document.addEventListener("mousedown", closeSearch); document.addEventListener("keydown", escapeSearch);
     return () => { document.removeEventListener("mousedown", closeSearch); document.removeEventListener("keydown", escapeSearch); };
   }, []);
-  useEffect(() => {
-    function closeMobileNavigation() { if (window.innerWidth > 900) setMobileMenuOpen(false); }
-    window.addEventListener("resize", closeMobileNavigation);
-    return () => window.removeEventListener("resize", closeMobileNavigation);
-  }, []);
+
 
   const visibleDishes = useMemo(() => filterAndSortDishes(query.trim().length >= 2 ? searchDishes : dishes, { query, category, under30: quickOnly, freeDelivery: freeDeliveryOnly, topRated: topRatedOnly, sort: sortBy as "recommended" | "price-low" | "price-high" | "rating" | "fastest" | "nearest" }), [dishes, searchDishes, category, query, quickOnly, freeDeliveryOnly, topRatedOnly, sortBy]);
   const siteSearchMatches = useMemo(() => { const normalized = normalizeCatalogSearchText(query); return normalized.length < 2 ? [] : siteSearchItems.filter((item) => normalizeCatalogSearchText(`${item.title} ${item.description}`).includes(normalized)); }, [query]);
@@ -338,7 +331,6 @@ export default function Home() {
     finally { setPlacingOrder(false); orderSubmitLock.current=false; }
   }
 
-  async function signOut() { await fetch("/api/auth", { method: "DELETE" }); window.dispatchEvent(new Event("homefoods:account-change")); router.replace("/"); }
   async function toggleFavorite(dish: Dish) {
     if (!user) { router.push(`/signin?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`); return; }
     if (user.role !== "CUSTOMER") { setCatalogError("Favorites are available for customer accounts."); return; }
@@ -383,28 +375,15 @@ export default function Home() {
   return (
     <main id="main-content" tabIndex={-1}>
       <div className="market-shell">
-        <header className="site-header market-topbar">
-          <button ref={menuTriggerRef} className="mobile-menu-toggle" type="button" aria-expanded={mobileMenuOpen} aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"} onClick={() => setMobileMenuOpen((open) => !open)}>{mobileMenuOpen ? "×" : "☰"}</button>
-          <Brand href="#top" />
+        <AppHeader cartAction={<button ref={cartTriggerRef} className="cart-button" onClick={() => setCartOpen(open=>!open)} aria-label={`Open cart${itemCount ? `, ${itemCount} items` : ""}`}><svg className="cart-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 3.5h2.2l2.1 11.2a2 2 0 0 0 2 1.6h8.8a2 2 0 0 0 1.9-1.4l2-7.2H6"/><circle cx="9.3" cy="20" r="1.2"/><circle cx="18" cy="20" r="1.2"/></svg>{itemCount > 0 && <span className="cart-count">{itemCount}</span>}</button>}>
           <LocationSelector onSelect={(location, address) => { setSelectedLocation(location); if (address) { setAddressLine1(address.addressLine1); setCity(address.city); setPostalCode(address.postalCode ?? ""); if (address.id) setSelectedAddressId(address.id); } else setSelectedAddressId(null); }} />
           <div className="top-search-wrap" ref={searchWrapRef}>
             <div className="top-search"><span aria-hidden="true">⌕</span><input value={query} onFocus={() => setSearchOpen(true)} onKeyDown={handleSearchKeyDown} onChange={(event) => { setQuery(event.target.value); setActiveSuggestion(-1); setSearchOpen(true); }} placeholder="Search dishes, kitchens, and more" aria-label="Search all of HomeFoods" aria-expanded={searchOpen} aria-controls="homefoods-search-suggestions" role="combobox" aria-autocomplete="list"/>{query && <button className="search-clear" type="button" aria-label="Clear search" onClick={() => { setQuery(""); setActiveSuggestion(-1); setSearchOpen(true); }}>×</button>}</div>
             {searchOpen && <div className="search-results top-search-results" id="homefoods-search-suggestions" role="listbox" aria-label="Search suggestions">{query.trim().length < 2 ? <><strong>Popular searches</strong><div className="popular-searches">{["Beef Bhuna", "Chicken Curry", "Biryani", "Khichuri"].map((term) => <button type="button" key={term} onClick={() => { setQuery(term); setSearchOpen(true); document.getElementById("discover")?.scrollIntoView({ behavior: "smooth" }); }}>{term}</button>)}</div><strong>Popular categories</strong><div className="popular-searches">{categories.slice(1).map((item) => <button type="button" key={item} onClick={() => { chooseCategory(item); setSearchOpen(false); document.getElementById("discover")?.scrollIntoView({ behavior: "smooth" }); }}>{item}</button>)}</div></> : <>{searchSuggestions.map((dish, index) => <button type="button" role="option" aria-selected={activeSuggestion === index} key={`dish-${dish.id}`} onMouseEnter={() => setActiveSuggestion(index)} onClick={() => router.push(`/kitchens/${dish.shopId}?item=${dish.id}`)}><span><HighlightedMatch text={dish.name} query={query}/></span><small>{dish.shop} · {money(dish.price)}</small></button>)}{kitchenMatches.map((shop, index) => <button type="button" className="search-kitchen-option" role="option" aria-selected={activeSuggestion === searchSuggestions.length + index} key={`shop-${shop.id}`} onMouseEnter={() => setActiveSuggestion(searchSuggestions.length + index)} onClick={() => router.push(`/kitchens/${shop.id}`)}><span className="search-kitchen-thumb"><MarketImage src={shop.coverImageUrl ?? shop.logoUrl} alt="" fallbackSrc="https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=120&q=75"/></span><span className="search-kitchen-copy"><span><HighlightedMatch text={shop.name} query={query}/></span><small>{shop.cuisine || "Home kitchen"} · {shop.city || "Finland"}{shop.deliveryFee == null ? "" : ` · ${shop.deliveryFee === 0 ? "Free delivery" : money(shop.deliveryFee) + " delivery"}`}</small></span></button>)}{siteSearchMatches.map((item) => <a key={item.href} href={item.href} onClick={() => { setQuery(""); setSearchOpen(false); }}><span><HighlightedMatch text={item.title} query={query}/></span><small>{item.description}</small></a>)}{!searchSuggestions.length && !kitchenMatches.length && !siteSearchMatches.length && <p>{catalogLoading ? "Finding something lovely…" : "No matching dishes or kitchens. Try “biryani”, “chicken”, or a cook’s name."}</p>}</>}</div>}
           </div>
-          <div className="header-actions">{!user ? <><button className="text-button account-link" onClick={() => router.push("/signin")}>Sign in</button><button className="join-button" onClick={() => router.push("/join")}>Join</button></> : <button className="header-profile-button" onClick={() => router.push("/workspace#profile")} aria-label={`Open ${user.name || "your"} profile`} title="Your account">{user.name?.trim().split(/\s+/).map((part) => part[0]).slice(0, 2).join("").toUpperCase() || "HF"}</button>}<button ref={cartTriggerRef} className="cart-button" onClick={() => setCartOpen(open=>!open)} aria-label={`Open cart${itemCount ? `, ${itemCount} items` : ""}`}><svg className="cart-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 3.5h2.2l2.1 11.2a2 2 0 0 0 2 1.6h8.8a2 2 0 0 0 1.9-1.4l2-7.2H6"/><circle cx="9.3" cy="20" r="1.2"/><circle cx="18" cy="20" r="1.2"/></svg>{itemCount > 0 && <span className="cart-count">{itemCount}</span>}</button></div>
-        </header>
-        <OverlayLayer open={mobileMenuOpen} className="sidebar-layer" dialogClassName="market-sidebar menu-open" dialogRef={sidebarRef} triggerRef={menuTriggerRef} onClose={() => setMobileMenuOpen(false)} swipeToClose="left" label="HomeFoods navigation" initialFocusSelector=".sidebar-close-button" dismissOnBackdrop>
-          <div className="sidebar-close-row"><button type="button" className="sidebar-close-button" onClick={() => setMobileMenuOpen(false)} aria-label="Close navigation">Close <span aria-hidden="true">×</span></button></div>
-          {user ? <><a className="sidebar-profile" href="/workspace#profile" onClick={() => setMobileMenuOpen(false)} aria-label="Open profile and settings"><span className="profile-avatar">{user.name?.trim().split(/\s+/).map((part) => part[0]).slice(0, 2).join("").toUpperCase() || "HF"}</span><span className="profile-copy"><b>{user.name || "HomeFoods member"}</b><small>{user.email}</small><small className="profile-role">{{ CUSTOMER: "Customer", SELLER: "Seller / Kitchen Owner", RIDER: "Delivery Rider", ADMIN: "Administrator" }[user.role]}</small><span className="profile-manage">Manage account →</span></span></a><div className="sidebar-rule"/></> : null}
-          {user?.role === "SELLER" && <a className="sidebar-link dashboard-link" href="/workspace#seller-dashboard" onClick={() => setMobileMenuOpen(false)}><span>▦</span>Your Kitchen</a>}
-          {user?.role === "RIDER" && <a className="sidebar-link dashboard-link" href="/workspace#rider-dashboard" onClick={() => setMobileMenuOpen(false)}><span>➜</span>Deliver</a>}
-          {user?.role === "ADMIN" && <Link className="sidebar-link dashboard-link" href="/workspace/admin" onClick={() => setMobileMenuOpen(false)}><span>⚙</span>Workspace</Link>}
-          <div className="sidebar-label">DISCOVER</div><a className="sidebar-link active" href="#top" onClick={() => setMobileMenuOpen(false)}><span>⌂</span>Home</a><a className="sidebar-link" href="#home-sections" onClick={() => setMobileMenuOpen(false)}><span>⌕</span>Explore kitchens</a>
-          {user && <><div className="sidebar-label sidebar-section-label">YOUR HOMEFOODS</div><a className="sidebar-link" href="/orders" onClick={() => setMobileMenuOpen(false)}><span>▤</span>Orders</a>{user.role === "CUSTOMER" && <a className="sidebar-link" href="/favorites" onClick={() => setMobileMenuOpen(false)}><span>♡</span>Favorites</a>}</>}
-          {!user && <><div className="sidebar-rule"/><div className="sidebar-label">JOIN HOMEFOODS</div><button className="sidebar-link" onClick={() => { setMobileMenuOpen(false); router.push("/join?role=SELLER"); }}><span>＋</span>Become a cook</button><button className="sidebar-link" onClick={() => { setMobileMenuOpen(false); router.push("/join?role=RIDER"); }}><span>➜</span>Deliver with us</button></>}
-          {user && <button className="sidebar-link sidebar-logout" onClick={() => { setMobileMenuOpen(false); void signOut(); }}><span>↪</span>Sign out</button>}
-          <div className="sidebar-bottom"><span className="sidebar-promise">✳ Made with care,<br/>right around the corner.</span><ThemeToggle/><a href="#faq">Help & FAQs</a></div>
-        </OverlayLayer>
+
+        </AppHeader>
+
         <div className="market-main">
         <div className="category-strip" aria-label="Browse by cuisine or dish"><div className="category-strip-inner" role="group" aria-label="Food categories">{categories.map((item, index) => <button key={item} type="button" className={`category-chip ${category === item ? "selected" : ""}`} aria-pressed={category === item} tabIndex={category === item ? 0 : -1} onClick={() => chooseCategory(item)} onKeyDown={(event) => {
           const buttons = Array.from(event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>(".category-chip") ?? []);

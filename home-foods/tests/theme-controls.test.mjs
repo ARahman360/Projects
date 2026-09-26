@@ -13,8 +13,8 @@ function sources(directory) {
 test('the existing main sidebar is the only theme control mount', () => {
   const mounts = [...sources('app'), ...sources('src')].flatMap(path =>
     [...readFileSync(path, 'utf8').matchAll(/<ThemeToggle\b/g)].map(() => path.replaceAll('\\', '/')));
-  assert.deepEqual(mounts, ['app/page.tsx']);
-  const home = readFileSync('app/page.tsx', 'utf8');
+  assert.deepEqual(mounts, ['src/components/app-shell.tsx']);
+  const home = readFileSync('src/components/app-shell.tsx', 'utf8');
   assert.match(home, /className="sidebar-bottom"[^\n]*<ThemeToggle\/>/);
 });
 
