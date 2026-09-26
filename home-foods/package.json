@@ -16,7 +16,8 @@
     "repair:test-data": "tsx scripts/seed-marketplace.ts",
     "admin:promote": "tsx scripts/promote-admin.ts",
     "postinstall": "prisma skills sync || exit 0",
-    "contract:emit": "prisma contract emit"
+    "contract:emit": "prisma contract emit",
+    "dev:lan": "node scripts/dev-lan.mjs"
   },
   "dependencies": {
     "@prisma/client": "^7.10.0",

@@ -74,7 +74,7 @@ export default function WorkspacePage() {
     return () => { stopped = true; window.clearInterval(timer); document.removeEventListener("visibilitychange", onVisible); };
   }, [data.rider, load, user?.role]);
 
-  useEffect(() => { if (!user || user.role === "CUSTOMER") return; const timer = setInterval(() => { if (!document.hidden) void load(); }, 20000); return () => clearInterval(timer); }, [load, user]);
+  useEffect(() => { if (!user || user.role === "CUSTOMER") return; const refresh = () => { if (!document.hidden) void load(); }; const timer = setInterval(refresh, 20000); window.addEventListener("focus",refresh); document.addEventListener("visibilitychange",refresh); return () => { clearInterval(timer); window.removeEventListener("focus",refresh); document.removeEventListener("visibilitychange",refresh); }; }, [load, user]);
 
   async function perform(action: () => Promise<unknown>, message: string) {
     setBusy(true); setError(""); setNotice("");

@@ -56,19 +56,25 @@ export async function PATCH(request: Request) {
   if (!session) return jsonError("Sign in to update deliveries.", 401);
   if (session.role !== "RIDER") return jsonError("Only riders can update their delivery status.", 403);
   try {
-    const body = await request.json() as { deliveryId?: number; status?: string; isAvailable?: boolean; reason?: string };
+    const body = await request.json() as { deliveryId?: number; status?: string; isAvailable?: boolean; expectedAvailability?: boolean; reason?: string };
     const account = await db.orm.public.User.where({ id: session.userId }).select("accountStatus").first();
     if (account?.accountStatus !== "ACTIVE" && (body.isAvailable === true || body.status === "ACCEPTED" || body.status === "HEARTBEAT")) return jsonError("Your rider account is suspended. Existing deliveries remain available for resolution.", 403);
-    let rider = await db.orm.public.Rider.where({ userId: session.userId }).first();
+    const rider = await db.orm.public.Rider.where({ userId: session.userId }).first();
     if (!rider) return jsonError("Rider profile not found.", 404);
     if (body.status === "HEARTBEAT") {
       if (!rider.isAvailable) return Response.json({ success: true, isAvailable: false });
-      rider = await db.orm.public.Rider.where({ id: rider.id }).update({ isAvailable: true });
+      await db.runtime().execute(db.sql.public.rider.update({updatedAt:new Date().toISOString()}).where((f,fn)=>fn.and(fn.eq(f.id,rider!.id),fn.eq(f.isAvailable,true))).build());
       return Response.json({ success: true, isAvailable: true });
     }
     if (typeof body.isAvailable === "boolean") {
-      rider = await db.orm.public.Rider.where({ id: rider.id }).update({ isAvailable: body.isAvailable });
-      return Response.json({ success: true, isAvailable: body.isAvailable });
+      if (typeof body.expectedAvailability === "boolean" && body.expectedAvailability !== rider.isAvailable) return jsonError("Availability changed on another device. Refresh and try again.",409);
+      const riderId=rider.id, expected=rider.isAvailable, desired=body.isAvailable;
+      const changed=await db.transaction(async tx=>{
+        if(desired){const active=await tx.execute(tx.sql.public.user.update({updatedAt:new Date().toISOString()}).where((f,fn)=>fn.and(fn.eq(f.id,session.userId),fn.eq(f.accountStatus,"ACTIVE"))).build());if(!active.affectedRows)return false;}
+        const result=await tx.execute(tx.sql.public.rider.update({isAvailable:desired,updatedAt:new Date().toISOString()}).where((f,fn)=>fn.and(fn.eq(f.id,riderId),fn.eq(f.isAvailable,expected))).build());return Boolean(result.affectedRows);
+      });
+      if(!changed)return jsonError("Availability changed. Refresh and try again.",409);
+      return Response.json({ success: true, isAvailable: desired });
     }
     const deliveryId = Number(body.deliveryId);
     if (!Number.isInteger(deliveryId) || typeof body.status !== "string") return jsonError("Choose a delivery and status.");

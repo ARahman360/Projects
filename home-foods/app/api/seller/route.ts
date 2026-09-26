@@ -1,3 +1,4 @@
+import { readLocationProof } from "@/src/lib/address-policy";
 import { db } from "@/src/prisma/db";
 import { isSameOriginRequest } from "@/src/lib/request-security";
 import { getSession, jsonError } from "@/src/lib/auth";
@@ -40,14 +41,16 @@ export async function PATCH(request: Request) {
     if (!shop) return jsonError("Shop application not found.", 404);
     if (body.action === "availability") {
       if (typeof body.isOnline !== "boolean") return jsonError("Choose online or offline.", 422);
+      if (typeof body.expectedAvailability === "boolean" && body.expectedAvailability !== shop.isOnline) return jsonError("Availability changed on another device. Refresh and try again.",409);
       if (body.isOnline && shop.status !== "ACTIVE") return jsonError("Only approved, unsuspended kitchens can accept new orders.", 409);
-      const { affectedRows } = await db.runtime().execute(db.sql.public.shop.update({isOnline:body.isOnline,updatedAt:new Date().toISOString()}).where((f,fn)=>fn.and(fn.eq(f.id,shop.id),fn.eq(f.sellerId,session.userId),fn.eq(f.status,shop.status))).build());
+      const { affectedRows } = await db.runtime().execute(db.sql.public.shop.update({isOnline:body.isOnline,updatedAt:new Date().toISOString()}).where((f,fn)=>fn.and(fn.eq(f.id,shop.id),fn.eq(f.sellerId,session.userId),fn.eq(f.status,shop.status),fn.eq(f.isOnline,shop.isOnline))).build());
       if (!affectedRows) return jsonError("Kitchen status changed. Refresh and retry.", 409);
       return Response.json({ shop: await ownedShop(session.userId) });
     }
     if (body.action === "set-location") {
       const address = typeof body.address === "string" ? body.address.trim() : "";
-      const verified = await verifyAddressText(address);
+      const proof=readLocationProof(body.verificationToken);
+      const verified = proof && typeof proof.houseNumber === "string" && proof.houseNumber && typeof proof.postalCode === "string" && /^\d{5}$/.test(proof.postalCode) && typeof proof.formattedAddress === "string" && typeof proof.city === "string" && typeof proof.latitude === "number" && typeof proof.longitude === "number" ? {formattedAddress:proof.formattedAddress,city:proof.city,latitude:proof.latitude,longitude:proof.longitude} : await verifyAddressText(address);
       const updated = await db.orm.public.Shop.where({ id: shop.id, sellerId: session.userId }).update({ address: verified.formattedAddress, city: verified.city, latitude: verified.latitude, longitude: verified.longitude });
       return Response.json({ shop: updated, location: verified });
     }

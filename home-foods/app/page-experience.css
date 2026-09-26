@@ -157,8 +157,8 @@
 .workspace-form label{gap:7px;color:#4f5d55;font-size:12px;font-weight:650}
 .workspace-form input,.workspace-form select,.workspace-row select{height:44px;padding:0 12px;border:1px solid var(--hf-border);border-radius:10px;background:#fff;color:var(--hf-ink);font-size:13px}
 .workspace-form input:focus,.workspace-form select:focus,.workspace-row select:focus{border-color:#7da18a;outline:3px solid #cde9dd80}
-.workspace-form .dark-cta,.workspace-card .dark-cta{min-height:43px;padding:0 16px;border-radius:11px;background:var(--hf-brand);font-size:13px;font-weight:700}
-.workspace-form .dark-cta:hover,.workspace-card .dark-cta:hover{background:var(--hf-brand-hover);transform:translateY(-1px)}
+.workspace-form .dark-cta,.workspace-card .dark-cta{color:#fffefa;min-height:43px;padding:0 16px;border-radius:11px;background:var(--hf-brand);font-size:13px;font-weight:700}
+.workspace-form .dark-cta:hover,.workspace-card .dark-cta:hover{color:#fffefa;background:var(--hf-brand-hover);transform:translateY(-1px)}
 .plan-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:16px}
 .plan-card{padding:20px;border-radius:18px}
 .availability-toggle{min-height:44px;padding:6px 12px;border:1px solid #bfdbc9;border-radius:99px;background:#edf7f0;color:#20573c;font-size:13px;font-weight:700}

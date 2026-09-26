@@ -47,7 +47,7 @@ export default function AddressEditor({ initial, saveToAccount = true, onSaved, 
         const response = await fetch(`/api/location/suggest?q=${encodeURIComponent(query.trim())}`, { signal: controller.signal });
         const result = await response.json();
         if (!response.ok) throw new Error(result.error);
-        if (!controller.signal.aborted) { setSuggestions(result.suggestions ?? []); setExpanded(true); setSearched(true); setActive(-1); }
+        if (!controller.signal.aborted) { setSuggestions(result.suggestions ?? []); setSearched(true); setActive(-1); }
       } catch (e) { if (!controller.signal.aborted) { setSuggestions([]); setError(e instanceof Error ? e.message : "Address search is unavailable."); } }
       finally { if (!controller.signal.aborted) setSearching(false); }
     }, 350);
@@ -57,7 +57,7 @@ export default function AddressEditor({ initial, saveToAccount = true, onSaved, 
     generation.current++;
     setBusy("");
     setFields(f => ({ ...f, [key]: value })); setError(""); setNote("");
-    if (["addressLine1", "city", "postalCode"].includes(key)) setToken("");
+    if (["addressLine1", "city", "postalCode"].includes(key)) { setToken(""); setFields(f => ({ ...f, latitude: null, longitude: null, verificationToken: undefined, verificationSource: null, status: undefined })); }
   }
   function pick(s: Suggestion) {
     generation.current++;
@@ -72,7 +72,7 @@ export default function AddressEditor({ initial, saveToAccount = true, onSaved, 
     try {
       const result = await addressRequest("/api/location/resolve", { latitude, longitude, candidateOnly: true });
       if (!alive.current || current !== generation.current) return;
-      setFields(f => ({ ...f, ...result, id: initial?.id, label: f.label, addressLine2: f.addressLine2 })); setToken(result.verificationToken); setSandbox(false);
+      setFields(f => ({ ...f, ...result, id: initial?.id, label: f.label, addressLine2: f.addressLine2 })); setToken(result.verificationToken); setQuery(""); setSuggestions([]); setExpanded(false); setSearching(false); setSandbox(false);
       setNote(`Please confirm or correct this nearby address.${accuracy != null ? ` Browser accuracy: approximately ${Math.round(accuracy)} metres.` : ""} Location detection may not identify your exact door.`);
     } catch(e) { if (alive.current && current === generation.current) setError(e instanceof Error ? e.message : "Couldn't find this address."); }
     finally { if (alive.current && current === generation.current) setBusy(""); }
@@ -103,24 +103,23 @@ export default function AddressEditor({ initial, saveToAccount = true, onSaved, 
   }
   return <div className="address-editor">
     <button type="button" className="address-gps" disabled={!!busy} onClick={locate}><span aria-hidden="true">◎</span><span>Use my current location<small>Find a nearby address, then confirm your door.</small></span></button>
-    <div className="address-search" ref={searchBox}>
-      <label htmlFor={`${listId}-search`}>Search a Finnish address</label>
-      <div className="address-search-input"><input id={`${listId}-search`} role="combobox" aria-autocomplete="list" aria-expanded={expanded && !!suggestions.length} aria-controls={listId} aria-activedescendant={active >= 0 ? `${listId}-${active}` : undefined} autoComplete="off" placeholder="Start typing a street or city…" value={query} onChange={e => { generation.current++; setQuery(e.target.value); setSuggestions([]); setSearched(false); setSearching(false); setError(""); setExpanded(true); setActive(-1); }} onFocus={() => setExpanded(true)} onKeyDown={e => {
-        if (e.key === "Escape" && expanded) { e.preventDefault(); e.stopPropagation(); setExpanded(false); }
-        if (["ArrowDown", "ArrowUp"].includes(e.key) && suggestions.length) { e.preventDefault(); setExpanded(true); setActive(a => e.key === "ArrowDown" ? Math.min(a+1,suggestions.length-1) : Math.max(a-1,0)); }
-        if (e.key === "Enter" && expanded && active >= 0) { e.preventDefault(); pick(suggestions[active]); }
-      }}/>{query && <button type="button" aria-label="Clear address search" onClick={() => { setQuery(""); setSuggestions([]); setExpanded(false); setSearching(false); setError(""); }}>×</button>}</div>
-      {searching && <p role="status">Searching Finland…</p>}
-      {expanded && suggestions.length > 0 && <div className="address-options" role="listbox" id={listId}>{suggestions.map((s,i) => <button id={`${listId}-${i}`} role="option" aria-selected={active === i} type="button" key={`${s.text}-${i}`} onMouseEnter={() => setActive(i)} onClick={() => pick(s)}>{s.text}</button>)}</div>}
-      {searched && query.length >= 3 && !searching && !suggestions.length && !error && <p>No matching addresses yet. Try adding your city or building number.</p>}
-    </div>
     <p className="address-credit">Address data: Geoapify · © OpenStreetMap contributors</p>
     <button type="button" className="address-text-action" onClick={() => setShowMap(v=>!v)}>{showMap ? "Hide map" : "Choose on a map"}</button>
     {showMap && <div><LeafletAddressMap onPick={setPoint}/><button type="button" disabled={!point || !!busy} onClick={() => point && void reverse(point.latitude,point.longitude)}>Use this map pin</button></div>}
     {note && <p className="address-note" role="status">{note}</p>}
     <form className="address-fields" onSubmit={save}>
       {saveToAccount && <label>Address label <input value={fields.label ?? ""} onChange={e=>change("label",e.target.value)} placeholder="Home, Work…" maxLength={40}/></label>}
-      <label>Street and building number <input required value={fields.addressLine1} onChange={e=>change("addressLine1",e.target.value)} autoComplete="address-line1" placeholder="Street name and house number" maxLength={150}/></label>
+    <div className="address-search" ref={searchBox}>
+      <label htmlFor={`${listId}-search`}>Street and building number</label>
+      <div className="address-search-input"><input id={`${listId}-search`} role="combobox" aria-autocomplete="list" aria-expanded={expanded && !!suggestions.length} aria-controls={listId} aria-activedescendant={expanded && active >= 0 ? `${listId}-${active}` : undefined} autoComplete="off" placeholder="Start typing a street or city…" required maxLength={150} value={fields.addressLine1} onChange={e => { change("addressLine1",e.target.value); setQuery(e.target.value); setSuggestions([]); setSearched(false); setSearching(false); setError(""); setExpanded(true); setActive(-1); }} onFocus={() => setExpanded(true)} onKeyDown={e => {
+        if (e.key === "Escape" && expanded) { e.preventDefault(); e.stopPropagation(); setExpanded(false); }
+        if (["ArrowDown", "ArrowUp"].includes(e.key) && suggestions.length) { e.preventDefault(); setExpanded(true); setActive(a => e.key === "ArrowDown" ? Math.min(a+1,suggestions.length-1) : Math.max(a-1,0)); }
+        if (e.key === "Enter" && expanded && active >= 0) { e.preventDefault(); pick(suggestions[active]); }
+      }}/>{fields.addressLine1 && <button type="button" aria-label="Clear street and building number" onClick={() => { change("addressLine1", ""); setQuery(""); setSuggestions([]); setExpanded(false); setSearching(false); setError(""); }}>×</button>}</div>
+      {searching && <p role="status">Searching Finland…</p>}
+      {expanded && suggestions.length > 0 && <div className="address-options" role="listbox" id={listId}>{suggestions.map((s,i) => <button id={`${listId}-${i}`} role="option" aria-selected={active === i} type="button" key={`${s.text}-${i}`} onMouseEnter={() => setActive(i)} onClick={() => pick(s)}>{s.text}</button>)}</div>}
+      {searched && query.length >= 3 && !searching && !suggestions.length && !error && <p>No matching addresses yet. Try adding your city or building number.</p>}
+    </div>
       <label>Apartment, floor or entrance <input value={fields.addressLine2 ?? ""} onChange={e=>change("addressLine2",e.target.value)} autoComplete="address-line2" placeholder="Optional" maxLength={150}/></label>
       <div className="address-field-row"><label>Postal code <input required pattern="[0-9]{5}" title="Enter all five digits, including leading zeros" inputMode="numeric" maxLength={5} value={fields.postalCode ?? ""} onChange={e=>change("postalCode",e.target.value)} autoComplete="postal-code" placeholder="00100"/></label><label>City or municipality <input required value={fields.city} onChange={e=>change("city",e.target.value)} autoComplete="address-level2" maxLength={80}/></label></div>
       <p className="address-country">Country: Finland</p>
