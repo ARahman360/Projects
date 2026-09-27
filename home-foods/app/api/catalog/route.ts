@@ -6,7 +6,7 @@ import { normalizeCatalogSearchText } from "@/src/lib/catalog-filter";
 export const runtime = "nodejs";
 
 const average = (ratings: Array<{ rating: number }>) => ratings.length ? ratings.reduce((sum, row) => sum + row.rating, 0) / ratings.length : null;
-const cuisineOf = (description: string | null, city: string | null) => description?.match(/inspired by ([\w -]+?) home cooking/i)?.[1] ?? city ?? "Home cooking";
+const cuisineOf = (description: string | null) => description?.match(/inspired by ([\w -]+?) home cooking/i)?.[1] ?? "Home cooking";
 const dishTerms = (dish: { name: string; category: string; cuisine: string }) => `${dish.name} ${dish.category} ${dish.cuisine}`.toLowerCase();
 const sweets = /dessert|sweet|cake|pie|tart|pudding|baklava|jamun|kunafa|mochi|churro|ice cream|halwa|cheesecake|tiramisu|mämmi|korvapuusti|pastry|brownie|cookie|donut/i;
 const plantBased = /vegetarian|vegan|plant-based|salad|tofu|lentil|chickpea/i;
@@ -53,7 +53,7 @@ export async function GET(request: Request) {
 
     const allDishes = eligibleShops.flatMap((shop) => {
       const rating = average(shop.reviews ?? []);
-      const cuisine = cuisineOf(shop.description, shop.city);
+      const cuisine = cuisineOf(shop.description);
       return (shop.menuItems ?? []).map((item) => ({
         id: item.id, shopId: shop.id, name: item.name, shop: shop.name, cuisine,
         category: item.category?.name ?? "Other", price: item.price, rating,
@@ -68,12 +68,12 @@ export async function GET(request: Request) {
     if (query.length >= 2) {
       const results = allDishes.filter((dish) => normalizeCatalogSearchText(`${dish.name} ${dish.shop} ${dish.cuisine} ${dish.category} ${dish.description}`).includes(query)).slice(0, 40);
       const kitchens = shops
-        .filter((shop) => normalizeCatalogSearchText(`${shop.name} ${shop.description ?? ""} ${shop.city ?? ""} ${cuisineOf(shop.description, shop.city)}`).includes(query))
+        .filter((shop) => normalizeCatalogSearchText(`${shop.name} ${shop.description ?? ""} ${shop.city ?? ""} ${cuisineOf(shop.description)}`).includes(query))
         .slice(0, 12)
         .map((shop) => ({
           id: shop.id, name: shop.name, description: shop.description, logoUrl: shop.logoUrl,
-          coverImageUrl: shop.coverImageUrl, city: shop.city, status: shop.status,
-          cuisine: cuisineOf(shop.description, shop.city), deliveryFee: shop.deliveryFee,
+          coverImageUrl: shop.coverImageUrl, city: shop.city, status: shop.status, isOnline: shop.isOnline,
+          cuisine: cuisineOf(shop.description), deliveryFee: shop.deliveryFee,
           estimatedMinutes: shop.estimatedMinutes, minimumOrder: shop.minimumOrder,
           distanceKm: deliveryChecks.get(shop.id)?.distanceKm ?? null,
           deliveryDistanceKm: deliveryChecks.get(shop.id)?.distanceKm ?? null,
@@ -103,8 +103,8 @@ export async function GET(request: Request) {
     const dishes = allDishes.map((dish) => ({ ...dish, orderCount: orderCounts.get(dish.id) ?? 0, favoriteCount: favoriteCounts.get(dish.id) ?? 0 }));
     const kitchens = shops.map((shop) => ({
       id: shop.id, name: shop.name, description: shop.description, logoUrl: shop.logoUrl,
-      coverImageUrl: shop.coverImageUrl, city: shop.city, status: shop.status,
-      cuisine: cuisineOf(shop.description, shop.city), deliveryFee: shop.deliveryFee,
+      coverImageUrl: shop.coverImageUrl, city: shop.city, status: shop.status, isOnline: shop.isOnline,
+      cuisine: cuisineOf(shop.description), deliveryFee: shop.deliveryFee,
       estimatedMinutes: shop.estimatedMinutes, minimumOrder: shop.minimumOrder,
       createdAt: shop.createdAt, rating: average(shop.reviews ?? []),
       reviewCount: shop.reviews?.length ?? 0, orderCount: kitchenOrders.get(shop.id) ?? 0,
@@ -174,10 +174,10 @@ export async function GET(request: Request) {
       { id: "international-flavours", title: "International Flavours", kind: "food", href: "/collections/international-flavours", description: "Explore a mix of cuisines made by cooks in your area.", items: curated(international) },
       { id: "healthy-choices", title: "Healthy Choices", kind: "food", href: "/collections/healthy-choices", description: "Vegetarian, plant-based, salad and lentil menu categories; nutrition data is not provided.", items: curated(healthy) },
       { id: "sweet-treats", title: "Sweet Treats & Desserts", kind: "food", href: "/collections/sweet-treats", description: "Desserts, bakes and sweet menu favourites.", items: curated(desserts) },
-      { id: "featured-kitchens", title: "Featured Kitchens", kind: "kitchen", href: "/collections/featured-kitchens", description: "Home kitchens with standout ratings and customer saves.", items: kitchenDiverse(featuredKitchens) },
-      { id: "popular-restaurants", title: "Popular Restaurants", kind: "kitchen", href: "/collections/popular-restaurants", description: "Sorted by the number of dishes ordered.", items: kitchenDiverse(popularKitchens) },
-      { id: "new-on-homefoods", title: "New on HomeFoods", kind: "kitchen", href: "/collections/new-on-homefoods", description: "Recently joined kitchens with active menus.", items: kitchenDiverse(newKitchens) },
-      { id: "international-kitchens", title: "Explore International Kitchens", kind: "kitchen", href: "/collections/international-kitchens", description: "Meet cooks sharing food from around the world.", items: kitchenDiverse(internationalKitchens) },
+      { id: "featured-kitchens", title: "Featured Kitchens", kind: "kitchen", href: "/kitchens?collection=featured-kitchens", description: "Home kitchens with standout ratings and customer saves.", items: kitchenDiverse(featuredKitchens) },
+      { id: "popular-restaurants", title: "Popular Restaurants", kind: "kitchen", href: "/kitchens?collection=popular-restaurants", description: "Sorted by the number of dishes ordered.", items: kitchenDiverse(popularKitchens) },
+      { id: "new-on-homefoods", title: "New on HomeFoods", kind: "kitchen", href: "/kitchens?collection=new-on-homefoods", description: "Recently joined kitchens with active menus.", items: kitchenDiverse(newKitchens) },
+      { id: "international-kitchens", title: "Explore International Kitchens", kind: "kitchen", href: "/kitchens?collection=international-kitchens", description: "Meet cooks sharing food from around the world.", items: kitchenDiverse(internationalKitchens) },
     ];
     const collectionId = new URL(request.url).searchParams.get("collection");
     if (collectionId) {

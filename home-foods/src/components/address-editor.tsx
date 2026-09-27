@@ -11,7 +11,7 @@ export async function addressRequest(path: string, body?: unknown, method = "POS
   if (!response.ok) throw new Error(result.error || "Address service is unavailable. Please try again.");
   return result;
 }
-export default function AddressEditor({ initial, saveToAccount = true, onSaved, onCancel }: { initial?: SavedAddress; saveToAccount?: boolean; onSaved: (address: SavedAddress) => void; onCancel?: () => void }) {
+export default function AddressEditor({ initial, saveToAccount = true, onSaved, onCancel, onDirtyChange }: { initial?: SavedAddress; saveToAccount?: boolean; onSaved: (address: SavedAddress) => void | Promise<void>; onCancel?: () => void; onDirtyChange?: () => void }) {
   const [fields, setFields] = useState<SavedAddress>(initial ?? { label: "Home", addressLine1: "", addressLine2: "", city: "", postalCode: "", countryCode: "FI" });
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -54,12 +54,14 @@ export default function AddressEditor({ initial, saveToAccount = true, onSaved, 
     return () => { clearTimeout(timer); controller.abort(); };
   }, [query]);
   function change(key: keyof SavedAddress, value: string) {
+    onDirtyChange?.();
     generation.current++;
     setBusy("");
     setFields(f => ({ ...f, [key]: value })); setError(""); setNote("");
     if (["addressLine1", "city", "postalCode"].includes(key)) { setToken(""); setFields(f => ({ ...f, latitude: null, longitude: null, verificationToken: undefined, verificationSource: null, status: undefined })); }
   }
   function pick(s: Suggestion) {
+    onDirtyChange?.();
     generation.current++;
     setBusy("");
     setFields(f => ({ ...f, ...s.location, id: initial?.id, label: f.label, addressLine2: f.addressLine2 }));
@@ -67,6 +69,7 @@ export default function AddressEditor({ initial, saveToAccount = true, onSaved, 
     setNote(s.location.houseNumber ? "Address selected. Confirm the details below, including your apartment or entrance." : "Street selected. Add the building number below, then confirm the address.");
   }
   async function reverse(latitude: number, longitude: number, accuracy?: number) {
+    onDirtyChange?.();
     const current = ++generation.current;
     setBusy("Finding the nearest address…"); setError("");
     try {
@@ -92,11 +95,11 @@ export default function AddressEditor({ initial, saveToAccount = true, onSaved, 
     try {
       if (saveToAccount) {
         const result = await addressRequest("/api/addresses", { ...fields, id: initial?.id, verificationToken: token, sandboxConfirmation: sandbox }, initial?.id ? "PATCH" : "POST");
-        addressChanged(); onSaved(result.address);
+        addressChanged(); await onSaved(result.address);
       } else {
         const result = await addressRequest("/api/location/resolve", token ? { verificationToken: token, candidateOnly: true } : { addressText: `${fields.addressLine1}, ${fields.postalCode} ${fields.city}, Finland`, candidateOnly: true });
         if (!result.houseNumber || !/^\d{5}$/.test(result.postalCode)) throw new Error("Add the building number and five-digit postal code, then confirm your address.");
-        onSaved({ ...fields, ...result, addressLine2: fields.addressLine2, status: "verified" });
+        await onSaved({ ...fields, ...result, addressLine2: fields.addressLine2, status: "verified" });
       }
     } catch(e) { setError(e instanceof Error ? e.message : "Couldn't save this address."); }
     finally { if (alive.current) setBusy(""); }

@@ -1,3 +1,4 @@
+import {pickupForOrder} from "@/src/lib/pickup-snapshot";
 import { db } from "@/src/prisma/db";
 import { isSameOriginRequest } from "@/src/lib/request-security";
 import { pickupTransition } from "@/src/lib/workspace-policy";
@@ -29,7 +30,7 @@ export async function GET() {
       .all() : [];
     const jobs = (await Promise.all(pendingJobs.filter((delivery) => delivery.order?.status === "READY_FOR_PICKUP").map(async (delivery) => {
       if (delivery.order?.isSandbox && !isNationwideDevelopmentMode()) return null;
-      const shop = delivery.order?.shop;
+      const shop = delivery.order?.shop ? pickupForOrder(delivery.order,delivery.order.shop) : null;
       const address = delivery.order?.address;
       if (!shop || !isKitchenLocationAllowed(shop.address)) return null;
       if (!isDeliveryRadiusEnforced()) return isNationwideDevelopmentSeller(shop?.seller) ? { ...delivery, developmentTestDelivery: isNationwideDevelopmentMode() } : null;
@@ -120,10 +121,11 @@ export async function PATCH(request: Request) {
       if (!rider.isAvailable) return jsonError("Go online before accepting a delivery.", 409);
       const order = await db.orm.public.Order.where({ id: delivery.orderId, status: "READY_FOR_PICKUP" }).first();
       if (!order || (order.isSandbox && !isNationwideDevelopmentMode())) return jsonError("This order is not available for delivery in the current environment.", 409);
-      const [shop, address] = await Promise.all([
+      const [currentKitchen, address] = await Promise.all([
         db.orm.public.Shop.where({ id: order.shopId }).include("seller", (seller) => seller.select("name", "email")).first(),
         db.orm.public.Address.where({ id: order.addressId }).first(),
       ]);
+      const shop=currentKitchen?pickupForOrder(order,currentKitchen):null;
       if (isNationwideDevelopmentMode() && !isNationwideDevelopmentSeller(shop?.seller)) return jsonError("This kitchen is unavailable in the current development catalog.", 403);
       if (isDeliveryRadiusEnforced()) {
         if (!shop || !address || shop.latitude == null || shop.longitude == null || address.latitude == null || address.longitude == null) return jsonError("This delivery no longer has verified route locations and can't be assigned.", 409);

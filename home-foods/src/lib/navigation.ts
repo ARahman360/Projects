@@ -8,7 +8,7 @@ export const roleDestinations: Partial<Record<AccountRole, NavigationItem>> = {
  RIDER: {label:'Deliver', href:'/workspace#rider-dashboard', icon:'delivery'},
  ADMIN: {label:'Workspace', href:'/workspace/admin', icon:'workspace'},
 };
-export const discoveryNavigation: NavigationItem[] = [{label:'Home',href:'/',icon:'home'},{label:'Explore Kitchens',href:'/#home-sections',icon:'search'}];
+export const discoveryNavigation: NavigationItem[] = [{label:'Home',href:'/',icon:'home'},{label:'Explore Kitchens',href:'/kitchens',icon:'search'}];
 export function personalNavigation(role?: AccountRole): NavigationItem[] {
  if(!role) return [];
  return [{label:'Orders',href:'/orders',icon:'orders'}, ...(role==='CUSTOMER' ? [{label:'Meal Plans',href:'/meal-plans',icon:'calendar'},{label:'Favourites',href:'/favorites',icon:'heart'}] as NavigationItem[] : [])];
@@ -20,16 +20,16 @@ export function workspaceDefaultHash(role?:AccountRole) {
 }
 export function isNavigationActive(href:string, pathname:string, hash:string) {
  const [path, anchor] = href.split('#');
- if(href==='/#home-sections') return (pathname==='/' && ['#home-sections','#featured','#discover'].includes(hash)) || pathname.startsWith('/kitchens/') || pathname.startsWith('/collections/');
+ if(href==='/kitchens') return pathname==='/kitchens' || pathname.startsWith('/kitchens/');
  if(anchor) return pathname===path && hash===`#${anchor}`;
  if(path==='/workspace/admin/overview' && pathname==='/workspace/admin') return true;
- if(path==='/') return pathname==='/' && (!hash || hash==='#top');
+ if(path==='/') return pathname==='/';
  return pathname===path || pathname.startsWith(`${path}/`);
 }
 export function workspaceNavigation(role:AccountRole): NavigationItem[] {
  const item=(label:string,hash:string,icon:NavigationIcon):NavigationItem=>({label,href:`/workspace#${hash}`,icon});
  if(role==='CUSTOMER') return [item('Profile','profile','settings'),item('Saved Addresses','addresses','home')];
- if(role==='SELLER') return [item('Overview','seller-dashboard','kitchen'),item('Orders to prepare','orders','orders'),item('Meal-plan obligations','obligations','calendar'),item('Delivery requests','delivery-requests','delivery'),item('Menu & kitchen','seller-menu','kitchen'),item('Profile','profile','settings')];
+ if(role==='SELLER') return [item('Overview','seller-dashboard','kitchen'),item('Orders to prepare','orders','orders'),item('Meal-plan obligations','obligations','calendar'),item('Delivery requests','delivery-requests','delivery'),item('Menu & kitchen','seller-menu','kitchen'),item('Kitchen Settings','kitchen-settings','settings'),item('Profile','profile','settings')];
  if(role==='RIDER') return [item('Availability','rider-dashboard','delivery'),item('Active delivery','orders','delivery'),item('Available jobs','available-jobs','search'),item('Delivery history','delivery-history','orders'),item('Earnings','earnings','workspace'),item('Profile','profile','settings')];
  return [item('Profile','profile','settings'),{label:'Admin Workspace',href:'/workspace/admin',icon:'workspace'}];
 }

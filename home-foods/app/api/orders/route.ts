@@ -1,3 +1,4 @@
+import {pickupSnapshot} from "@/src/lib/pickup-snapshot";
 import { assertFinnishKitchen } from "@/src/lib/location";
 import { createHash, randomBytes } from "node:crypto";
 import { db } from "@/src/prisma/db";
@@ -157,12 +158,12 @@ export async function POST(request: Request) {
         const currentShop = await tx.execute(tx.sql.public.shop.update({updatedAt:new Date().toISOString()}).where((f,fn)=>fn.and(fn.eq(f.id,shopId),fn.eq(f.status,"ACTIVE"),fn.eq(f.isOnline,true))).build());
         if (!currentShop.affectedRows) throw new Error("This kitchen is no longer accepting new orders. Your basket has been kept.");
         const subtotal = items.reduce((sum, item) => sum + item.price * (quantities.get(item.id) ?? 0), 0);
-        const firstShop = items[0]?.shop;
+        const firstShop = await tx.orm.public.Shop.where({id:shopId}).first();
         const deliveryFee = firstShop?.deliveryFee ?? 2.5;
         const serviceFee = Math.round(subtotal * 0.05 * 100) / 100;
         const total = Math.round((subtotal + deliveryFee + serviceFee) * 100) / 100;
         const orderNumber = `HF-${randomBytes(4).toString("hex").toUpperCase()}`;
-        const order = await tx.orm.public.Order.create({ orderNumber, customerId: session.userId, shopId, addressId: address.id, isSandbox: isNationwideDevelopmentMode(), status: "PENDING", subtotal, deliveryFee, serviceFee, discount: 0, total, notes: notes || null });
+        const order = await tx.orm.public.Order.create({ pickupSnapshot:pickupSnapshot(firstShop??{}), orderNumber, customerId: session.userId, shopId, addressId: address.id, isSandbox: isNationwideDevelopmentMode(), status: "PENDING", subtotal, deliveryFee, serviceFee, discount: 0, total, notes: notes || null });
         await tx.orm.public.OrderStatusEvent.create({ orderId: order.id, status: "PENDING", domain: "ORDER", actorId: session.userId, actorRole: "CUSTOMER", message: "Order placed" });
         for (const item of items) {
           const quantity = quantities.get(item.id) ?? 0;

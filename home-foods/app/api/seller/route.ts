@@ -1,3 +1,5 @@
+import {kitchenProfileError} from "@/src/lib/kitchen-profile";
+import {saveKitchenLocation,verifiedKitchenLocation} from "@/src/lib/kitchen-location-history";
 import { readLocationProof } from "@/src/lib/address-policy";
 import { db } from "@/src/prisma/db";
 import { isSameOriginRequest } from "@/src/lib/request-security";
@@ -23,7 +25,7 @@ export async function GET() {
     const plans = await db.orm.public.SubscriptionPlan.where({ shopId: shop.id }).include("items").all();
     const planIds = plans.map((plan) => plan.id);
     const subscriptions = planIds.length ? await db.orm.public.Subscription.where((subscription) => subscription.planId.in(planIds)).include("customer", (customer) => customer.select("name", "email")).include("plan", (plan) => plan.select("id", "name")).include("scheduledMeals", (meal) => meal.include("order", (order) => order.include("items").include("delivery")).orderBy((meal) => meal.scheduledAt.asc())).all() : [];
-    return Response.json({ shop, items, categories, orders, plans, subscriptions });
+    return Response.json({ shop: {...shop, profileCompletedAt:kitchenProfileError(shop)?null:shop.profileCompletedAt, locationIsVerified: verifiedKitchenLocation(shop)}, items, categories, orders, plans, subscriptions });
   } catch (error) {
     console.error("Seller workspace request failed", error);
     return jsonError("Seller workspace is unavailable. Check the database setup.", 503);
@@ -51,7 +53,7 @@ export async function PATCH(request: Request) {
       const address = typeof body.address === "string" ? body.address.trim() : "";
       const proof=readLocationProof(body.verificationToken);
       const verified = proof && typeof proof.houseNumber === "string" && proof.houseNumber && typeof proof.postalCode === "string" && /^\d{5}$/.test(proof.postalCode) && typeof proof.formattedAddress === "string" && typeof proof.city === "string" && typeof proof.latitude === "number" && typeof proof.longitude === "number" ? {formattedAddress:proof.formattedAddress,city:proof.city,latitude:proof.latitude,longitude:proof.longitude} : await verifyAddressText(address);
-      const updated = await db.orm.public.Shop.where({ id: shop.id, sellerId: session.userId }).update({ address: verified.formattedAddress, city: verified.city, latitude: verified.latitude, longitude: verified.longitude });
+      const updated = await saveKitchenLocation(shop.id,session.userId,{address:verified.formattedAddress,city:verified.city,latitude:verified.latitude,longitude:verified.longitude});
       return Response.json({ shop: updated, location: verified });
     }
     if (body.action === "update-category") {
@@ -96,7 +98,8 @@ export async function PATCH(request: Request) {
       const updated = await db.orm.public.MenuItem.where({ id: itemId }).update(update);
       return Response.json({ item: updated });
     }
-    const update: { name?: string; description?: string | null; phone?: string | null; address?: string | null; city?: string | null; latitude?:number; longitude?:number; deliveryFee?: number; estimatedMinutes?: number; logoUrl?: string | null; coverImageUrl?: string | null } = {};
+    if(body.action === "save-profile"){const error=kitchenProfileError(body);if(error)return jsonError(error,422);}
+    const update: { profileCompletedAt?:string; name?: string; description?: string | null; phone?: string | null; address?: string | null; city?: string | null; latitude?:number; longitude?:number; deliveryFee?: number; estimatedMinutes?: number; logoUrl?: string | null; coverImageUrl?: string | null } = {};
     if (typeof body.name === "string" && body.name.trim().length > 1) update.name = body.name.trim().slice(0, 100);
     if (typeof body.description === "string") update.description = body.description.trim().slice(0, 1200);
     if (typeof body.phone === "string") update.phone = body.phone.trim().slice(0, 40);
@@ -104,10 +107,11 @@ export async function PATCH(request: Request) {
     if (typeof body.coverImageUrl === "string") update.coverImageUrl = body.coverImageUrl.trim().slice(0, 500) || null;
     if ((typeof body.address === "string" && body.address.trim() !== shop.address) || (typeof body.city === "string" && body.city.trim() !== shop.city)) {
       const verified = await verifyAddressText(`${body.address ?? shop.address ?? ""}, ${body.city ?? shop.city ?? ""}`);
-      update.address = verified.formattedAddress; update.city = verified.city; update.latitude = verified.latitude; update.longitude = verified.longitude;
+      await saveKitchenLocation(shop.id,session.userId,{address:verified.formattedAddress,city:verified.city,latitude:verified.latitude,longitude:verified.longitude});
     }
     if (typeof body.deliveryFee === "number" && Number.isFinite(body.deliveryFee) && body.deliveryFee >= 0 && body.deliveryFee <= 50) update.deliveryFee = Math.round(body.deliveryFee * 100) / 100;
     if (typeof body.estimatedMinutes === "number" && Number.isInteger(body.estimatedMinutes) && body.estimatedMinutes >= 10 && body.estimatedMinutes <= 240) update.estimatedMinutes = body.estimatedMinutes;
+    if(body.action === "save-profile") update.profileCompletedAt=new Date().toISOString();
     const updated = await db.orm.public.Shop.where({ id: shop.id, sellerId: session.userId }).update(update);
     return Response.json({ shop: updated });
   } catch (error) {

@@ -1885,6 +1885,13 @@
                   "kind": "scalar"
                 }
               },
+              "pickupSnapshot": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "serviceFee": {
                 "nullable": false,
                 "type": {
@@ -2106,6 +2113,9 @@
                 },
                 "orderNumber": {
                   "column": "orderNumber"
+                },
+                "pickupSnapshot": {
+                  "column": "pickupSnapshot"
                 },
                 "serviceFee": {
                   "column": "serviceFee"
@@ -3249,6 +3259,20 @@
                   "kind": "scalar"
                 }
               },
+              "locationVerificationHash": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "locationVerifiedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
               "logoUrl": {
                 "nullable": true,
                 "type": {
@@ -3281,6 +3305,13 @@
                 "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "profileCompletedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
                   "kind": "scalar"
                 }
               },
@@ -3470,6 +3501,12 @@
                 "latitude": {
                   "column": "latitude"
                 },
+                "locationVerificationHash": {
+                  "column": "locationVerificationHash"
+                },
+                "locationVerifiedAt": {
+                  "column": "locationVerifiedAt"
+                },
                 "logoUrl": {
                   "column": "logoUrl"
                 },
@@ -3484,6 +3521,9 @@
                 },
                 "phone": {
                   "column": "phone"
+                },
+                "profileCompletedAt": {
+                  "column": "profileCompletedAt"
                 },
                 "sellerId": {
                   "column": "sellerId"
@@ -5545,6 +5585,11 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "pickupSnapshot": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "serviceFee": {
                   "codecId": "pg/float8@1",
                   "default": {
@@ -6686,6 +6731,16 @@
                   "nativeType": "float8",
                   "nullable": true
                 },
+                "locationVerificationHash": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "locationVerifiedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
                 "logoUrl": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -6709,6 +6764,11 @@
                 "phone": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
+                  "nullable": true
+                },
+                "profileCompletedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
                   "nullable": true
                 },
                 "sellerId": {
@@ -7399,7 +7459,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "9eceda9b225dd63549754bab80b6e3f7be12106a9c15e93f43ffbbebe2aa6007"
+    "storageHash": "0fe0ed3c2aa866e7753fe5451a619e873ca63c88fa77a80f6749417055d11430"
   },
   "execution": {
     "executionHash": "6a798fe5863219e1a94434be9b3689a946ed07045dc95c60387dff0fc37be662",

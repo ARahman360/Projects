@@ -1,5 +1,6 @@
 "use client";
 
+import KitchenCard from "./kitchen-card";
 import HomeCarousel from "@/src/components/home-carousel";
 import MarketImage from "@/src/components/market-image";
 import SpotlightCard from "@/src/components/ui/spotlight-card";
@@ -45,8 +46,7 @@ export default function HomeSections({ sections, loading, error, cart, favorites
       const items = section.items as Shop[];
       return <HomeCarousel key={section.id} id={section.id} title={section.title} description={section.description} href={section.href} cardKind="kitchen" empty={!items.length ? "No kitchens in this collection yet." : undefined}>{items.map((shop, index) => {
         const saved = favoriteShops.includes(shop.id);
-        const cover = shop.coverImageUrl || fallback;
-        const card = <article className={`carousel-kitchen-card${shop.deliverable === false ? " kitchen-too-far" : ""}`} key={shop.id}><a className="carousel-kitchen-cover" href={`/kitchens/${shop.id}`}><MarketImage src={cover} alt={`${shop.name} kitchen cover`} fallbackSrc={fallback}/>{shop.logoUrl && <span className="carousel-kitchen-logo"><MarketImage src={shop.logoUrl} alt={`${shop.name} kitchen icon`} fallbackSrc={fallback}/></span>}<span className="kitchen-status"><i/> Home kitchen</span>{shop.deliverable === false && <span className="kitchen-distance-badge">{shop.deliveryStatus === "Too far for delivery" ? "Too far for delivery" : shop.deliveryStatus ?? "Delivery unavailable"}</span>}</a><button className={`save-button ${saved ? "is-saved" : ""}`} type="button" aria-pressed={saved} aria-label={`${saved ? "Remove" : "Save"} ${shop.name} ${saved ? "from" : "to"} favorites`} onClick={() => onFavoriteShop(shop)}>{saved ? "♥" : "♡"}</button><a href={`/kitchens/${shop.id}`} className="carousel-kitchen-info"><h3>{shop.name}</h3><p>{shop.cuisine || "Home kitchen"} · {shop.city || "Local"}</p><div className="carousel-kitchen-meta">{shop.rating != null && <span>★ {shop.rating.toFixed(1)}{shop.reviewCount ? ` (${shop.reviewCount})` : ""}</span>}{shop.estimatedMinutes != null && <span>◷ {shop.estimatedMinutes} min</span>}{shop.deliverable !== false && shop.deliveryDistanceKm != null && <span>◉ {shop.deliveryDistanceKm.toFixed(1)} km by road</span>}{shop.deliverable !== false && shop.deliveryFee != null && <span>{shop.deliveryFee === 0 ? "Free delivery" : `${money(shop.deliveryFee)} delivery`}</span>}</div></a></article>;
+        const card = <KitchenCard shop={shop} saved={saved} onFavoriteShop={onFavoriteShop}/>;
         return section.id === "featured-kitchens" && index === 0
           ? <SpotlightCard key={`spotlight-${shop.id}`} className="spotlight-featured-kitchen" glowColor="orange" size="small">{card}</SpotlightCard>
           : card;

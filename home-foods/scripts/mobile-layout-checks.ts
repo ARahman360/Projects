@@ -64,10 +64,10 @@ export async function checkAddress(context:BrowserContext,base:string) {
   assert.equal(await p.getByLabel('Search a Finnish address',{exact:true}).count(),0);
   const street=p.getByRole('combobox',{name:'Street and building number'});
   await street.fill('Mannerheimintie 9 Helsinki');
-  await expect(p.getByRole('option').first()).toBeVisible({timeout:25000});
-  await street.press('Escape');await expect(p.getByRole('option')).toHaveCount(0);
-  await street.focus();await street.press('ArrowDown');await expect(p.getByRole('option').first()).toBeVisible();
-  await p.getByLabel('Address label',{exact:true}).click();await expect(p.getByRole('option')).toHaveCount(0);
+  await expect(p.getByRole('listbox').getByRole('option').first()).toBeVisible({timeout:25000});
+  await street.press('Escape');await expect(p.getByRole('listbox').getByRole('option')).toHaveCount(0);
+  await street.focus();await street.press('ArrowDown');await expect(p.getByRole('listbox').getByRole('option').first()).toBeVisible();
+  await p.getByLabel('Address label',{exact:true}).click();await expect(p.getByRole('listbox').getByRole('option')).toHaveCount(0);
   await street.focus();await street.press('ArrowDown');await street.press('Enter');
   await expect(p.getByLabel('Postal code',{exact:true})).toHaveValue(/^\d{5}$/);
   await expect(p.getByLabel('City or municipality')).not.toHaveValue('');

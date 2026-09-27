@@ -14,6 +14,7 @@ import "./customer-collections.css";
 import "./operations.css";
 import "./admin-workspace.css";
 import "./app-navigation.css";
+import "./kitchen-experience.css";
 
 export const metadata: Metadata = {
   title: "HomeFoods — Homemade happiness, delivered",

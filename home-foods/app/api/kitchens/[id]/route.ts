@@ -12,6 +12,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     const shop = await db.orm.public.Shop
       .where({ id, status: "ACTIVE" })
       .include("menuItems", (items) => items.include("category", (category) => category.select("id", "name")).orderBy((item) => item.name.asc()))
+      .include("subscriptionPlans", plans=>plans.where({isActive:true}))
       .include("reviews", (reviews) => reviews.select("rating").orderBy((review) => review.createdAt.desc()).limit(100))
       .include("seller", (seller) => seller.select("name", "email"))
       .first();

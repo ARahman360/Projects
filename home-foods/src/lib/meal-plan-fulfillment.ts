@@ -1,3 +1,4 @@
+import {pickupSnapshot} from "./pickup-snapshot";
 import { randomBytes } from "node:crypto";
 import { db } from "@/src/prisma/db";
 
@@ -73,7 +74,9 @@ export async function createMealPlanFulfillment(subscriptionId: number, billingE
       if (duplicate) { meals.push({ scheduledAt: String(duplicate.scheduledAt), orderNumber: "" }); continue; }
 
       const orderNumber = `HF-${randomBytes(4).toString("hex").toUpperCase()}`;
-      const order = await tx.orm.public.Order.create({ orderNumber, customerId: subscription.customerId, shopId: plan.shopId, addressId: subscription.addressId, status: "PENDING", subtotal: amountPerMeal, deliveryFee: 0, serviceFee: 0, discount: 0, total: amountPerMeal, notes: `Included in ${plan.name} subscription. Scheduled for ${scheduledAt} (${TZ}).` });
+      await tx.execute(tx.sql.public.shop.update({updatedAt:new Date().toISOString()}).where((f,fn)=>fn.eq(f.id,plan.shopId)).build());
+      const pickup=await tx.orm.public.Shop.where({id:plan.shopId}).first();
+      const order = await tx.orm.public.Order.create({ pickupSnapshot:pickupSnapshot(pickup??plan.shop), orderNumber, customerId: subscription.customerId, shopId: plan.shopId, addressId: subscription.addressId, status: "PENDING", subtotal: amountPerMeal, deliveryFee: 0, serviceFee: 0, discount: 0, total: amountPerMeal, notes: `Included in ${plan.name} subscription. Scheduled for ${scheduledAt} (${TZ}).` });
       for (const entry of selectedItems) {
         await tx.orm.public.OrderItem.create({ orderId: order.id, menuItemId: entry.menuItemId, name: entry.menuItem.name, quantity: entry.quantity * subscription.portions, unitPrice: 0, totalPrice: 0 });
       }

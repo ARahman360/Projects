@@ -1,0 +1,170 @@
+[
+  {
+    "id": "column.public.order.pickupSnapshot",
+    "label": "Add column \"pickupSnapshot\" to \"order\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "pickupSnapshot",
+        "table": "order"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"pickupSnapshot\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "order",
+          "pickupSnapshot"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"pickupSnapshot\"",
+        "sql": "ALTER TABLE \"public\".\"order\" ADD COLUMN \"pickupSnapshot\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"pickupSnapshot\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "order",
+          "pickupSnapshot"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.shop.locationVerificationHash",
+    "label": "Add column \"locationVerificationHash\" to \"shop\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "locationVerificationHash",
+        "table": "shop"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"locationVerificationHash\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "shop",
+          "locationVerificationHash"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"locationVerificationHash\"",
+        "sql": "ALTER TABLE \"public\".\"shop\" ADD COLUMN \"locationVerificationHash\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"locationVerificationHash\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "shop",
+          "locationVerificationHash"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.shop.locationVerifiedAt",
+    "label": "Add column \"locationVerifiedAt\" to \"shop\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "locationVerifiedAt",
+        "table": "shop"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"locationVerifiedAt\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "shop",
+          "locationVerifiedAt"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"locationVerifiedAt\"",
+        "sql": "ALTER TABLE \"public\".\"shop\" ADD COLUMN \"locationVerifiedAt\" timestamptz"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"locationVerifiedAt\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "shop",
+          "locationVerifiedAt"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.shop.profileCompletedAt",
+    "label": "Add column \"profileCompletedAt\" to \"shop\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "profileCompletedAt",
+        "table": "shop"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"profileCompletedAt\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "shop",
+          "profileCompletedAt"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"profileCompletedAt\"",
+        "sql": "ALTER TABLE \"public\".\"shop\" ADD COLUMN \"profileCompletedAt\" timestamptz"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"profileCompletedAt\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "shop",
+          "profileCompletedAt"
+        ]
+      }
+    ]
+  }
+]

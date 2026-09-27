@@ -1,4 +1,5 @@
 import { db } from "@/src/prisma/db";
+import { isSameOriginRequest } from "@/src/lib/request-security";
 import { getSession, jsonError } from "@/src/lib/auth";
 
 export const runtime = "nodejs";
@@ -18,8 +19,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const origin = request.headers.get("origin");
-  if (origin && origin !== new URL(request.url).origin) return jsonError("Request origin could not be verified.", 403);
+  if (!isSameOriginRequest(request)) return jsonError("Request origin could not be verified.", 403);
   const session = await getSession();
   if (!session) return jsonError("Sign in to save favorites.", 401);
   if (session.role !== "CUSTOMER") return jsonError("Favorites are available for customer accounts.", 403);
