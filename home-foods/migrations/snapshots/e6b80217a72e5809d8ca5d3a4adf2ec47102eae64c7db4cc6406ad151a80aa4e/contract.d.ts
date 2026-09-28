@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'16e95f66860db533af7e42ceba52221c73927c8c4667586b2931f661cb6e7671'>;
+  StorageHashBase<'e6b80217a72e5809d8ca5d3a4adf2ec47102eae64c7db4cc6406ad151a80aa4e'>;
 export type ExecutionHash =
   ExecutionHashBase<'6a798fe5863219e1a94434be9b3689a946ed07045dc95c60387dff0fc37be662'>;
 export type ProfileHash =
@@ -314,6 +314,14 @@ export type FieldOutputTypes = {
       readonly notes: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    };
+    readonly EmailChangeRequest: {
+      readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly userId: CodecTypes['pg/int4@1']['output'];
+      readonly email: CodecTypes['pg/text@1']['output'];
+      readonly tokenHash: CodecTypes['pg/text@1']['output'];
+      readonly expiresAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
     };
     readonly Favorite: {
       readonly id: CodecTypes['pg/int4@1']['output'];
@@ -643,6 +651,14 @@ export type FieldInputTypes = {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
     };
+    readonly EmailChangeRequest: {
+      readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly userId: CodecTypes['pg/int4@1']['input'];
+      readonly email: CodecTypes['pg/text@1']['input'];
+      readonly tokenHash: CodecTypes['pg/text@1']['input'];
+      readonly expiresAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
     readonly Favorite: {
       readonly id: CodecTypes['pg/int4@1']['input'];
       readonly customerId: CodecTypes['pg/int4@1']['input'];
@@ -970,6 +986,14 @@ export type StorageColumnTypes = {
         | 'DELIVERED'
         | 'FAILED';
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    };
+    readonly emailChangeRequest: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly email: CodecTypes['pg/text@1']['output'];
+      readonly expiresAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly tokenHash: CodecTypes['pg/text@1']['output'];
+      readonly userId: CodecTypes['pg/int4@1']['output'];
     };
     readonly favorite: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -1299,6 +1323,14 @@ export type StorageColumnInputTypes = {
         | 'FAILED';
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
     };
+    readonly emailChangeRequest: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly email: CodecTypes['pg/text@1']['input'];
+      readonly expiresAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly tokenHash: CodecTypes['pg/text@1']['input'];
+      readonly userId: CodecTypes['pg/int4@1']['input'];
+    };
     readonly favorite: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly customerId: CodecTypes['pg/int4@1']['input'];
@@ -1568,6 +1600,7 @@ export namespace Models {
     updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     addresses: public_Address[];
     carts: public_Cart[];
+    emailChanges: public_EmailChangeRequest[];
     favoriteKitchens: public_KitchenFavorite[];
     favorites: public_Favorite[];
     notifications: public_Notification[];
@@ -1580,6 +1613,7 @@ export namespace Models {
     readonly [RelationKeys]?:
       | 'addresses'
       | 'carts'
+      | 'emailChanges'
       | 'favoriteKitchens'
       | 'favorites'
       | 'notifications'
@@ -2010,6 +2044,16 @@ export namespace Models {
     user: public_User;
     readonly [RelationKeys]?: 'user';
   };
+  export type public_EmailChangeRequest = {
+    id: CodecTypes['pg/int4@1']['output'];
+    userId: CodecTypes['pg/int4@1']['output'];
+    email: CodecTypes['pg/text@1']['output'];
+    tokenHash: CodecTypes['pg/text@1']['output'];
+    expiresAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    user: public_User;
+    readonly [RelationKeys]?: 'user';
+  };
 }
 
 export declare const models: {
@@ -2041,6 +2085,7 @@ export declare const models: {
     NewsletterSubscriber: Models.public_NewsletterSubscriber;
     AdminAuditLog: Models.public_AdminAuditLog;
     Notification: Models.public_Notification;
+    EmailChangeRequest: Models.public_EmailChangeRequest;
   };
 };
 
@@ -2544,6 +2589,75 @@ type ContractBase = Omit<
                   readonly target: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'rider';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly emailChangeRequest: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                };
+                readonly userId: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                };
+                readonly email: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly tokenHash: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly expiresAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['tokenHash'] }];
+              indexes: readonly [
+                {
+                  readonly name: 'emailChangeRequest_userId_createdAt_idx_f726f04a';
+                  readonly prefix: 'emailChangeRequest_userId_createdAt_idx';
+                  readonly columns: readonly ['userId', 'createdAt'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'emailChangeRequest_userId_idx_a489d58a';
+                  readonly prefix: 'emailChangeRequest_userId_idx';
+                  readonly columns: readonly ['userId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'emailChangeRequest';
+                    readonly columns: readonly ['userId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'user';
                     readonly columns: readonly ['id'];
                   };
                 },
@@ -4737,6 +4851,10 @@ type ContractBase = Omit<
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'Notification';
     };
+    readonly emailChangeRequest: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'EmailChangeRequest';
+    };
   };
   readonly domain: {
     readonly namespaces: {
@@ -5217,6 +5335,63 @@ type ContractBase = Omit<
                 readonly notes: { readonly column: 'notes' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
+              };
+            };
+          };
+          readonly EmailChangeRequest: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly userId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly email: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly tokenHash: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly expiresAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+            };
+            readonly relations: {
+              readonly user: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['userId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'emailChangeRequest';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly userId: { readonly column: 'userId' };
+                readonly email: { readonly column: 'email' };
+                readonly tokenHash: { readonly column: 'tokenHash' };
+                readonly expiresAt: { readonly column: 'expiresAt' };
+                readonly createdAt: { readonly column: 'createdAt' };
               };
             };
           };
@@ -7198,6 +7373,17 @@ type ContractBase = Omit<
               };
               readonly carts: {
                 readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'Cart' };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['userId'];
+                };
+              };
+              readonly emailChanges: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'EmailChangeRequest';
+                };
                 readonly cardinality: '1:N';
                 readonly on: {
                   readonly localFields: readonly ['id'];

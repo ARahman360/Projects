@@ -24,8 +24,11 @@ export async function POST(request: Request) {
       const consumed = await tx.query(plan) as Array<{ userId: number }>;
       const reset = consumed[0];
       if (!reset) return false;
-      await tx.orm.public.User.where({ id: reset.userId }).update({ password: passwordHash });
-      await tx.orm.public.PasswordResetToken.where({ userId: reset.userId }).delete();
+      const account=await tx.orm.public.User.where({id:reset.userId}).first();
+      if(!account)return false;
+      const changed=await tx.execute(tx.sql.public.user.update({password:passwordHash,authVersion:account.authVersion+1}).where((f,fn)=>fn.and(fn.eq(f.id,reset.userId),fn.eq(f.authVersion,account.authVersion))).build());
+      if(!changed.affectedRows)throw new Error("Account changed during password reset");
+      await tx.execute(tx.sql.public.passwordResetToken.delete().where((f,fn)=>fn.eq(f.userId,reset.userId)).build());
       return true;
     });
     if (!applied) return jsonError("This reset link is invalid or has expired. Request a new one.", 400);

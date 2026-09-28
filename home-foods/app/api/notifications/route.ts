@@ -1,23 +1,24 @@
-import { getSession, jsonError } from "@/src/lib/auth";
-import { db } from "@/src/prisma/db";
-import { orderNotification } from "@/src/lib/notification-content";
-
-export const runtime = "nodejs";
-export async function GET() {
-  const session = await getSession();
-  if (!session) return jsonError("Sign in to see order updates.",401);
-  if (session.role !== "CUSTOMER") return jsonError("Customer notifications only.",403);
-  try {
-    const orders = await db.orm.public.Order.where({customerId:session.userId})
-      .select("id","orderNumber").include("shop",s=>s.select("name"))
-      .orderBy(o=>o.createdAt.desc()).limit(50).all();
-    const ids=orders.map(o=>o.id);
-    const events=ids.length ? await db.orm.public.OrderStatusEvent.where(e=>e.orderId.in(ids)).orderBy(e=>e.createdAt.desc()).limit(100).all() : [];
-    const notifications=events.flatMap(event=>{
-      const order=orders.find(o=>o.id===event.orderId)!;
-      const message=orderNotification(event.status,order.shop?.name??"Your kitchen");
-      return message?[{id:event.id,orderId:order.id,orderNumber:order.orderNumber,status:event.status,message,createdAt:event.createdAt,href:`/orders#order-${order.id}`}]:[];
-    }).slice(0,30);
-    return Response.json({userId:session.userId,notifications},{headers:{"Cache-Control":"private, no-store"}});
-  } catch { return jsonError("Order updates are temporarily unavailable. Your orders are still saved.",503); }
+import {getSession,jsonError} from '@/src/lib/auth';
+import {db} from '@/src/prisma/db';
+import {syncAccountNotifications} from '@/src/lib/account-notifications';
+import {isSameOriginRequest} from '@/src/lib/request-security';
+export const runtime='nodejs';
+export async function GET(){
+ const session=await getSession();if(!session)return jsonError('Sign in to see notifications.',401);
+ try{
+  await syncAccountNotifications(session);
+  const notifications=await db.orm.public.Notification.where({userId:session.userId}).orderBy(n=>n.createdAt.desc()).limit(100).all();
+  const unread=await db.orm.public.Notification.where({userId:session.userId,readAt:null}).select('id').all();
+  return Response.json({userId:session.userId,notifications,unreadCount:unread.length},{headers:{'Cache-Control':'private, no-store'}});
+ }catch{return jsonError('Notifications could not be refreshed. Please try again.',503);}
+}
+export async function PATCH(request:Request){
+ if(!isSameOriginRequest(request))return jsonError('Request origin could not be verified.',403);
+ const session=await getSession();if(!session)return jsonError('Sign in to update notifications.',401);
+ try{
+  const body=await request.json();
+  if(body.all===true){const unread=await db.orm.public.Notification.where({userId:session.userId,readAt:null}).select('id').all(); await db.transaction(async tx=>{for(const n of unread)await tx.orm.public.Notification.where({id:n.id,userId:session.userId}).update({readAt:new Date().toISOString()});});}
+  else{if(!Number.isInteger(body.id))return jsonError('Choose a notification.',422);const notice=await db.orm.public.Notification.where({id:body.id,userId:session.userId}).first();if(!notice)return jsonError('Notification not found.',404);await db.orm.public.Notification.where({id:notice.id,userId:session.userId}).update({readAt:notice.readAt??new Date().toISOString()});}
+  return Response.json({success:true});
+ }catch{return jsonError('Could not mark notifications as read.',503);}
 }

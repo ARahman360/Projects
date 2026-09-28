@@ -1,6 +1,7 @@
 import { createHmac, randomBytes, scrypt as scryptCallback, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
 import { cookies } from "next/headers";
+import { db } from "@/src/prisma/db";
 import { getSessionSigningSecret } from "./session-secret";
 
 const scrypt = promisify(scryptCallback);
@@ -8,7 +9,7 @@ const COOKIE_NAME = "home-foods-session";
 const SESSION_AGE_SECONDS = 60 * 60 * 24 * 7;
 
 export type UserRole = "CUSTOMER" | "SELLER" | "RIDER" | "ADMIN";
-export type Session = { userId: number; role: UserRole; email: string; name: string | null; expiresAt: number };
+export type Session = { userId: number; role: UserRole; email: string; name: string | null; expiresAt: number; authVersion?: number };
 
 function secret() {
   return getSessionSigningSecret();
@@ -34,7 +35,8 @@ function sign(value: string) {
 
 export async function setSession(user: Omit<Session, "expiresAt">) {
   const expiresAt = Math.floor(Date.now() / 1000) + SESSION_AGE_SECONDS;
-  const payload = Buffer.from(JSON.stringify({ ...user, expiresAt })).toString("base64url");
+  const account = await db.orm.public.User.where({id:user.userId}).select("authVersion").first();
+  const payload = Buffer.from(JSON.stringify({ ...user, authVersion:account?.authVersion??0, expiresAt })).toString("base64url");
   const jar = await cookies();
   jar.set(COOKIE_NAME, `${payload}.${sign(payload)}`, {
     httpOnly: true,
@@ -62,7 +64,9 @@ export async function getSession(): Promise<Session | null> {
     const session = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as Session;
     if (session.expiresAt <= Math.floor(Date.now() / 1000)) return null;
     if (!Number.isInteger(session.userId) || !["CUSTOMER", "SELLER", "RIDER", "ADMIN"].includes(session.role)) return null;
-    return session;
+    const account=await db.orm.public.User.where({id:session.userId}).select("authVersion","role","email","name").first();
+    if(!account || account.authVersion !== (session.authVersion??0))return null;
+    return {...session,role:account.role,email:account.email,name:account.name};
   } catch {
     return null;
   }

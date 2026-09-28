@@ -1,0 +1,446 @@
+[
+  {
+    "id": "table.emailChangeRequest",
+    "label": "Create table \"emailChangeRequest\"",
+    "summary": "Creates table \"emailChangeRequest\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "emailChangeRequest"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"emailChangeRequest\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"emailChangeRequest\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"emailChangeRequest\"",
+        "sql": "CREATE TABLE \"public\".\"emailChangeRequest\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"email\" text NOT NULL,\n  \"expiresAt\" timestamptz NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"tokenHash\" text NOT NULL,\n  \"userId\" int4 NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"emailChangeRequest\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"emailChangeRequest\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.notification",
+    "label": "Create table \"notification\"",
+    "summary": "Creates table \"notification\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "notification"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"notification\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"notification\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"notification\"",
+        "sql": "CREATE TABLE \"public\".\"notification\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"eventKey\" text NOT NULL,\n  \"href\" text NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"kind\" text NOT NULL,\n  \"message\" text NOT NULL,\n  \"readAt\" timestamptz,\n  \"title\" text NOT NULL,\n  \"userId\" int4 NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"notification\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"notification\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.user.authVersion",
+    "label": "Add column \"authVersion\" to \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "authVersion",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"authVersion\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "authVersion"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"authVersion\"",
+        "sql": "ALTER TABLE \"public\".\"user\" ADD COLUMN \"authVersion\" int4 DEFAULT 0 NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"authVersion\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "authVersion"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.emailChangeRequest.emailChangeRequest_tokenHash_key",
+    "label": "Add unique constraint on \"emailChangeRequest\" (tokenHash)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "emailChangeRequest_tokenHash_key",
+        "table": "emailChangeRequest"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"emailChangeRequest_tokenHash_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "emailChangeRequest_tokenHash_key",
+          "public",
+          "\"public\".\"emailChangeRequest\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"emailChangeRequest_tokenHash_key\"",
+        "sql": "ALTER TABLE \"public\".\"emailChangeRequest\" ADD CONSTRAINT \"emailChangeRequest_tokenHash_key\" UNIQUE (\"tokenHash\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"emailChangeRequest_tokenHash_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "emailChangeRequest_tokenHash_key",
+          "public",
+          "\"public\".\"emailChangeRequest\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.notification.notification_eventKey_key",
+    "label": "Add unique constraint on \"notification\" (eventKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "notification_eventKey_key",
+        "table": "notification"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"notification_eventKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "notification_eventKey_key",
+          "public",
+          "\"public\".\"notification\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"notification_eventKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"notification\" ADD CONSTRAINT \"notification_eventKey_key\" UNIQUE (\"eventKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"notification_eventKey_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "notification_eventKey_key",
+          "public",
+          "\"public\".\"notification\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.emailChangeRequest.emailChangeRequest_userId_createdAt_idx_f726f04a",
+    "label": "Create index \"emailChangeRequest_userId_createdAt_idx_f726f04a\" on \"emailChangeRequest\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "emailChangeRequest_userId_createdAt_idx_f726f04a",
+        "table": "emailChangeRequest"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"emailChangeRequest_userId_createdAt_idx_f726f04a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"emailChangeRequest_userId_createdAt_idx_f726f04a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"emailChangeRequest_userId_createdAt_idx_f726f04a\"",
+        "sql": "CREATE INDEX \"emailChangeRequest_userId_createdAt_idx_f726f04a\" ON \"public\".\"emailChangeRequest\" (\"userId\", \"createdAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"emailChangeRequest_userId_createdAt_idx_f726f04a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"emailChangeRequest_userId_createdAt_idx_f726f04a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.emailChangeRequest.emailChangeRequest_userId_idx_a489d58a",
+    "label": "Create index \"emailChangeRequest_userId_idx_a489d58a\" on \"emailChangeRequest\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "emailChangeRequest_userId_idx_a489d58a",
+        "table": "emailChangeRequest"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"emailChangeRequest_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"emailChangeRequest_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"emailChangeRequest_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"emailChangeRequest_userId_idx_a489d58a\" ON \"public\".\"emailChangeRequest\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"emailChangeRequest_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"emailChangeRequest_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.notification.notification_userId_createdAt_idx_f726f04a",
+    "label": "Create index \"notification_userId_createdAt_idx_f726f04a\" on \"notification\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "notification_userId_createdAt_idx_f726f04a",
+        "table": "notification"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"notification_userId_createdAt_idx_f726f04a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"notification_userId_createdAt_idx_f726f04a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"notification_userId_createdAt_idx_f726f04a\"",
+        "sql": "CREATE INDEX \"notification_userId_createdAt_idx_f726f04a\" ON \"public\".\"notification\" (\"userId\", \"createdAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"notification_userId_createdAt_idx_f726f04a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"notification_userId_createdAt_idx_f726f04a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.notification.notification_userId_idx_a489d58a",
+    "label": "Create index \"notification_userId_idx_a489d58a\" on \"notification\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "notification_userId_idx_a489d58a",
+        "table": "notification"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"notification_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"notification_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"notification_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"notification_userId_idx_a489d58a\" ON \"public\".\"notification\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"notification_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"notification_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.emailChangeRequest.emailChangeRequest_userId_fkey",
+    "label": "Add foreign key \"emailChangeRequest_userId_fkey\" on \"emailChangeRequest\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "emailChangeRequest_userId_fkey",
+        "table": "emailChangeRequest"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"emailChangeRequest_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "emailChangeRequest_userId_fkey",
+          "public",
+          "\"public\".\"emailChangeRequest\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"emailChangeRequest_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"emailChangeRequest\"\nADD CONSTRAINT \"emailChangeRequest_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"user\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"emailChangeRequest_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "emailChangeRequest_userId_fkey",
+          "public",
+          "\"public\".\"emailChangeRequest\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.notification.notification_userId_fkey",
+    "label": "Add foreign key \"notification_userId_fkey\" on \"notification\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "notification_userId_fkey",
+        "table": "notification"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"notification_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "notification_userId_fkey",
+          "public",
+          "\"public\".\"notification\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"notification_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"notification\"\nADD CONSTRAINT \"notification_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"user\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"notification_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "notification_userId_fkey",
+          "public",
+          "\"public\".\"notification\""
+        ]
+      }
+    ]
+  }
+]

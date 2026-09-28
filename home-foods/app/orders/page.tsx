@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import OrderJourney from "@/src/components/order-journey";
@@ -27,6 +27,7 @@ function trackingStatus(order: Row, delivery: Row) {
 
 export default function OrdersPage() {
   const router = useRouter();
+  const revealedOrder = useRef('');
   const [tab,setTab] = useState<"active"|"history"|"cancelled">("active");
   const [reordering,setReordering] = useState<number|null>(null);
   const [notice,setNotice] = useState("");
@@ -69,6 +70,23 @@ export default function OrdersPage() {
     document.addEventListener("visibilitychange", onVisible);
     return () => { active = false; window.clearInterval(timer); document.removeEventListener("visibilitychange", onVisible); };
   }, [router]);
+
+  useEffect(() => {
+    const reveal = (force = false) => {
+      if (!force && revealedOrder.current === location.hash) return;
+      const match = location.hash.match(/^#order-(\d+)$/);
+      if (!match) return;
+      const order = orders.find(o => Number(o.id) === Number(match[1]));
+      if (!order) return;
+      revealedOrder.current = location.hash;
+      const status = trackingStatus(order, (order.delivery as Row) ?? {});
+      setTab(["CANCELLED", "REFUNDED", "DELIVERY_FAILED"].includes(status) ? "cancelled" : status === "DELIVERED" ? "history" : "active");
+      requestAnimationFrame(() => document.getElementById(location.hash.slice(1))?.scrollIntoView({block:"start"}));
+    };
+    const onHash = () => reveal(true);
+    reveal();window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, [orders]);
 
   const title = user?.role === "RIDER" ? "Your deliveries" : user?.role === "SELLER" ? "Kitchen orders" : user?.role === "ADMIN" ? "All marketplace orders" : "Your orders";
   const isRider = user?.role === "RIDER";

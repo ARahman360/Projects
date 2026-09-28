@@ -10,7 +10,7 @@ export async function GET() {
   if (!session) return Response.json({ user: null });
   const { userId, role, email, name } = session;
   try {
-    const profile = await db.orm.public.User.select("id", "name", "email", "role", "avatarUrl").where({ id: userId }).first();
+    const profile = await db.orm.public.User.select("id", "name", "email", "role", "avatarUrl", "phone", "createdAt", "accountStatus").where({ id: userId }).first();
     if (profile) return Response.json({ user: profile });
   } catch (error) { console.error("Profile lookup failed", error); }
   return Response.json({ user: { id: userId, role, email, name, avatarUrl: null } });

@@ -80,6 +80,8 @@ model User {
   role        UserRole @default(CUSTOMER)
   avatarUrl   String?
   accountStatus String @default("ACTIVE")
+  authVersion Int @default(0)
+  notifications Notification[]
 
   shops       Shop[]
   addresses   Address[]
@@ -571,4 +573,18 @@ model AdminAuditLog {
   createdAt TimestamptzString @default(now())
 
   @@index([entityType, entityId, createdAt])
+}
+
+model Notification {
+  id Int @id @default(autoincrement())
+  userId Int
+  eventKey String @unique
+  title String
+  message String
+  href String
+  kind String
+  readAt TimestamptzString?
+  createdAt TimestamptzString @default(now())
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, createdAt])
 }

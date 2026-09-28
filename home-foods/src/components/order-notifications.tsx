@@ -1,36 +1,16 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import OverlayLayer from "./overlay-layer";
-type Notice={id:number;orderId:number;orderNumber:string;message:string;createdAt:string;href:string};
-export default function OrderNotifications(){
-  const path=usePathname(),dialog=useRef<HTMLElement|null>(null),trigger=useRef<HTMLButtonElement|null>(null);
-  const [owner,setOwner]=useState<number|null>(null),[items,setItems]=useState<Notice[]>([]),[seen,setSeen]=useState<number[]>([]),[open,setOpen]=useState(false),[error,setError]=useState("");
-  useEffect(()=>{
-    let active=true;const controller=new AbortController();
-    const refresh=async()=>{if(document.hidden)return;try{
-      const auth=await fetch('/api/auth',{cache:'no-store',signal:controller.signal}).then(r=>r.json());
-      if(!active)return;
-      if(auth.user?.role!=="CUSTOMER"){setOwner(null);setItems([]);setOpen(false);return;}
-      const response=await fetch('/api/notifications',{cache:'no-store',signal:controller.signal});const data=await response.json();
-      if(!active)return;if(!response.ok)throw Error(data.error??"Updates could not be refreshed.");
-      setOwner(data.userId);setItems(data.notifications);setError("");
-      try{const stored=JSON.parse(localStorage.getItem(`homefoods:notifications-read:${data.userId}`)??'[]');setSeen(Array.isArray(stored)?stored.filter(Number.isInteger):[]);}catch{setSeen([]);}
-    }catch(e){if(active&&!controller.signal.aborted)setError(e instanceof Error?e.message:"Updates could not be refreshed.");}};
-    void refresh();const timer=setInterval(()=>void refresh(),20000);const changed=()=>void refresh();
-    window.addEventListener('homefoods:account-change',changed);window.addEventListener('focus',changed);window.addEventListener('storage',changed);
-    return()=>{active=false;controller.abort();clearInterval(timer);window.removeEventListener('homefoods:account-change',changed);window.removeEventListener('focus',changed);window.removeEventListener('storage',changed);};
-  },[path]);
-  function mark(ids:number[]){const next=[...new Set([...seen,...ids])].slice(-500);setSeen(next);localStorage.setItem(`homefoods:notifications-read:${owner}`,JSON.stringify(next));}
-  const unread=items.filter(item=>!seen.includes(item.id)).length;
-  if(!owner)return null;
-  return <><button ref={trigger} className="order-notifications-trigger" onClick={()=>setOpen(true)} aria-label={`Order updates${unread?`, ${unread} unread`:''}`} aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 17h14l-2-3V9a5 5 0 0 0-10 0v5l-2 3Zm5 3h4"/></svg><span>Updates</span>{unread>0&&<b>{unread}</b>}</button>
-  <span className="sr-only" role="status">{unread?`${unread} unread order updates`:''}</span>
-  <OverlayLayer open={open} onClose={()=>setOpen(false)} label="Order updates" className="modal-backdrop notification-overlay" dialogClassName="notification-panel" dialogRef={dialog} triggerRef={trigger} dismissOnBackdrop>
-    <header><div><span className="eyebrow">FROM YOUR KITCHEN</span><h2>Order updates</h2></div><button type="button" className="close-button" aria-label="Close order updates" onClick={()=>setOpen(false)}>×</button></header>
-    <p>Updates appear while HomeFoods is open. Read status is saved on this device.</p>
-    {error&&<p className="form-error" role="alert">{error}</p>}
-    {items.length?<><button className="notification-read-all" onClick={()=>mark(items.map(i=>i.id))}>Mark all as read</button><ul>{items.map(item=><li key={item.id} data-unread={!seen.includes(item.id)}><Link href={item.href} onClick={()=>{mark([item.id]);setOpen(false);}}><strong>{item.message}</strong><span>{item.orderNumber} · {new Date(item.createdAt).toLocaleString('fi-FI')}</span></Link></li>)}</ul></>:<div className="notification-empty"><h3>You’re all caught up</h3><p>Your order’s next update will appear here.</p><Link href="/orders" onClick={()=>setOpen(false)}>View your orders →</Link></div>}
-  </OverlayLayer></>;
+import {useCallback,useEffect,useRef,useState} from 'react';
+import Link from 'next/link';
+import OverlayLayer from './overlay-layer';
+type Notice={id:number;title:string;message:string;createdAt:string;readAt:string|null;href:string;kind:string};
+export default function OrderNotifications({userId}:{userId:number}){
+ const dialog=useRef<HTMLElement|null>(null),trigger=useRef<HTMLButtonElement|null>(null),known=useRef<Set<number>|null>(null);
+ const [items,setItems]=useState<Notice[]>([]),[count,setCount]=useState(0),[open,setOpen]=useState(false),[error,setError]=useState(''),[busy,setBusy]=useState(false),[pulse,setPulse]=useState(false),[loading,setLoading]=useState(true);
+ const refresh=useCallback(async(signal?:AbortSignal)=>{try{const r=await fetch('/api/notifications',{cache:'no-store',signal});const data=await r.json();if(!r.ok)throw Error(data.error);if(signal?.aborted)return;const next:Notice[]=data.notifications;if(known.current&&next.some(n=>!n.readAt&&!known.current!.has(n.id)))setPulse(true);known.current=new Set(next.map(n=>n.id));setItems(next);setCount(data.unreadCount);setError('');}catch(e){if(!signal?.aborted)setError(e instanceof Error?e.message:'Could not refresh.');}finally{if(!signal?.aborted)setLoading(false);}},[]);
+ useEffect(()=>{const controller=new AbortController();let inFlight=false;const update=async()=>{if(document.hidden||inFlight)return;inFlight=true;await refresh(controller.signal);inFlight=false;};void update();const timer=setInterval(()=>void update(),20000);window.addEventListener('focus',update);document.addEventListener('visibilitychange',update);window.addEventListener('homefoods:notifications-change',update);return()=>{controller.abort();clearInterval(timer);window.removeEventListener('focus',update);document.removeEventListener('visibilitychange',update);window.removeEventListener('homefoods:notifications-change',update);};},[userId,refresh]);
+ async function mark(id?:number){setBusy(true);try{const r=await fetch('/api/notifications',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(id?{id}:{all:true})});const d=await r.json();if(!r.ok)throw Error(d.error);await refresh();window.dispatchEvent(new Event('homefoods:notifications-change'));return true;}catch(e){setError(e instanceof Error?e.message:'Could not save read status.');return false;}finally{setBusy(false);}}
+ return <><button ref={trigger} className={`header-notifications ${pulse?'has-new':''}`} onAnimationEnd={()=>setPulse(false)} onClick={()=>{setOpen(true);void refresh();}} aria-label={`Notifications${count?', '+count+' unread':''}`} aria-expanded={open} aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 17h14l-2-3V9a5 5 0 0 0-10 0v5l-2 3Zm5 3h4"/></svg>{count>0&&<b>{count>99?'99+':count}</b>}</button>
+ <OverlayLayer open={open} onClose={()=>setOpen(false)} label="Notifications" className="modal-backdrop account-notification-overlay" dialogClassName="account-notification-panel" dialogRef={dialog} triggerRef={trigger} dismissOnBackdrop><header><div><span className="eyebrow">YOUR HOMEFOODS</span><h2>Notifications</h2><p role="status">{count} unread</p></div><button className="close-button" aria-label="Close notifications" onClick={()=>setOpen(false)}>×</button></header>
+ {error&&<div role="alert" className="workspace-alert">{error}<button onClick={()=>void refresh()}>Retry</button></div>}
+ {loading?<p role="status">Loading notifications…</p>:items.length?<><button disabled={busy||count===0} onClick={()=>void mark()}>Mark All as Read</button><ul>{items.map(n=><li key={n.id} data-unread={!n.readAt}><span className="notification-kind" aria-hidden="true">{n.kind==='alert'?'!':n.kind==='order'?'◷':'♧'}</span><div><Link href={n.href} onClick={event=>{if(n.href.split('#')[0]===location.pathname&&n.href.includes('#')){event.preventDefault();location.hash=n.href.split('#')[1];}if(!n.readAt)void mark(n.id);setOpen(false);}}><strong>{n.title}</strong><p>{n.message}</p><time dateTime={n.createdAt}>{new Date(n.createdAt).toLocaleString()}</time></Link>{!n.readAt&&<button disabled={busy} onClick={()=>void mark(n.id)}>Mark as Read</button>}<small>{n.readAt?'Read':'Unread'}</small></div></li>)}</ul><p>Showing the latest {items.length} updates. Checks for new notifications every 20 seconds while this page is visible.</p></>:<div className="notification-empty"><span aria-hidden="true">♧</span><h3>You’re all caught up!</h3><p>Your next HomeFoods update will appear here.</p></div>}</OverlayLayer></>;
 }

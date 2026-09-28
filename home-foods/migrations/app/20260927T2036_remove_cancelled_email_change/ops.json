@@ -1,0 +1,39 @@
+[
+  {
+    "id": "dropTable.emailChangeRequest",
+    "label": "Drop table \"emailChangeRequest\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "emailChangeRequest"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"emailChangeRequest\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"emailChangeRequest\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop table \"emailChangeRequest\"",
+        "sql": "DROP TABLE \"public\".\"emailChangeRequest\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"emailChangeRequest\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"emailChangeRequest\""
+        ]
+      }
+    ]
+  }
+]

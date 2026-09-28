@@ -1,6 +1,5 @@
 "use client";
 
-import OrderNotifications from "./order-notifications";
 import { useEffect, useState } from "react";
 
 export default function SiteEnhancements() {
@@ -47,7 +46,7 @@ export default function SiteEnhancements() {
     setCookieVisible(false);
   }
 
-  return <><OrderNotifications/>
+  return <>
     <a className="skip-link" href="#main-content">Skip to content</a>
     <div className="scroll-progress" style={{ width: `${progress}%` }} aria-hidden="true" />
     <div className="floating-tools" aria-label="Site tools">
