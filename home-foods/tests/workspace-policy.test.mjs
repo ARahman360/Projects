@@ -23,3 +23,8 @@ test('administrative changes require meaningful bounded review notes', () => {
   for (const value of [null,{},'', '  a ', 'x'.repeat(501)]) assert.ok(reasonError(value));
   assert.equal(reasonError('Reviewed kitchen application'),null);
 });
+import {adminReasonError,isVerificationAction} from '../src/lib/workspace-policy.ts';
+test('verification alone permits an omitted comment; suspension still requires one',()=>{
+ for(const action of ['approve-kitchen','verify-rider']){assert.ok(isVerificationAction(action));for(const reason of [undefined,null,'','   '])assert.equal(adminReasonError(action,reason),null);assert.ok(adminReasonError(action,{}));assert.ok(adminReasonError(action,'x'.repeat(501)));}
+ for(const action of ['suspend-kitchen','suspend-account','reject-kitchen','reactivate-account','edit-kitchen']){assert.equal(isVerificationAction(action),false);for(const reason of [undefined,null,'','   '])assert.ok(adminReasonError(action,reason));assert.equal(adminReasonError(action,'Review comment supplied'),null);}
+});

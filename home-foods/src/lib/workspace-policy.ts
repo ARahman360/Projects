@@ -21,3 +21,12 @@ export function reasonError(reason: unknown) {
   return typeof reason !== "string" || reason.trim().length < 5 || reason.trim().length > 500
     ? "Please give a reason between 5 and 500 characters." : null;
 }
+
+export function isVerificationAction(action: string) {
+  return action === 'approve-kitchen' || action === 'verify-rider';
+}
+
+export function adminReasonError(action: string, reason: unknown) {
+  if (isVerificationAction(action) && (reason == null || typeof reason === 'string' && !reason.trim())) return null;
+  return reasonError(reason);
+}

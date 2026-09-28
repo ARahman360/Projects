@@ -13,7 +13,6 @@ export function personalNavigation(role?: AccountRole): NavigationItem[] {
  if(!role) return [];
  return [{label:'Orders',href:'/orders',icon:'orders'}, ...(role==='CUSTOMER' ? [{label:'Meal Plans',href:'/meal-plans',icon:'calendar'},{label:'Favourites',href:'/favorites',icon:'heart'}] as NavigationItem[] : [])];
 }
-export const accountNavigation: NavigationItem[] = [{label:'Settings',href:accountHref,icon:'settings'}];
 export const adminSections = [["overview", "Overview"], ["kitchens", "Kitchens"], ["riders", "Riders"], ["deliveries", "Deliveries"], ["customers", "Customers"], ["orders", "Orders"], ["meal-plans", "Meal Plans"], ["payments", "Payments & Payouts"], ["promotions", "Promotions"], ["reviews", "Reviews"], ["support", "Support"], ["reports", "Reports & Analytics"], ["settings", "Settings"]] as const;
 export function workspaceDefaultHash(role?:AccountRole) {
  return role==='SELLER'?'#seller-dashboard':role==='RIDER'?'#rider-dashboard':'#profile';

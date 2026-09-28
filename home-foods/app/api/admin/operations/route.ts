@@ -1,7 +1,7 @@
 import { db } from "@/src/prisma/db";
 import { getSession, jsonError } from "@/src/lib/auth";
 import { isSameOriginRequest } from "@/src/lib/request-security";
-import { reasonError } from "@/src/lib/workspace-policy";
+import { adminReasonError } from "@/src/lib/workspace-policy";
 import { isKitchenLocationAllowed } from "@/src/lib/feature-flags";
 import { assertFinnishKitchen } from "@/src/lib/location";
 
@@ -34,9 +34,9 @@ export async function PATCH(request: Request) {
     const body = await request.json();
     const id = Number(body.id), action = String(body.action);
     if (!Number.isSafeInteger(id) || id < 1) return jsonError("Choose a valid record.", 422);
-    const invalidReason = reasonError(body.reason);
+    const invalidReason = adminReasonError(action, body.reason);
     if (invalidReason) return jsonError(invalidReason, 422);
-    const reason = body.reason.trim();
+    const reason = typeof body.reason === 'string' && body.reason.trim() ? body.reason.trim() : action === 'approve-kitchen' ? 'Kitchen verified by administrator.' : 'Rider verified by administrator.';
     await db.transaction(async tx => {
       if (["approve-kitchen", "reject-kitchen", "suspend-kitchen", "reactivate-kitchen", "edit-kitchen"].includes(action)) {
         const shop = await tx.orm.public.Shop.where({ id }).first();
