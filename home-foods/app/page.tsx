@@ -5,6 +5,8 @@ function publishFavoritesChange(){localStorage.setItem("homefoods:favorites-upda
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
 import OverlayLayer from "@/src/components/overlay-layer";
+import BasketDrawer, {FoodImage} from '@/src/components/basket-drawer';
+import {basketTotals,type Dish,type CartLine} from '@/src/lib/basket';
 import Brand from "@/src/components/brand";
 import LocationSelector, { type DeliveryLocation } from "@/src/components/location-selector";
 import { AppHeader } from "@/src/components/app-shell";
@@ -13,8 +15,6 @@ import { OriginButton } from "@/src/components/ui/origin-button";
 import MarketImage from "@/src/components/market-image";
 import { filterAndSortDishes, normalizeCatalogSearchText } from "@/src/lib/catalog-filter";
 
-type Dish = { id: number; shopId: number; name: string; shop: string; cuisine: string; category: string; price: number; rating: number | null; time: string; estimatedMinutes?: number | null; deliveryDistanceKm?: number | null; image: string | null; description: string; deliveryFee: number; orderCount?: number; favoriteCount?: number; isFeatured?: boolean };
-type CartLine = { dish: Dish; quantity: number };
 type User = { id: number; email: string; name: string | null; role: "CUSTOMER" | "SELLER" | "RIDER" | "ADMIN" };
 type Shop = { id: number; name: string; description?: string | null; logoUrl?: string | null; coverImageUrl?: string | null; city?: string | null; cuisine?: string; status?: string; deliveryFee?: number | null; estimatedMinutes?: number | null; distanceKm?: number | null; deliveryDistanceKm?: number | null; deliverable?: boolean | null; deliveryStatus?: string | null; latitude?: number | null; longitude?: number | null; rating?: number | null; reviewCount?: number; orderCount?: number; favoriteCount?: number; createdAt?: string };
 type CarouselSection = { id: string; title: string; description: string; kind: "food" | "kitchen"; href: string; items: Array<Dish | Shop> };
@@ -41,11 +41,6 @@ const siteSearchItems = [
   { title: "Newsletter", description: "Get updates from kitchens in your neighbourhood.", href: "#newsletter" },
 ];
 
-function FoodImage({ dish, className = "" }: { dish: Dish; className?: string }) {
-  const name = `${dish.name} ${dish.category}`.toLowerCase();
-  const fallback = name.includes("biryani") ? "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?auto=format&fit=crop&w=900&q=85" : name.includes("beef") || name.includes("bhuna") || name.includes("curry") ? "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=900&q=85" : name.includes("chicken") ? "https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=900&q=85" : name.includes("dessert") || name.includes("sweet") ? "https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=900&q=85" : name.includes("vegetarian") ? "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=900&q=85" : "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=900&q=85";
-  return <MarketImage className={`food-image ${className}`} src={dish.image} fallbackSrc={fallback} alt={`${dish.name}, ${dish.cuisine} cuisine`} />;
-}
 function HighlightedMatch({ text, query }: { text: string; query: string }) {
   const matchAt = text.toLowerCase().indexOf(query.trim().toLowerCase());
   if (matchAt < 0 || !query.trim()) return text;
@@ -66,7 +61,7 @@ export default function Home() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [activeSuggestion, setActiveSuggestion] = useState(-1);
   const searchWrapRef = useRef<HTMLDivElement>(null);
-  const drawerRef = useRef<HTMLElement>(null);
+
   const cartTriggerRef = useRef<HTMLButtonElement>(null);
   const checkoutDialogRef = useRef<HTMLElement>(null);
   const checkoutTriggerRef = useRef<HTMLElement | null>(null);
@@ -91,8 +86,9 @@ export default function Home() {
   const [loadedCartKey, setLoadedCartKey] = useState<string | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
   const [cartNotes, setCartNotes] = useState("");
-  const [promoCode, setPromoCode] = useState("");
   const [promoMessage, setPromoMessage] = useState("");
+
+
   const [checkout, setCheckout] = useState(false);
   const [placingOrder, setPlacingOrder] = useState(false);
   const [complete, setComplete] = useState(false);
@@ -221,10 +217,12 @@ export default function Home() {
         }
         setCart(stored ? JSON.parse(stored) as CartLine[] : []);
       } catch { window.localStorage.removeItem(cartStorageKey); setCart([]); }
+      setCartNotes(sessionStorage.getItem(`${cartStorageKey}:notes`)??'');
       setLoadedCartKey(cartStorageKey);
     });
   }, [cartStorageKey]);
   useEffect(() => { if (loadedCartKey === cartStorageKey) window.localStorage.setItem(cartStorageKey, JSON.stringify(cart)); }, [cart, cartStorageKey, loadedCartKey]);
+  useEffect(() => { if (loadedCartKey === cartStorageKey) sessionStorage.setItem(`${cartStorageKey}:notes`,cartNotes); }, [cartNotes,cartStorageKey,loadedCartKey]);
   useEffect(() => {
     function closeSearch(event: MouseEvent) { if (!searchWrapRef.current?.contains(event.target as Node)) { setSearchOpen(false); setActiveSuggestion(-1); } }
     function escapeSearch(event: globalThis.KeyboardEvent) { if (event.key === "Escape") { setSearchOpen(false); setActiveSuggestion(-1); } }
@@ -254,10 +252,7 @@ export default function Home() {
     return matches;
   }, [hasActiveDiscovery, category, query, visibleDishes, kitchenMatches, sections]);
   const itemCount = cart.reduce((sum, line) => sum + line.quantity, 0);
-  const subtotal = cart.reduce((sum, line) => sum + line.quantity * line.dish.price, 0);
-  const deliveryTotal = [...new Map(cart.map(({ dish }) => [dish.shopId, dish.deliveryFee])).values()].reduce((sum, fee) => sum + fee, 0);
-  const serviceFee = Math.round([...new Set(cart.map(line => line.dish.shopId))].reduce((total, shopId) => total + Math.round(cart.filter(line => line.dish.shopId === shopId).reduce((sum, line) => sum + line.dish.price * line.quantity, 0) * 5) / 100, 0) * 100) / 100;
-  const cartTotal = subtotal + deliveryTotal + serviceFee;
+  const {subtotal,deliveryTotal,serviceFee,cartTotal}=basketTotals(cart);
 
   function add(dish: Dish) {
     if (selectedLocation.latitude != null && selectedLocation.longitude != null && dish.deliveryDistanceKm == null && locationStatus?.radiusEnforced !== false) {
@@ -326,7 +321,7 @@ export default function Home() {
       if (!response.ok) throw new Error(payload.error ?? "We couldn't place your order.");
       if (payload.checkoutUrl) { window.location.assign(payload.checkoutUrl); return; }
       setOrderNumbers((payload.orders ?? []).map((order: { orderNumber: string }) => order.orderNumber));
-      setCart([]); setCheckout(false); setComplete(true); checkoutAttempt.current=null; sessionStorage.removeItem(`homefoods:checkout-attempt:${user.id}`);
+      setCart([]); setCartNotes(''); setCheckout(false); setComplete(true); checkoutAttempt.current=null; sessionStorage.removeItem(`homefoods:checkout-attempt:${user.id}`);
     } catch (error) { setOrderError(error instanceof Error ? error.message : "Order service unavailable."); }
     finally { setPlacingOrder(false); orderSubmitLock.current=false; }
   }
@@ -414,7 +409,8 @@ export default function Home() {
 
 
       {favoriteError && <div className="favorite-toast" role="alert">{favoriteError}<button type="button" onClick={() => setFavoriteError("")} aria-label="Dismiss message">×</button></div>}
-      <OverlayLayer open={cartOpen} className="drawer-backdrop" dialogClassName="cart-drawer" dialogRef={drawerRef} triggerRef={cartTriggerRef} onClose={() => setCartOpen(false)} label="Your basket" swipeToClose="right" dismissOnBackdrop><div className="drawer-head"><div><span className="eyebrow">YOUR LITTLE HAUL</span><h2>Your basket <span>({itemCount})</span></h2></div><button className="close-button" onClick={() => setCartOpen(false)} aria-label="Close basket">×</button></div>{cart.length ? <><div className="basket-body"><div className="cart-note">From {new Set(cart.map((line) => line.dish.shopId)).size} home {new Set(cart.map((line) => line.dish.shopId)).size === 1 ? "cook" : "cooks"} · each kitchen gets its own order</div><div className="cart-lines">{cart.map(({ dish, quantity }) => <div className="cart-line" key={dish.id}><FoodImage dish={dish} className="cart-thumb"/><div className="cart-line-main"><strong>{dish.name}</strong><span>{dish.shop}</span><div className="quantity-control"><button onClick={() => changeQuantity(dish.id, -1)} aria-label={`Remove one ${dish.name}`}>−</button><span>{quantity}</span><button onClick={() => changeQuantity(dish.id, 1)} aria-label={`Add ${dish.name}`}>+</button></div></div><div className="cart-line-price"><b>{money(dish.price * quantity)}</b><button type="button" onClick={() => setCart((current) => current.filter((line) => line.dish.id !== dish.id))} aria-label={`Remove ${dish.name} from basket`}>Remove</button></div></div>)}</div><label className="cart-instructions">Kitchen instructions<textarea maxLength={500} value={cartNotes} onChange={(event) => setCartNotes(event.target.value)} placeholder="Allergies or delivery notes for the kitchen (optional)"/></label><form className="cart-promo" onSubmit={(event) => { event.preventDefault(); setPromoMessage("Promo codes are not active yet. No discount was applied."); }}><label htmlFor="basket-promo">Promo code</label><div><input id="basket-promo" value={promoCode} onChange={(event) => setPromoCode(event.target.value)} placeholder="Enter a code"/><button type="submit">Apply</button></div>{promoMessage && <small role="status">{promoMessage}</small>}</form><div className="cart-totals"><div><span>Food subtotal</span><b>{money(subtotal)}</b></div><div><span>Delivery</span><b>{money(deliveryTotal)}</b></div><div><span>Service fee</span><b>{money(serviceFee)}</b></div><div className="total-line"><span>Total</span><b>{money(cartTotal)}</b></div></div></div><footer className="basket-footer"><div><span>Total</span><strong>{money(cartTotal)}</strong></div><button className="checkout-button" onClick={openCheckout}>{user ? "Continue to checkout" : "Sign in to checkout"} <span>→</span></button></footer></> : <div className="empty-cart"><span>♡</span><h3>A little room for something lovely</h3><p>Your basket is empty. Let’s find something delicious.</p><button onClick={() => setCartOpen(false)}>Explore the menu</button></div>}</OverlayLayer>      <OverlayLayer open={checkout} className="modal-backdrop checkout-overlay" dialogClassName="checkout-modal" dialogRef={checkoutDialogRef} triggerRef={checkoutTriggerRef} onClose={() => setCheckout(false)} label="Checkout" initialFocusSelector=".modal-close">
+      <BasketDrawer cart={cart} open={cartOpen} onClose={()=>setCartOpen(false)} changeQuantity={changeQuantity} onRemove={id=>setCart(current=>current.filter(line=>line.dish.id!==id))} cartNotes={cartNotes} setCartNotes={setCartNotes} notice={promoMessage} openCheckout={openCheckout} user={user} triggerRef={cartTriggerRef}/>
+      <OverlayLayer open={checkout} className="modal-backdrop checkout-overlay" dialogClassName="checkout-modal" dialogRef={checkoutDialogRef} triggerRef={checkoutTriggerRef} onClose={() => setCheckout(false)} label="Checkout" initialFocusSelector=".modal-close">
         <header className="checkout-head"><div><span className="eyebrow">A GOOD MEAL, ALMOST HOME</span><h2>Checkout</h2><p>{itemCount} items · {new Set(cart.map(line=>line.dish.shopId)).size} home kitchens</p></div><button className="close-button modal-close" onClick={() => setCheckout(false)} aria-label="Close checkout">×</button></header>
         <form onSubmit={placeOrder} className="checkout-form" id="homefoods-checkout">
           <div className="checkout-body"><div className="checkout-details">
