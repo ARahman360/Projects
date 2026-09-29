@@ -1,0 +1,121 @@
+Specialty,Descriptions
+Family Medicine,Primary care;general health issues;preventive care
+Cardiology,Heart problems;heart disorders;vascular issues;hypertension
+Dermatology,Skin disorders;acne;eczema;psoriasis;dermatitis
+Endocrinology,Hormonal imbalances;diabetes;thyroid disorders
+Gastroenterology,Digestive system disorders;gastritis;irritable bowel syndrome (IBS);liver disease
+Hematology,Blood-related disorders;anemia;leukemia;blood cancers
+Infectious Disease,Infections caused by microorganisms;
+Nephrology,Kidney disorders;renal failure;kidney stones
+Neurology,Neurological disorders;migraines;epilepsy;Alzheimer's disease
+Obstetrics and Gynecology,Women's reproductive health;pregnancy;gynecological conditions
+Oncology,Cancer;tumors;chemotherapy;radiation therapy
+Ophthalmology,Eye disorders;vision problems;cataracts
+Orthopedics,Musculoskeletal disorders;bone fractures;joint problems
+Otolaryngology (ENT),Ear;nose;throat disorders;sinusitis;hearing loss
+Pediatrics,Childhood health issues;developmental disorders
+Physical Medicine and Rehabilitation,Rehabilitation after injuries or surgeries;physical therapy;
+Psychiatry,Mental health disorders;depression;anxiety;schizophrenia
+Pulmonology,Respiratory system disorders;asthma;chronic obstructive pulmonary disease (COPD)
+Radiology,Medical imaging;X-rays;CT scans;MRI
+Rheumatology,Autoimmune disorders;arthritis;lupus
+Urology,Urinary system disorders;kidney stones;prostate issues
+Allergy and Immunology,Allergies;immune system disorders
+Anesthesiology,Anesthesia;pain management during surgery
+Emergency Medicine,Urgent medical care;trauma;critical conditions
+Internal Medicine,Adult health issues;chronic diseases;internal organ disorders
+General Surgery,Surgical procedures for various conditions
+Plastic Surgery,Cosmetic and reconstructive surgery
+Thoracic Surgery,Surgery on the organs in the chest
+Vascular Surgery,Blood vessel-related surgery
+Cardiothoracic Surgery,Surgery on the heart and chest organs
+Colorectal Surgery,Surgery on the colon and rectum
+Critical Care Medicine,Intensive care for critically ill patients
+Geriatrics,Elderly care;age-related health issues
+Neonatology,Care for newborns;premature infants
+Pain Medicine,Management of chronic pain
+Sleep Medicine,Sleep disorders;insomnia;sleep apnea
+Sports Medicine,Injuries related to sports;physical fitness
+Addiction Medicine,Substance abuse and addiction treatment
+Nuclear Medicine,Medical imaging using radioactive substances
+Pathology,Diagnosis of diseases through examination of tissues
+Clinical Genetics,Genetic disorders;inherited conditions
+Medical Genetics,Genetic testing;counseling for genetic conditions
+Aerospace Medicine,Health issues related to aviation and space travel
+Nuclear Radiology,Medical imaging using nuclear medicine techniques
+Pediatric Cardiology,Heart disorders in children
+Pediatric Endocrinology,Endocrine disorders in children
+Pediatric Gastroenterology,Digestive system disorders in children
+Pediatric Hematology-Oncology,Blood disorders and cancer in children
+Pediatric Nephrology,Kidney disorders in children
+Pediatric Pulmonology,Respiratory disorders in children
+Reproductive Endocrinology and Infertility,Issues related to fertility;infertility;reproductive disorders
+Infectious Diseases,Diseases caused by microorganisms;bacterial and viral infections
+Clinical Pharmacology,Drug interactions;medication management
+Medical Toxicology,Poisoning;exposure to toxins;overdose
+Pain Management,Chronic pain conditions;pain disorders
+Sleep Medicine,Sleep disorders;insomnia;sleep apnea
+Hospice and Palliative Medicine,End-of-life care;pain management in terminal illness
+Adolescent Medicine,Health issues specific to adolescents;puberty-related conditions
+Developmental-Behavioral Pediatrics,Behavioral and developmental disorders in children
+Pediatric Allergy and Immunology,Allergies;immune system disorders in children
+Pediatric Cardiac Surgery,Surgical procedures for congenital heart defects in children
+Pediatric Critical Care,Intensive care for critically ill children
+Pediatric Emergency Medicine,Urgent medical care for children;pediatric trauma
+Pediatric Infectious Diseases,Infectious diseases in children
+Pediatric Nephrology,Kidney disorders in children
+Pediatric Rheumatology,Autoimmune disorders;arthritis in children;
+Pediatric Surgery,Surgical procedures for children
+Addiction Psychiatry,Management of psychiatric issues related to substance abuse
+Forensic Psychiatry,Psychiatric assessment in legal contexts;criminal behavior
+Geriatric Psychiatry,Mental health issues in the elderly
+Psychosomatic Medicine,Interaction between mental and physical health
+Sleep Medicine,Sleep disorders;insomnia;sleep apnea
+Surgical Oncology,Surgical treatment of cancer
+Transplant Hepatology,Liver transplantation;hepatic disorders
+Gynecologic Oncology,Cancers of the female reproductive system
+Neonatal-Perinatal Medicine,Care for newborns;premature infants
+Pain Medicine,Management of chronic pain
+Pediatric Rheumatology,Autoimmune disorders;arthritis in children
+Undersea and Hyperbaric Medicine,Medical issues related to diving;hyperbaric oxygen therapy
+Clinical Neurophysiology,Disorders of the nervous system;neurological testing
+Interventional Cardiology,Minimally invasive procedures for heart conditions
+Pediatric Neurology,Neurological disorders in children
+Pediatric Rheumatology,Autoimmune disorders;arthritis in children
+Neurotology,Disorders of the ear and related structures
+Forensic Pathology,Investigation of deaths for legal purposes
+Pediatric Radiology,Diagnostic imaging for children
+Pediatric Rheumatology,Autoimmune disorders;arthritis in children
+Pediatric Transplant Hepatology,Liver transplantation in children
+Pediatric Urology,Urinary system disorders in children
+Surgical Critical Care,Intensive care for critically ill surgical patients
+Andrology,Male reproductive health issues;fertility;erectile dysfunction
+Behavioral Neurology,Neurological disorders affecting behavior and cognition
+Cardiovascular Disease,Heart and blood vessel disorders;heart attacks;heart failure
+Clinical Cardiac Electrophysiology,Heart rhythm disorders;arrhythmias
+Clinical Informatics,Use of information technology in healthcare
+Cytopathology,Study of cells for diseases;cancer diagnosis
+Dermatopathology,Study of skin diseases;skin cancer diagnosis
+Electrodiagnostic Medicine,Study of nerve and muscle function;Nerve disorders
+Female Pelvic Medicine and Reconstructive Surgery,Pelvic floor disorders;Urinary incontinence
+Infectious Disease Medicine,Diseases caused by microorganisms;bacterial and viral infections
+Medical Microbiology,Study of microorganisms and their effects on health
+Molecular Genetic Pathology,Genetic testing;Study of genetic disorders
+Neuropathology,Study of diseases affecting the nervous system
+Pain Management,Management of chronic pain conditions
+Pediatric Anesthesiology,Anesthesia for pediatric patients
+Pediatric Clinical Pharmacology,Medication management in pediatric patients
+Pediatric Dermatology,Skin disorders in children
+Pediatric Emergency Medicine,Urgent medical care for children;pediatric trauma
+Pediatric Infectious Diseases,Infectious diseases in children
+Pediatric Medical Toxicology,Toxic exposures and poisonings in children
+Pediatric Neurodevelopmental Disabilities,Developmental disorders in children
+Pediatric Orthopedics,Musculoskeletal disorders in children
+Pediatric Otolaryngology,Ear problems;Nose problems;Throat disorders in children
+Pediatric Pulmonology,Respiratory disorders in children
+Pediatric Radiology,Diagnostic imaging for children
+Pediatric Rehabilitation Medicine,Rehabilitation for children with disabilities
+Pediatric Sports Medicine,Sports-related injuries and conditions in children
+Pediatric Transplant Hepatology,Liver transplantation in children
+Pediatric Urology,Urinary system disorders in children
+Pediatric Vascular Surgery,Blood vessel-related surgery in children
