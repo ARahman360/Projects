@@ -1,3 +1,4 @@
+import {validateImageReference,queueImageCleanup,UploadError} from '@/src/lib/image-storage';
 import {kitchenProfileError} from "@/src/lib/kitchen-profile";
 import {saveKitchenLocation,verifiedKitchenLocation} from "@/src/lib/kitchen-location-history";
 import { readLocationProof } from "@/src/lib/address-policy";
@@ -27,6 +28,7 @@ export async function GET() {
     const subscriptions = planIds.length ? await db.orm.public.Subscription.where((subscription) => subscription.planId.in(planIds)).include("customer", (customer) => customer.select("name", "email")).include("plan", (plan) => plan.select("id", "name")).include("scheduledMeals", (meal) => meal.include("order", (order) => order.include("items").include("delivery")).orderBy((meal) => meal.scheduledAt.asc())).all() : [];
     return Response.json({ shop: {...shop, profileCompletedAt:kitchenProfileError(shop)?null:shop.profileCompletedAt, locationIsVerified: verifiedKitchenLocation(shop)}, items, categories, orders, plans, subscriptions });
   } catch (error) {
+    if(error instanceof UploadError)return jsonError(error.message,error.status);
     console.error("Seller workspace request failed", error);
     return jsonError("Seller workspace is unavailable. Check the database setup.", 503);
   }
@@ -60,6 +62,7 @@ export async function PATCH(request: Request) {
       const categoryId = Number(body.categoryId);
       const category = await db.orm.public.MenuCategory.where({ id: categoryId, shopId: shop.id }).first();
       if (!category) return jsonError("Menu category not found.", 404);
+      if(body.imageUrl!==undefined)await validateImageReference(body.imageUrl,shop.id,category.imageUrl);
       const update: { name?: string; description?: string | null; imageUrl?: string | null; isActive?: boolean; sortOrder?: number } = {};
       if (typeof body.name === "string" && body.name.trim().length >= 2) update.name = body.name.trim().slice(0, 80);
       if (typeof body.description === "string") update.description = body.description.trim().slice(0, 300);
@@ -67,6 +70,7 @@ export async function PATCH(request: Request) {
       if (typeof body.isActive === "boolean") update.isActive = body.isActive;
       if (typeof body.sortOrder === "number" && Number.isInteger(body.sortOrder)) update.sortOrder = body.sortOrder;
       const updated = await db.orm.public.MenuCategory.where({ id: categoryId, shopId: shop.id }).update(update);
+      if(update.imageUrl!==undefined)await queueImageCleanup(category.imageUrl,update.imageUrl);
       return Response.json({ category: updated });
     }
     if (body.action === "delete-category") {
@@ -76,12 +80,14 @@ export async function PATCH(request: Request) {
       const assignedItems = await db.orm.public.MenuItem.where({ shopId: shop.id, categoryId }).all();
       if (assignedItems.length) return jsonError("Move or unassign this category's dishes before removing it.", 409);
       await db.orm.public.MenuCategory.where({ id: categoryId, shopId: shop.id }).delete();
+      await queueImageCleanup(category.imageUrl,null);
       return Response.json({ success: true });
     }
     if (body.itemId !== undefined) {
       const itemId = Number(body.itemId);
       const item = await db.orm.public.MenuItem.where({ id: itemId, shopId: shop.id }).first();
       if (!item) return jsonError("Menu item not found.", 404);
+      if(body.imageUrl!==undefined)await validateImageReference(body.imageUrl,shop.id,item.imageUrl);
       const update: { name?: string; description?: string | null; price?: number; imageUrl?: string | null; isAvailable?: boolean; isFeatured?: boolean; categoryId?: number | null } = {};
       if (typeof body.name === "string") update.name = body.name.trim().slice(0, 100);
       if (typeof body.description === "string") update.description = body.description.trim().slice(0, 1000);
@@ -96,8 +102,10 @@ export async function PATCH(request: Request) {
         update.categoryId = categoryId;
       }
       const updated = await db.orm.public.MenuItem.where({ id: itemId }).update(update);
+      if(update.imageUrl!==undefined)await queueImageCleanup(item.imageUrl,update.imageUrl);
       return Response.json({ item: updated });
     }
+    for(const key of ["logoUrl","coverImageUrl"] as const)if(body[key]!==undefined)await validateImageReference(body[key],shop.id,shop[key]);
     if(body.action === "save-profile"){const error=kitchenProfileError(body);if(error)return jsonError(error,422);}
     const update: { profileCompletedAt?:string; name?: string; description?: string | null; phone?: string | null; address?: string | null; city?: string | null; latitude?:number; longitude?:number; deliveryFee?: number; estimatedMinutes?: number; logoUrl?: string | null; coverImageUrl?: string | null } = {};
     if (typeof body.name === "string" && body.name.trim().length > 1) update.name = body.name.trim().slice(0, 100);
@@ -113,8 +121,10 @@ export async function PATCH(request: Request) {
     if (typeof body.estimatedMinutes === "number" && Number.isInteger(body.estimatedMinutes) && body.estimatedMinutes >= 10 && body.estimatedMinutes <= 240) update.estimatedMinutes = body.estimatedMinutes;
     if(body.action === "save-profile") update.profileCompletedAt=new Date().toISOString();
     const updated = await db.orm.public.Shop.where({ id: shop.id, sellerId: session.userId }).update(update);
+    for(const key of ["logoUrl","coverImageUrl"] as const)if(update[key]!==undefined)await queueImageCleanup(shop[key],update[key]);
     return Response.json({ shop: updated });
   } catch (error) {
+    if(error instanceof UploadError)return jsonError(error.message,error.status);
     console.error("Seller update failed", error);
     if (error instanceof Error && isLocationServiceUnavailableMessage(error.message)) return jsonError(error.message, 503);
     if (error instanceof Error && (error.message === OUTSIDE_FINLAND_MESSAGE || error.message.startsWith("Enter a complete delivery") || error.message.startsWith("Add a building number") || error.message.startsWith("Geoapify did not return"))) return jsonError(error.message, 422);
@@ -123,6 +133,7 @@ export async function PATCH(request: Request) {
 }
 
 export async function POST(request: Request) {
+  if(!isSameOriginRequest(request))return jsonError("Request origin could not be verified.",403);
   const session = await getSession();
   if (!session) return jsonError("Sign in to add menu items.", 401);
   if (session.role !== "SELLER") return jsonError("This action is for sellers only.", 403);
@@ -144,6 +155,7 @@ export async function POST(request: Request) {
     }
     const shop = await ownedShop(session.userId);
     if (!shop) return jsonError("Shop application not found.", 404);
+    if(body.imageUrl!==undefined)await validateImageReference(body.imageUrl,shop.id);
     if (body.action === "create-category") {
       const name = typeof body.name === "string" ? body.name.trim() : "";
       if (name.length < 2 || name.length > 80) return jsonError("Add a category name between 2 and 80 characters.");
@@ -155,15 +167,17 @@ export async function POST(request: Request) {
     if (name.length < 2 || name.length > 100 || !Number.isFinite(price) || price < 0.5 || price > 500) return jsonError("Add a menu item name and a price between €0.50 and €500.");
     const categoryId = body.categoryId ? Number(body.categoryId) : null;
     if (categoryId !== null && (!Number.isInteger(categoryId) || !await db.orm.public.MenuCategory.where({ id: categoryId, shopId: shop.id }).first())) return jsonError("Choose one of your kitchen's categories.");
-    const item = await db.orm.public.MenuItem.create({ shopId: shop.id, categoryId, name, price: Math.round(price * 100) / 100, description: typeof body.description === "string" ? body.description.trim().slice(0, 1000) : null, imageUrl: typeof body.imageUrl === "string" ? body.imageUrl.trim().slice(0, 500) : null, isAvailable: true, isFeatured: false });
+    const item = await db.orm.public.MenuItem.create({ shopId: shop.id, categoryId, name, price: Math.round(price * 100) / 100, description: typeof body.description === "string" ? body.description.trim().slice(0, 1000) : null, imageUrl: typeof body.imageUrl === "string" ? body.imageUrl.trim().slice(0, 500) : null, isAvailable: typeof body.isAvailable === "boolean" ? body.isAvailable : true, isFeatured: false });
     return Response.json({ item }, { status: 201 });
   } catch (error) {
+    if(error instanceof UploadError)return jsonError(error.message,error.status);
     console.error("Menu item creation failed", error);
     return jsonError("Couldn't add that menu item.", 503);
   }
 }
 
 export async function DELETE(request: Request) {
+  if(!isSameOriginRequest(request))return jsonError("Request origin could not be verified.",403);
   const session = await getSession();
   if (!session) return jsonError("Sign in to manage your menu.", 401);
   if (session.role !== "SELLER") return jsonError("This action is for sellers only.", 403);
@@ -179,8 +193,10 @@ export async function DELETE(request: Request) {
       return Response.json({ archived: true, message: "This dish is part of order history, so it was hidden from the menu." });
     }
     await db.orm.public.MenuItem.where({ id: itemId, shopId: shop.id }).delete();
+    await queueImageCleanup(item.imageUrl,null);
     return Response.json({ success: true });
   } catch (error) {
+    if(error instanceof UploadError)return jsonError(error.message,error.status);
     console.error("Menu item removal failed", error);
     return jsonError("Couldn't remove that menu item.", 503);
   }

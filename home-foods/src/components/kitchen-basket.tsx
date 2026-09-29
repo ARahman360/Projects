@@ -2,6 +2,7 @@
 
 import {useEffect,useRef,useState} from 'react';
 import {useRouter} from 'next/navigation';
+import {currentBasketImages,applyBasketImages} from '@/src/lib/basket-images';
 import BasketDrawer from './basket-drawer';
 import type {CartLine} from '@/src/lib/basket';
 
@@ -12,7 +13,7 @@ export default function KitchenBasket({customerId,signedIn}:{customerId:number|n
   const key=`home-foods-cart:${customerId??'guest'}`;
   useEffect(()=>{
     const read=()=>{try{const value=JSON.parse(localStorage.getItem(key)??'[]');setCart(Array.isArray(value)?value:[]);}catch{setCart([]);}};
-    const show=()=>{trigger.current=document.activeElement instanceof HTMLElement?document.activeElement:null;read();setNotes(sessionStorage.getItem(`${key}:notes`)??'');setOpen(true);};
+    const show=()=>{trigger.current=document.activeElement instanceof HTMLElement?document.activeElement:null;read();try{const snapshot=JSON.parse(localStorage.getItem(key)??'[]') as CartLine[];void currentBasketImages(snapshot).then(images=>{const latest=JSON.parse(localStorage.getItem(key)??'[]') as CartLine[];const next=applyBasketImages(latest,images);localStorage.setItem(key,JSON.stringify(next));setCart(next);}).catch(()=>{});}catch{}setNotes(sessionStorage.getItem(`${key}:notes`)??'');setOpen(true);};
     window.addEventListener('homefoods:open-basket',show);
     window.addEventListener('homefoods:cart-change',read);
     window.addEventListener('storage',read);

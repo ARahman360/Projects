@@ -78,7 +78,7 @@ Password reset links are single-use, expire after 30 minutes, and are stored as 
 
 ## Current operational limits
 
-- Email verification, social login, SMS/push notifications, image upload storage, live map tracking, automated route optimization, and Stripe Connect seller payouts need external services and provider accounts. Password reset email delivery needs the Resend configuration above.
+- Email verification, social login, SMS/push notifications, live map tracking, automated route optimization, and Stripe Connect seller payouts need external services and provider accounts. Password reset email delivery needs the Resend configuration above.
 - Rider assignment is manual from the admin workspace; automatic distance-based assignment is not configured.
 - The catalog starts empty until sellers are approved and add menu items. No sample shops are inserted into the live database.
 - Stripe webhooks must be configured for payment and subscription state to update; never treat the browser redirect as proof of payment.
@@ -92,3 +92,10 @@ Leaflet is loaded only when a customer opens the optional map. Map tiles use Ope
 Delivery eligibility is enforced at a maximum of 20,000 metres of Geoapify `mode=drive` route distance from the kitchen to the verified Finnish customer address. Exactly 20,000 metres is allowed. A route result is cached in server memory for six hours; route failures are temporary unknowns and are never treated as eligible. Each seller must enter their real Finnish kitchen street address in the seller workspace so Geoapify can save accurate kitchen coordinates. No city-centre coordinates are fabricated. Kitchens without coordinates cannot offer delivery until their seller sets the location; pickup may be supported separately if the marketplace later enables it.
 
 The application uses `GEOAPIFY_API_KEY` only in server routes for autocomplete, address verification, reverse geocoding, and road routing. A local environment without this key will show a setup message rather than using an unverified address. No pickup flow or seller pickup capability is present in the current data model, so this delivery distance check does not create or disable pickup orders.
+
+## Seller image uploads
+
+Sellers can upload dish, category, kitchen logo and cover images from their device.
+See [IMAGE-UPLOADS.md](IMAGE-UPLOADS.md) for storage, limits, backups, cleanup and
+physical-device testing limitations. Development stores uploads in `.data/uploads`;
+production requires a persistent server volume configured with `HOMEFOODS_UPLOAD_DIR`.

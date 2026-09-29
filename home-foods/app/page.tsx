@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type
 import { useRouter } from "next/navigation";
 import OverlayLayer from "@/src/components/overlay-layer";
 import BasketDrawer, {FoodImage} from '@/src/components/basket-drawer';
+import {currentBasketImages,applyBasketImages} from '@/src/lib/basket-images';
 import {basketTotals,type Dish,type CartLine} from '@/src/lib/basket';
 import Brand from "@/src/components/brand";
 import LocationSelector, { type DeliveryLocation } from "@/src/components/location-selector";
@@ -221,6 +222,10 @@ export default function Home() {
       setLoadedCartKey(cartStorageKey);
     });
   }, [cartStorageKey]);
+  useEffect(()=>{if(!cartOpen)return;let active=true;void currentBasketImages(cart).then(images=>{if(active)setCart(current=>applyBasketImages(current,images));});return()=>{active=false;};
+  // Refresh on opening the drawer; quantities continue to update independently.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[cartOpen,cartStorageKey,loadedCartKey]);
   useEffect(() => { if (loadedCartKey === cartStorageKey) window.localStorage.setItem(cartStorageKey, JSON.stringify(cart)); }, [cart, cartStorageKey, loadedCartKey]);
   useEffect(() => { if (loadedCartKey === cartStorageKey) sessionStorage.setItem(`${cartStorageKey}:notes`,cartNotes); }, [cartNotes,cartStorageKey,loadedCartKey]);
   useEffect(() => {
