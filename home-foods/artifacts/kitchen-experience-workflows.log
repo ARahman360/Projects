@@ -1,0 +1,247 @@
+◇ injected env (0) from .env
+WORKSPACE QA FAILED ExpectError: expect(locator).toHaveText(expected) failed
+
+Locator: getByRole('dialog', { name: 'HomeFoods navigation' }).locator('.app-drawer-profile strong')
+Expected: "[TEST] Workspace ADMIN"
+Timeout: 5000ms
+Error: element(s) not found
+
+Call log:
+  - Expect "toHaveText" getByRole('dialog', { name: 'HomeFoods navigation' }).locator('.app-drawer-profile strong') with timeout 5000ms
+  - waiting for getByRole('dialog', { name: 'HomeFoods navigation' }).locator('.app-drawer-profile strong')
+
+    at captureRawStack (C:\Users\arahm\WORKSPACE\Projects\home-foods\node_modules\playwright-core\lib\coreBundle.js:8588:17)
+    at callMatcherAsStep (C:\Users\arahm\WORKSPACE\Projects\home-foods\node_modules\playwright\lib\matchers\expect.js:13310:57)
+    at Object.toHaveText (C:\Users\arahm\WORKSPACE\Projects\home-foods\node_modules\playwright\lib\matchers\expect.js:13302:23)
+    at checkNavigation (C:\Users\arahm\WORKSPACE\Projects\home-foods\scripts\navigation-checks.ts:25:63)
+    at async <anonymous> (C:\Users\arahm\WORKSPACE\Projects\home-foods\scripts\test-workspace-operations.ts:96:50) {
+  matcherResult: {
+    name: 'toHaveText',
+    expected: '[TEST] Workspace ADMIN',
+    message: 'expect(locator).toHaveText(expected) failed\n' +
+      '\n' +
+      "Locator: getByRole('dialog', { name: 'HomeFoods navigation' }).locator('.app-drawer-profile strong')\n" +
+      'Expected: "[TEST] Workspace ADMIN"\n' +
+      'Timeout: 5000ms\n' +
+      'Error: element(s) not found\n' +
+      '\n' +
+      'Call log:\n' +
+      `  - Expect "toHaveText" getByRole('dialog', { name: 'HomeFoods navigation' }).locator('.app-drawer-profile strong') with timeout 5000ms\n` +
+      "  - waiting for getByRole('dialog', { name: 'HomeFoods navigation' }).locator('.app-drawer-profile strong')\n",
+    pass: false,
+    actual: undefined,
+    log: [
+      `  - Expect "toHaveText" getByRole('dialog', { name: 'HomeFoods navigation' }).locator('.app-drawer-profile strong') with timeout 5000ms`,
+      "  - waiting for getByRole('dialog', { name: 'HomeFoods navigation' }).locator('.app-drawer-profile strong')"
+    ],
+    timeout: 5000,
+    ariaSnapshot: '- link "Skip to content":\n' +
+      '  - /url: "#main-content"\n' +
+      '- button "✉ Contact"\n' +
+      '- banner:\n' +
+      '  - button "Close navigation menu" [expanded]\n' +
+      '  - link "HomeFoods home":\n' +
+      '    - /url: /\n' +
+      '    - text: HomeFoods\n' +
+      `  - 'button "Change delivery address. Current address: Choose a location"': DELIVER TO Choose a location ⌄\n` +
+      '  - textbox "Search all of HomeFoods":\n' +
+      '    - /placeholder: Search dishes, kitchens, and more\n' +
+      '  - link "Sign in":\n' +
+      '    - /url: /signin\n' +
+      '  - link "Join":\n' +
+      '    - /url: /join\n' +
+      '  - link "Open cart":\n' +
+      '    - /url: /?cart=open\n' +
+      '- main:\n' +
+      '  - navigation "Administrator sections":\n' +
+      '    - link "Overview":\n' +
+      '      - /url: /workspace/admin/overview\n' +
+      '    - link "Kitchens":\n' +
+      '      - /url: /workspace/admin/kitchens\n' +
+      '    - link "Riders":\n' +
+      '      - /url: /workspace/admin/riders\n' +
+      '    - link "Deliveries":\n' +
+      '      - /url: /workspace/admin/deliveries\n' +
+      '    - link "Customers":\n' +
+      '      - /url: /workspace/admin/customers\n' +
+      '    - link "Orders":\n' +
+      '      - /url: /workspace/admin/orders\n' +
+      '    - link "Meal Plans":\n' +
+      '      - /url: /workspace/admin/meal-plans\n' +
+      '    - link "Payments & Payouts":\n' +
+      '      - /url: /workspace/admin/payments\n' +
+      '    - link "Promotions":\n' +
+      '      - /url: /workspace/admin/promotions\n' +
+      '    - link "Reviews":\n' +
+      '      - /url: /workspace/admin/reviews\n' +
+      '    - link "Support":\n' +
+      '      - /url: /workspace/admin/support\n' +
+      '    - link "Reports & Analytics":\n' +
+      '      - /url: /workspace/admin/reports\n' +
+      '    - link "Settings":\n' +
+      '      - /url: /workspace/admin/settings\n' +
+      '  - text: MARKETPLACE OPERATIONS\n' +
+      '  - heading "Kitchens" [level=1]\n' +
+      '  - paragraph: Good food, thoughtfully managed.\n' +
+      '  - button "Refresh"\n' +
+      '  - text: "Last synced: Not recorded · updates every 20 seconds Loading management records…"\n' +
+      '- alert\n' +
+      '- dialog "HomeFoods navigation":\n' +
+      '  - text: At home with HomeFoods\n' +
+      '  - button "Close navigation"\n' +
+      '  - heading "A seat at the table." [level=2]\n' +
+      '  - paragraph: Good food. Your favourite people.\n' +
+      '  - link "Sign in":\n' +
+      '    - /url: /signin\n' +
+      '  - link "Join":\n' +
+      '    - /url: /join\n' +
+      '  - navigation "Main navigation":\n' +
+      '    - heading "Discover" [level=2]\n' +
+      '    - link "Home":\n' +
+      '      - /url: /\n' +
+      '    - link "Explore Kitchens":\n' +
+      '      - /url: /kitchens\n' +
+      '    - heading "Join our table" [level=2]\n' +
+      '    - link "Become a cook":\n' +
+      '      - /url: /join?role=SELLER\n' +
+      '    - link "Deliver with us":\n' +
+      '      - /url: /join?role=RIDER\n' +
+      '  - text: Made with care, right around the corner.\n' +
+      '  - button "Switch to light mode": Light mode\n' +
+      '  - link "Help & FAQs":\n' +
+      '    - /url: /#faq'
+  }
+} {
+  passed: [
+    'Admin data is inaccessible to customer, seller and rider roles',
+    'Approval preserves seller offline state and writes audit history',
+    'Live street autocomplete saves a verified Finnish address',
+    'Customer sandbox checkout, offline purchase rejection, and existing seller fulfilment',
+    'Suspension cannot be bypassed and reactivation preserves voluntary pause',
+    'Rider ownership, suspension safety, atomic pickup/transit, customer status and idempotent completion',
+    'Scheduled delivery completes only its own meal while subscription and next meal remain active',
+    'Rider sign-out switches availability offline',
+    'Desktop drawer/layout and responsive availability drag, keyboard, failure and persistence checks',
+    'Accessible kitchen action disclosure and confirmed suspension dialog',
+    'Admin route rendering and 390/768/1440 light/dark viewport checks; seller/rider dashboard rendering'
+  ]
+}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+ExpectError: expect(locator).toHaveText(expected) failed
+
+Locator: getByRole('dialog', { name: 'HomeFoods navigation' }).locator('.app-drawer-profile strong')
+Expected: "[TEST] Workspace ADMIN"
+Timeout: 5000ms
+Error: element(s) not found
+
+Call log:
+  - Expect "toHaveText" getByRole('dialog', { name: 'HomeFoods navigation' }).locator('.app-drawer-profile strong') with timeout 5000ms
+  - waiting for getByRole('dialog', { name: 'HomeFoods navigation' }).locator('.app-drawer-profile strong')
+
+    at captureRawStack (C:\Users\arahm\WORKSPACE\Projects\home-foods\node_modules\playwright-core\lib\coreBundle.js:8588:17)
+    at callMatcherAsStep (C:\Users\arahm\WORKSPACE\Projects\home-foods\node_modules\playwright\lib\matchers\expect.js:13310:57)
+    at Object.toHaveText (C:\Users\arahm\WORKSPACE\Projects\home-foods\node_modules\playwright\lib\matchers\expect.js:13302:23)
+    at checkNavigation (C:\Users\arahm\WORKSPACE\Projects\home-foods\scripts\navigation-checks.ts:25:63)
+    at async <anonymous> (C:\Users\arahm\WORKSPACE\Projects\home-foods\scripts\test-workspace-operations.ts:96:50) {
+  matcherResult: {
+    name: 'toHaveText',
+    expected: '[TEST] Workspace ADMIN',
+    message: 'expect(locator).toHaveText(expected) failed\n' +
+      '\n' +
+      "Locator: getByRole('dialog', { name: 'HomeFoods navigation' }).locator('.app-drawer-profile strong')\n" +
+      'Expected: "[TEST] Workspace ADMIN"\n' +
+      'Timeout: 5000ms\n' +
+      'Error: element(s) not found\n' +
+      '\n' +
+      'Call log:\n' +
+      `  - Expect "toHaveText" getByRole('dialog', { name: 'HomeFoods navigation' }).locator('.app-drawer-profile strong') with timeout 5000ms\n` +
+      "  - waiting for getByRole('dialog', { name: 'HomeFoods navigation' }).locator('.app-drawer-profile strong')\n",
+    pass: false,
+    actual: undefined,
+    log: [
+      `  - Expect "toHaveText" getByRole('dialog', { name: 'HomeFoods navigation' }).locator('.app-drawer-profile strong') with timeout 5000ms`,
+      "  - waiting for getByRole('dialog', { name: 'HomeFoods navigation' }).locator('.app-drawer-profile strong')"
+    ],
+    timeout: 5000,
+    ariaSnapshot: '- link "Skip to content":\n' +
+      '  - /url: "#main-content"\n' +
+      '- button "✉ Contact"\n' +
+      '- banner:\n' +
+      '  - button "Close navigation menu" [expanded]\n' +
+      '  - link "HomeFoods home":\n' +
+      '    - /url: /\n' +
+      '    - text: HomeFoods\n' +
+      `  - 'button "Change delivery address. Current address: Choose a location"': DELIVER TO Choose a location ⌄\n` +
+      '  - textbox "Search all of HomeFoods":\n' +
+      '    - /placeholder: Search dishes, kitchens, and more\n' +
+      '  - link "Sign in":\n' +
+      '    - /url: /signin\n' +
+      '  - link "Join":\n' +
+      '    - /url: /join\n' +
+      '  - link "Open cart":\n' +
+      '    - /url: /?cart=open\n' +
+      '- main:\n' +
+      '  - navigation "Administrator sections":\n' +
+      '    - link "Overview":\n' +
+      '      - /url: /workspace/admin/overview\n' +
+      '    - link "Kitchens":\n' +
+      '      - /url: /workspace/admin/kitchens\n' +
+      '    - link "Riders":\n' +
+      '      - /url: /workspace/admin/riders\n' +
+      '    - link "Deliveries":\n' +
+      '      - /url: /workspace/admin/deliveries\n' +
+      '    - link "Customers":\n' +
+      '      - /url: /workspace/admin/customers\n' +
+      '    - link "Orders":\n' +
+      '      - /url: /workspace/admin/orders\n' +
+      '    - link "Meal Plans":\n' +
+      '      - /url: /workspace/admin/meal-plans\n' +
+      '    - link "Payments & Payouts":\n' +
+      '      - /url: /workspace/admin/payments\n' +
+      '    - link "Promotions":\n' +
+      '      - /url: /workspace/admin/promotions\n' +
+      '    - link "Reviews":\n' +
+      '      - /url: /workspace/admin/reviews\n' +
+      '    - link "Support":\n' +
+      '      - /url: /workspace/admin/support\n' +
+      '    - link "Reports & Analytics":\n' +
+      '      - /url: /workspace/admin/reports\n' +
+      '    - link "Settings":\n' +
+      '      - /url: /workspace/admin/settings\n' +
+      '  - text: MARKETPLACE OPERATIONS\n' +
+      '  - heading "Kitchens" [level=1]\n' +
+      '  - paragraph: Good food, thoughtfully managed.\n' +
+      '  - button "Refresh"\n' +
+      '  - text: "Last synced: Not recorded · updates every 20 seconds Loading management records…"\n' +
+      '- alert\n' +
+      '- dialog "HomeFoods navigation":\n' +
+      '  - text: At home with HomeFoods\n' +
+      '  - button "Close navigation"\n' +
+      '  - heading "A seat at the table." [level=2]\n' +
+      '  - paragraph: Good food. Your favourite people.\n' +
+      '  - link "Sign in":\n' +
+      '    - /url: /signin\n' +
+      '  - link "Join":\n' +
+      '    - /url: /join\n' +
+      '  - navigation "Main navigation":\n' +
+      '    - heading "Discover" [level=2]\n' +
+      '    - link "Home":\n' +
+      '      - /url: /\n' +
+      '    - link "Explore Kitchens":\n' +
+      '      - /url: /kitchens\n' +
+      '    - heading "Join our table" [level=2]\n' +
+      '    - link "Become a cook":\n' +
+      '      - /url: /join?role=SELLER\n' +
+      '    - link "Deliver with us":\n' +
+      '      - /url: /join?role=RIDER\n' +
+      '  - text: Made with care, right around the corner.\n' +
+      '  - button "Switch to light mode": Light mode\n' +
+      '  - link "Help & FAQs":\n' +
+      '    - /url: /#faq'
+  }
+}
+
+Node.js v24.21.0

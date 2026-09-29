@@ -1,0 +1,2 @@
+◇ injected env (0) from .env
+PASS: JPG/PNG/WebP uploads; public retrieval; corrupt/empty/oversize and origin/ownership rejection; native chooser event and desktop drop; preview/confirmation; failed upload retry with draft retained; create/replace/remove; database/reload persistence; catalog, kitchen, basket, favourites, search and logo/cover persistence; desktop/mobile light/dark layout. Native mobile camera and physical Apple/Android devices not tested.

@@ -1,0 +1,185 @@
+⚠ Warning: Next.js ignored package-lock.json in C:\Users\arahm because it is outside the current Git repository (C:\Users\arahm\WORKSPACE\Projects).
+ To use this directory, set `turbopack.root` in your Next.js config.
+
+◇ injected env (0) from .env
+[browser] Each child in a list should have a unique "key" prop.
+
+Check the render method of `HomeCarousel`. It was passed a child from HomeSections. See https://react.dev/link/warning-keys for more information. 
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+[browser] Each child in a list should have a unique "key" prop.
+
+Check the render method of `HomeCarousel`. It was passed a child from HomeSections. See https://react.dev/link/warning-keys for more information. 
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+[browser] ./src/components/app-shell.tsx:13:1
+Error: Export accountNavigation doesn't exist in target module
+  11 | ...
+  12 | ...
+> 13 | ...veryNavigation, isNavigationActive, personalNavigation, roleDestinations, roleLabels, t...
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  14 | ...
+  15 | ...le;avatarUrl?:string|null};
+  16 | ...d;trigger:React.RefObject<HTMLButtonElement|null>;user:User|null};
+
+The export accountNavigation was not found in module [project]/src/lib/navigation.ts [app-client] (ecmascript).
+Did you mean to import workspaceNavigation?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Server Component:
+    ./src/components/app-shell.tsx
+    ./app/layout.tsx
+
+  Client Component Browser:
+    ./src/components/app-shell.tsx [Client Component Browser]
+    ./app/page.tsx [Client Component Browser]
+    ./app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/app-shell.tsx [Client Component SSR]
+    ./app/page.tsx [Client Component SSR]
+    ./app/page.tsx [Server Component] 
+[browser] ./src/components/app-shell.tsx:13:1
+Error: Export accountNavigation doesn't exist in target module
+  11 | ...
+  12 | ...
+> 13 | ...veryNavigation, isNavigationActive, personalNavigation, roleDestinations, roleLabels, t...
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  14 | ...
+  15 | ...le;avatarUrl?:string|null};
+  16 | ...d;trigger:React.RefObject<HTMLButtonElement|null>;user:User|null};
+
+The export accountNavigation was not found in module [project]/src/lib/navigation.ts [app-ssr] (ecmascript).
+Did you mean to import workspaceNavigation?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Server Component:
+    ./src/components/app-shell.tsx
+    ./app/layout.tsx
+
+  Client Component Browser:
+    ./src/components/app-shell.tsx [Client Component Browser]
+    ./app/page.tsx [Client Component Browser]
+    ./app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/app-shell.tsx [Client Component SSR]
+    ./app/page.tsx [Client Component SSR]
+    ./app/page.tsx [Server Component] 
+[browser] ./src/components/app-shell.tsx:13:1
+Error: Export accountNavigation doesn't exist in target module
+  11 | ...
+  12 | ...
+> 13 | ...veryNavigation, isNavigationActive, personalNavigation, roleDestinations, roleLabels, t...
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  14 | ...
+  15 | ...le;avatarUrl?:string|null};
+  16 | ...d;trigger:React.RefObject<HTMLButtonElement|null>;user:User|null};
+
+The export accountNavigation was not found in module [project]/src/lib/navigation.ts [app-client] (ecmascript).
+Did you mean to import workspaceNavigation?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Server Component:
+    ./src/components/app-shell.tsx
+    ./app/layout.tsx
+
+  Client Component Browser:
+    ./src/components/app-shell.tsx [Client Component Browser]
+    ./app/page.tsx [Client Component Browser]
+    ./app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/app-shell.tsx [Client Component SSR]
+    ./app/page.tsx [Client Component SSR]
+    ./app/page.tsx [Server Component] 
+[browser] ./src/components/app-shell.tsx:13:1
+Error: Export accountNavigation doesn't exist in target module
+  11 | ...
+  12 | ...
+> 13 | ...veryNavigation, isNavigationActive, personalNavigation, roleDestinations, roleLabels, t...
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  14 | ...
+  15 | ...le;avatarUrl?:string|null};
+  16 | ...d;trigger:React.RefObject<HTMLButtonElement|null>;user:User|null};
+
+The export accountNavigation was not found in module [project]/src/lib/navigation.ts [app-ssr] (ecmascript).
+Did you mean to import workspaceNavigation?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Server Component:
+    ./src/components/app-shell.tsx
+    ./app/layout.tsx
+
+  Client Component Browser:
+    ./src/components/app-shell.tsx [Client Component Browser]
+    ./app/page.tsx [Client Component Browser]
+    ./app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/app-shell.tsx [Client Component SSR]
+    ./app/page.tsx [Client Component SSR]
+    ./app/page.tsx [Server Component] 
+⚠ Fast Refresh had to perform a full reload when ./src/lib/navigation.ts changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[browser] Each child in a list should have a unique "key" prop.
+
+Check the render method of `HomeCarousel`. It was passed a child from HomeSections. See https://react.dev/link/warning-keys for more information. 
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+[browser] Each child in a list should have a unique "key" prop.
+
+Check the render method of `HomeCarousel`. It was passed a child from HomeSections. See https://react.dev/link/warning-keys for more information. 
+[browser] Each child in a list should have a unique "key" prop.
+
+Check the render method of `HomeCarousel`. It was passed a child from HomeSections. See https://react.dev/link/warning-keys for more information. 
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] Each child in a list should have a unique "key" prop.
+
+Check the render method of `HomeCarousel`. It was passed a child from HomeSections. See https://react.dev/link/warning-keys for more information. 
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+[browser] Each child in a list should have a unique "key" prop.
+
+Check the render method of `HomeCarousel`. It was passed a child from HomeSections. See https://react.dev/link/warning-keys for more information. 
+[browser] Each child in a list should have a unique "key" prop.
+
+Check the render method of `HomeCarousel`. It was passed a child from HomeSections. See https://react.dev/link/warning-keys for more information. 
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] Each child in a list should have a unique "key" prop.
+
+Check the render method of `HomeCarousel`. It was passed a child from HomeSections. See https://react.dev/link/warning-keys for more information. 
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env

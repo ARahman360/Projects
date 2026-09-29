@@ -1,0 +1,3 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
+const {chromium}=require('@playwright/test');
+(async()=>{const b=await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe'});const p=await b.newPage({viewport:{width:1440,height:960}});await p.goto('http://localhost:3000/');await p.getByRole('button',{name:'Open navigation menu'}).click();await p.waitForTimeout(400);await p.screenshot({path:'artifacts/navigation-desktop.png'});await p.getByRole('button',{name:'Close navigation',exact:true}).click();await p.waitForTimeout(250);await p.setViewportSize({width:390,height:844});await p.screenshot({path:'artifacts/navigation-mobile.png'});await b.close();})().catch(e=>{console.error(e);process.exitCode=1});

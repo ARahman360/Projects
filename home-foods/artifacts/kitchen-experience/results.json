@@ -1,0 +1,7 @@
+{
+  "passed": [
+    "Guest Join/Sign In, standalone auth, dedicated discovery, dark search and four responsive widths in both themes",
+    "Seller setup persists, settings collapse after save, verified address retains data, unsaved navigation is guarded, historical pickups survive moves",
+    "Real role registration and login, no public admin signup, seller authorization, discovery favourites persist and kitchen cards open their actual menu"
+  ]
+}

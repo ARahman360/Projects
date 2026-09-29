@@ -1,0 +1,1 @@
+PASS: kitchen header/menu basket stays on kitchen; quantity/remove/empty state, notes, counts, reload, focus/Escape and home basket regression; guest and browser-only customer fixtures; desktop/mobile, light/dark.

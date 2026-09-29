@@ -1,0 +1,9 @@
+◇ injected env (0) from .env
+{
+  "passed": [
+    "All four roles: edit and persist profile, refresh sidebar, reject role/owner tampering and email changes; responsive header notifications, read state and ownership checks",
+    "Visible-page polling receives new events and notification links reveal delivered orders in the history tab",
+    "Password changes revoke old sessions; email remains read-only; another device retains read state; new backend event appears exactly once",
+    "Isolated password-recovery token is consumed once and revokes prior sessions; no email is sent"
+  ]
+}

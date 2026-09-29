@@ -25,3 +25,120 @@
   143 | ...
   144 | ...? "Kitchen")}</b><span>Order {String(order.orderNumber)} · {[safeRow(order.address).addressLine1, safeRow(order.address).addressLine2, safeRow(order.address).postalCode, safeRow(order.address).city].filter(Boolean).join(", ") ...
   145 | ...
+◇ injected env (0) from .env
+[browser] In HTML, <form> cannot be a descendant of <form>.
+This will cause a hydration error.
+
+  ...
+    <RedirectErrorBoundary router={{...}}>
+      <InnerLayoutRouter url="/workspace" tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} segmentPath={[...]} ...>
+        <SegmentViewNode type="page" pagePath="workspace/...">
+          <SegmentTrieNode>
+          <ClientPageRoot Component={function WorkspacePage} serverProvidedParams={{...}}>
+            <WorkspacePage params={Promise} searchParams={Promise}>
+              <main id="main-content" tabIndex={-1} className="workspace-...">
+                <header>
+                <div className="workspace-...">
+                  <nav>
+                  <div className="workspace-...">
+                    <section>
+                    <section>
+                    <OperationalDashboard role="SELLER" data={{shop:{...}, ...}} ...>
+                      <div className="operationa...">
+                        <section>
+                        <section>
+                        <section>
+                        <section>
+                        <SellerKitchenEditor onSaved={function onSaved}>
+                          <section className="workspace-..." id="seller-menu">
+                            <div>
+                            <div>
+                            <section>
+                            <form>
+                            <form>
+                            <form>
+                            <form>
+                            <div>
+>                           <form className="workspace-form seller-editor-form" onSubmit={function onSubmit}>
+                              <h3>
+                              <label>
+                              <label>
+                              <label>
+                              <label>
+                              <label>
+                              <fieldset>
+                              <OriginButton>
+                              <div className="workspace-...">
+                                <article className="workspace-...">
+                                  <div>
+                                  <button>
+                                  <button>
+                                  <details className="plan-dish-...">
+                                    <summary>
+>                                   <form className="workspace-form" onSubmit={function onSubmit}>
+                        ...
+                        ...
+                ...
+        ...
+      ...
+ 
+[browser] <form> cannot contain a nested <form>.
+See this log for the ancestor stack trace. 
+[browser] In HTML, <form> cannot be a descendant of <form>.
+This will cause a hydration error.
+
+  ...
+    <RedirectErrorBoundary router={{...}}>
+      <InnerLayoutRouter url="/workspace" tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} segmentPath={[...]} ...>
+        <SegmentViewNode type="page" pagePath="workspace/...">
+          <SegmentTrieNode>
+          <ClientPageRoot Component={function WorkspacePage} serverProvidedParams={{...}}>
+            <WorkspacePage params={Promise} searchParams={Promise}>
+              <main id="main-content" tabIndex={-1} className="workspace-...">
+                <header>
+                <div className="workspace-...">
+                  <nav>
+                  <div className="workspace-...">
+                    <section>
+                    <OperationalDashboard role="SELLER" data={{shop:{...}, ...}} ...>
+                      <div className="operationa...">
+                        <section>
+                        <section>
+                        <section>
+                        <section>
+                        <SellerKitchenEditor onSaved={function onSaved}>
+                          <section className="workspace-..." id="seller-menu">
+                            <div>
+                            <div>
+                            <section>
+                            <form>
+                            <form>
+                            <form>
+                            <form>
+                            <div>
+>                           <form className="workspace-form seller-editor-form" onSubmit={function onSubmit}>
+                              <h3>
+                              <label>
+                              <label>
+                              <label>
+                              <label>
+                              <label>
+                              <fieldset>
+                              <OriginButton>
+                              <div className="workspace-...">
+                                <article className="workspace-...">
+                                  <div>
+                                  <button>
+                                  <button>
+                                  <details className="plan-dish-...">
+                                    <summary>
+>                                   <form className="workspace-form" onSubmit={function onSubmit}>
+                        ...
+                        ...
+                    ...
+                ...
+        ...
+      ...
+ 
+[browser] <form> cannot contain a nested <form>.
+See this log for the ancestor stack trace. 

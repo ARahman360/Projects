@@ -1,0 +1,73 @@
+
+> home-foods@0.1.0 test
+> tsx --import dotenv/config --test tests/*.test.mjs
+
+◇ injected env (2) from .env
+✔ verification is bound to stored street, country, postcode and exact coordinates (10.1854ms)
+✔ Finland validation preserves leading zero and rejects incomplete/foreign fields (2.556ms)
+✔ browser cannot forge or change provider proof (2.7166ms)
+✔ sandbox records are explicitly distinct and fallback cannot activate in production (4.0075ms)
+◇ injected env (2) from .env
+✔ price sort is numerical in both directions (9.8165ms)
+✔ filters combine and exclude missing delivery estimates and ratings (2.4323ms)
+✔ nearest and fastest leave unknown measurements last (0.8931ms)
+✔ search and category remain active together (0.9908ms)
+✔ recommended search favors exact and name-prefix matches (1.7652ms)
+◇ injected env (2) from .env
+✔ nationwide delivery is an explicit local development-only opt-in (11.8315ms)
+✔ sandbox payments require development and fictional test data (1.5847ms)
+✔ discovery and checkout share the existing-seller development opt-in (2.5293ms)
+✔ development placeholder kitchens cannot be used in production (2.1202ms)
+◇ injected env (2) from .env
+✔ kitchen filters combine real cuisine, location, ratings, fees and preparation values (7.946ms)
+✔ profile completion requires valid persisted operational fields, not just a name (1.0282ms)
+✔ pickup snapshots retain the original kitchen location after edits (1.1223ms)
+◇ injected env (2) from .env
+Geoapify API request rejected { service: '/v1/geocode/search', status: 401 }
+Geoapify API request rejected { service: '/v1/geocode/search', status: 403 }
+Geoapify API request rejected { service: '/v1/routing', status: 503 }
+Geoapify API request rejected { service: '/v1/routematrix', status: 503 }
+GEOAPIFY_API_KEY is malformed: check for an appended environment setting or whitespace.
+✔ 20 km driving-distance boundary is inclusive and rejects anything farther (3.8843ms)
+✔ saved verified Finnish addresses reuse their stored coordinates without geocoding again (4.4262ms)
+✔ legacy saved Finnish addresses are verified once and cache normalized coordinates (70.6431ms)
+✔ a legacy saved address explains when first-time geocoding is blocked (3.0834ms)
+✔ manual Finnish address resolution uses Geoapify and returns verified Finland details (2.6396ms)
+✔ Finnish autocomplete requests are country restricted and include attribution metadata (3.5879ms)
+✔ Geoapify provider failures remain distinguishable without exposing provider response details (5.0403ms)
+✔ Geoapify JSON autocomplete records with flat address fields display a complete label (2.0446ms)
+✔ autocomplete reads GeoJSON feature responses and normalizes Finland when the code is omitted (2.2914ms)
+✔ empty autocomplete response retries with Finland-filtered forward geocoding (2.8602ms)
+✔ foreign addresses and reverse-geocoded GPS locations are rejected (3.8243ms)
+✔ invalid coordinates and provider failures fail closed (3.2869ms)
+✔ driving route threshold permits 5 km, 19.9 km and exactly 20 km, but rejects 20.1 km (6.5986ms)
+✔ failed routes are not converted into an assumed straight-line distance and successful routes are cached (3.2553ms)
+✔ kitchen route matrix batches multiple exact kitchen-to-customer road distances and caches each pair (2.8733ms)
+✔ route matrix outages and unroutable kitchen pairs remain unavailable (2.8464ms)
+✔ distance utility remains a pure estimate and returns zero for identical points (0.6656ms)
+✔ concatenated environment settings are rejected before sending a provider request (1.4408ms)
+✔ kitchen country checks reject foreign or missing coordinates without routing (12.5713ms)
+◇ injected env (2) from .env
+✔ role shortcuts and independent customer routes are centralized (6.0751ms)
+✔ active navigation distinguishes hashes, nested routes, and similarly named paths (0.768ms)
+◇ injected env (2) from .env
+✔ same-origin validation accepts the browser origin through a local reverse proxy (67.6787ms)
+✔ same-origin validation still rejects a foreign browser origin (1.2581ms)
+◇ injected env (2) from .env
+✔ development session secret is stable across independently loaded server routes (4.1584ms)
+✔ production still requires a configured strong session secret (1.9473ms)
+◇ injected env (2) from .env
+✔ the existing main sidebar is the only theme control mount (68.3982ms)
+✔ theme initialization and persistence stay in the shared root system (3.1493ms)
+◇ injected env (2) from .env
+✔ seller availability is independent of administrative status (4.0749ms)
+✔ one pickup action becomes transit; retries do not generate transitions (0.6487ms)
+✔ administrative changes require meaningful bounded review notes (0.6904ms)
+ℹ tests 46
+ℹ suites 0
+ℹ pass 46
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1353.5824

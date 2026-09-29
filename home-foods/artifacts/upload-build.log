@@ -1,0 +1,309 @@
+
+> home-foods@0.1.0 build
+> next build
+
+▲ Next.js 16.3.5 (Turbopack)
+- Environments: .env.local, .env
+⚠ Warning: Next.js ignored package-lock.json in C:\Users\arahm because it is outside the current Git repository (C:\Users\arahm\WORKSPACE\Projects).
+ To use this directory, set `turbopack.root` in your Next.js config.
+
+✓ Running next.config.ts took 57ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 12.2s
+  Running TypeScript ...
+  Finished TypeScript in 23.8s ...
+  Collecting page data using 11 workers ...
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+  Generating static pages using 11 workers (0/39) ...
+  Generating static pages using 11 workers (9/39) 
+  Generating static pages using 11 workers (19/39) 
+  Generating static pages using 11 workers (29/39) 
+✓ Generating static pages using 11 workers (39/39) in 1888ms
+Turbopack build encountered 9 warnings:
+./src/lib/image-storage.ts:42:10
+Warning: Dynamic filesystem access causes tracing of the whole project
+  40 | ...xport async function readStoredImage(reference:string) {
+  41 | ... const parts=managedImageParts(reference);if(!parts)throw new UploadError('Image not fo...
+> 42 | ... return readFile(path.join(imageStorageRoot(),String(parts.shopId),parts.file));
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  43 | ...
+  44 | ...xport async function queueImageCleanup(previous:unknown,next:unknown) {
+  45 | ... if(typeof previous!=='string'||previous===next||!managedImageParts(previous))return;
+
+Static analysis determined that this filesystem access causes the whole project to be traced and included in the output.
+This is usually unintentional and leads to all source files (including the public folder) to be deployed as part of the server code.
+This can slow down deployments or lead to failures when size limits are exceeded.
+To resolve this, you can
+- make sure the path is statically scoped to some subfolder, for example path.join(process.cwd(), 'data', bar), or
+- only use them in development, or
+- opt out by adding an ignore comment to the highlighted call: fs.readFile(/*turbopackIgnore: true*/ ...), or
+- remove them.
+
+Import trace:
+  App Route:
+    ./src/lib/image-storage.ts
+    ./app/api/uploads/route.ts
+
+
+./src/lib/image-storage.ts:26:21
+Warning: Dynamic filesystem access causes tracing of the whole project
+  24 | export async function storeImage(shopId:number,bytes:Buffer) {
+  25 |   const dir=path.join(imageStorageRoot(),String(shopId));await mkdir(dir,{recursive:true});
+> 26 |   const files=await readdir(dir);const stats=await Promise.all(files.filter(f=>f.endsWith(...
+     |                     ^^^^^^^^^^^^
+  27 |   if(stats.reduce((n,s)=>n+s.size,bytes.length)>250*1024*1024||stats.length>=1000)throw ne...
+  28 |   if(stats.filter(s=>Date.now()-s.mtimeMs<3600000).length>=30)throw new UploadError('Too m...
+  29 |   const file=`${randomUUID()}.webp`;await writeFile(path.join(dir,file),bytes,{flag:'wx',m...
+
+Static analysis determined that this filesystem access causes the whole project to be traced and included in the output.
+This is usually unintentional and leads to all source files (including the public folder) to be deployed as part of the server code.
+This can slow down deployments or lead to failures when size limits are exceeded.
+To resolve this, you can
+- make sure the path is statically scoped to some subfolder, for example path.join(process.cwd(), 'data', bar), or
+- only use them in development, or
+- opt out by adding an ignore comment to the highlighted call: fs.readdir(/*turbopackIgnore: true*/ ...), or
+- remove them.
+
+Import trace:
+  App Route:
+    ./src/lib/image-storage.ts
+    ./app/api/uploads/route.ts
+
+
+./src/lib/image-storage.ts:26:108
+Warning: Dynamic filesystem access causes tracing of the whole project
+  24 | ...
+  25 | ...ecursive:true});
+> 26 | ...(f=>f.endsWith('.webp')).map(f=>stat(path.join(dir,f))));
+     |                                    ^^^^^^^^^^^^^^^^^^^^^^
+  27 | ...>=1000)throw new UploadError('Your kitchen image storage is full. Please contact suppor...
+  28 | ...oadError('Too many uploads. Please try again in an hour.',429);
+  29 | ...es,{flag:'wx',mode:0o600});
+
+Static analysis determined that this filesystem access causes the whole project to be traced and included in the output.
+This is usually unintentional and leads to all source files (including the public folder) to be deployed as part of the server code.
+This can slow down deployments or lead to failures when size limits are exceeded.
+To resolve this, you can
+- make sure the path is statically scoped to some subfolder, for example path.join(process.cwd(), 'data', bar), or
+- only use them in development, or
+- opt out by adding an ignore comment to the highlighted call: fs.stat(/*turbopackIgnore: true*/ ...), or
+- remove them.
+
+Import trace:
+  App Route:
+    ./src/lib/image-storage.ts
+    ./app/api/uploads/route.ts
+
+
+./src/lib/image-storage.ts:38:13
+Warning: Dynamic filesystem access causes tracing of the whole project
+  36 |   const parts=managedImageParts(String(value));if(!parts)return;
+  37 |   if(parts.shopId!==shopId)throw new UploadError('Choose an image uploaded by your own kit...
+> 38 |   try{await stat(path.join(imageStorageRoot(),String(shopId),parts.file));}catch{throw new...
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  39 | }
+  40 | export async function readStoredImage(reference:string) {
+  41 |   const parts=managedImageParts(reference);if(!parts)throw new UploadError('Image not foun...
+
+Static analysis determined that this filesystem access causes the whole project to be traced and included in the output.
+This is usually unintentional and leads to all source files (including the public folder) to be deployed as part of the server code.
+This can slow down deployments or lead to failures when size limits are exceeded.
+To resolve this, you can
+- make sure the path is statically scoped to some subfolder, for example path.join(process.cwd(), 'data', bar), or
+- only use them in development, or
+- opt out by adding an ignore comment to the highlighted call: fs.stat(/*turbopackIgnore: true*/ ...), or
+- remove them.
+
+Import trace:
+  App Route:
+    ./src/lib/image-storage.ts
+    ./app/api/uploads/route.ts
+
+
+./src/lib/image-storage.ts:25:13
+Warning: Dynamic filesystem access causes tracing of the whole project
+  23 | }
+  24 | export async function storeImage(shopId:number,bytes:Buffer) {
+> 25 |   const dir=path.join(imageStorageRoot(),String(shopId));await mkdir(dir,{recursive:true});
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 |   const files=await readdir(dir);const stats=await Promise.all(files.filter(f=>f.endsWith(...
+  27 |   if(stats.reduce((n,s)=>n+s.size,bytes.length)>250*1024*1024||stats.length>=1000)throw ne...
+  28 |   if(stats.filter(s=>Date.now()-s.mtimeMs<3600000).length>=30)throw new UploadError('Too m...
+
+Static analysis determined that this filesystem access causes the whole project to be traced and included in the output.
+This is usually unintentional and leads to all source files (including the public folder) to be deployed as part of the server code.
+This can slow down deployments or lead to failures when size limits are exceeded.
+To resolve this, you can
+- make sure the path is statically scoped to some subfolder, for example path.join(process.cwd(), 'data', bar), or
+- only use them in development, or
+- opt out by adding an ignore comment to the highlighted call: path.join(/*turbopackIgnore: true*/ ...), or
+- remove them.
+
+Import trace:
+  App Route:
+    ./src/lib/image-storage.ts
+    ./app/api/uploads/route.ts
+
+
+./src/lib/image-storage.ts:26:113
+Warning: Dynamic filesystem access causes tracing of the whole project
+  24 | ...
+  25 | ...ursive:true});
+> 26 | ...=>f.endsWith('.webp')).map(f=>stat(path.join(dir,f))));
+     |                                       ^^^^^^^^^^^^^^^^
+  27 | ...1000)throw new UploadError('Your kitchen image storage is full. Please contact support....
+  28 | ...dError('Too many uploads. Please try again in an hour.',429);
+  29 | ...,{flag:'wx',mode:0o600});
+
+Static analysis determined that this filesystem access causes the whole project to be traced and included in the output.
+This is usually unintentional and leads to all source files (including the public folder) to be deployed as part of the server code.
+This can slow down deployments or lead to failures when size limits are exceeded.
+To resolve this, you can
+- make sure the path is statically scoped to some subfolder, for example path.join(process.cwd(), 'data', bar), or
+- only use them in development, or
+- opt out by adding an ignore comment to the highlighted call: path.join(/*turbopackIgnore: true*/ ...), or
+- remove them.
+
+Import trace:
+  App Route:
+    ./src/lib/image-storage.ts
+    ./app/api/uploads/route.ts
+
+
+./src/lib/image-storage.ts:38:18
+Warning: Dynamic filesystem access causes tracing of the whole project
+  36 | ... const parts=managedImageParts(String(value));if(!parts)return;
+  37 | ... if(parts.shopId!==shopId)throw new UploadError('Choose an image uploaded by your own k...
+> 38 | ... try{await stat(path.join(imageStorageRoot(),String(shopId),parts.file));}catch{throw n...
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  39 | ...
+  40 | ...xport async function readStoredImage(reference:string) {
+  41 | ... const parts=managedImageParts(reference);if(!parts)throw new UploadError('Image not fo...
+
+Static analysis determined that this filesystem access causes the whole project to be traced and included in the output.
+This is usually unintentional and leads to all source files (including the public folder) to be deployed as part of the server code.
+This can slow down deployments or lead to failures when size limits are exceeded.
+To resolve this, you can
+- make sure the path is statically scoped to some subfolder, for example path.join(process.cwd(), 'data', bar), or
+- only use them in development, or
+- opt out by adding an ignore comment to the highlighted call: path.join(/*turbopackIgnore: true*/ ...), or
+- remove them.
+
+Import trace:
+  App Route:
+    ./src/lib/image-storage.ts
+    ./app/api/uploads/route.ts
+
+
+./src/lib/image-storage.ts:42:19
+Warning: Dynamic filesystem access causes tracing of the whole project
+  40 | ...t async function readStoredImage(reference:string) {
+  41 | ...st parts=managedImageParts(reference);if(!parts)throw new UploadError('Image not found....
+> 42 | ...urn readFile(path.join(imageStorageRoot(),String(parts.shopId),parts.file));
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  43 | ...
+  44 | ...t async function queueImageCleanup(previous:unknown,next:unknown) {
+  45 | ...typeof previous!=='string'||previous===next||!managedImageParts(previous))return;
+
+Static analysis determined that this filesystem access causes the whole project to be traced and included in the output.
+This is usually unintentional and leads to all source files (including the public folder) to be deployed as part of the server code.
+This can slow down deployments or lead to failures when size limits are exceeded.
+To resolve this, you can
+- make sure the path is statically scoped to some subfolder, for example path.join(process.cwd(), 'data', bar), or
+- only use them in development, or
+- opt out by adding an ignore comment to the highlighted call: path.join(/*turbopackIgnore: true*/ ...), or
+- remove them.
+
+Import trace:
+  App Route:
+    ./src/lib/image-storage.ts
+    ./app/api/uploads/route.ts
+
+
+./src/lib/image-storage.ts:11:10
+Warning: Dynamic filesystem access causes tracing of the whole project
+   9 | ... const configured=process.env.HOMEFOODS_UPLOAD_DIR;
+  10 | ... if(process.env.NODE_ENV==='production'&&!configured)throw new UploadError('Image uploa...
+> 11 | ... return path.resolve(configured || path.join(process.cwd(),'.data','uploads'));
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  12 | ...
+  13 | ...xport async function normalizeImage(bytes:Buffer) {
+  14 | ... if(!bytes.length||bytes.length>MAX_IMAGE_BYTES)throw new UploadError('Choose a non-emp...
+
+Static analysis determined that this filesystem access causes the whole project to be traced and included in the output.
+This is usually unintentional and leads to all source files (including the public folder) to be deployed as part of the server code.
+This can slow down deployments or lead to failures when size limits are exceeded.
+To resolve this, you can
+- make sure the path is statically scoped to some subfolder, for example path.join(process.cwd(), 'data', bar), or
+- only use them in development, or
+- opt out by adding an ignore comment to the highlighted call: path.resolve(/*turbopackIgnore: true*/ ...), or
+- remove them.
+
+Import trace:
+  App Route:
+    ./src/lib/image-storage.ts
+    ./app/api/uploads/route.ts
+
+
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /account-recovery
+├ ƒ /api/account
+├ ƒ /api/addresses
+├ ƒ /api/admin
+├ ƒ /api/admin/health
+├ ƒ /api/admin/operations
+├ ƒ /api/auth
+├ ƒ /api/auth/recovery
+├ ƒ /api/auth/reset-password
+├ ƒ /api/catalog
+├ ƒ /api/dev/test-accounts
+├ ƒ /api/favorites
+├ ƒ /api/kitchens/[id]
+├ ƒ /api/location/delivery-check
+├ ƒ /api/location/resolve
+├ ƒ /api/location/suggest
+├ ƒ /api/media/[shopId]/[file]
+├ ƒ /api/newsletter
+├ ƒ /api/notifications
+├ ƒ /api/orders
+├ ƒ /api/payments/webhook
+├ ƒ /api/reviews
+├ ƒ /api/rider
+├ ƒ /api/seller
+├ ƒ /api/seller/orders
+├ ƒ /api/subscriptions
+├ ƒ /api/uploads
+├ ƒ /collections/[slug]
+├ ○ /dev/components-preview
+├ ○ /favorites
+├ ○ /forgot-password
+├ ○ /join
+├ ○ /kitchens
+├ ƒ /kitchens/[id]
+├ ○ /meal-plans
+├ ○ /orders
+├ ○ /reset-password
+├ ○ /signin
+├ ○ /workspace
+└ ƒ /workspace/admin/[[...path]]
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

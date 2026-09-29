@@ -1,0 +1,72 @@
+⚠ Warning: Next.js ignored package-lock.json in C:\Users\arahm because it is outside the current Git repository (C:\Users\arahm\WORKSPACE\Projects).
+ To use this directory, set `turbopack.root` in your Next.js config.
+
+◇ injected env (0) from .env
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+◇ injected env (0) from .env
+◇ injected env (0) from .env
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+⚠ Found a change in next.config.ts. Restarting the server to apply the changes...
+⚠ Warning: Next.js ignored package-lock.json in C:\Users\arahm because it is outside the current Git repository (C:\Users\arahm\WORKSPACE\Projects).
+ To use this directory, set `turbopack.root` in your Next.js config.
+
+◇ injected env (0) from .env
+[browser] In HTML, <form> cannot be a descendant of <form>.
+This will cause a hydration error.
+
+  ...
+    <RedirectErrorBoundary router={{...}}>
+      <InnerLayoutRouter url="/workspace" tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} segmentPath={[...]} ...>
+        <SegmentViewNode type="page" pagePath="workspace/...">
+          <SegmentTrieNode>
+          <ClientPageRoot Component={function WorkspacePage} serverProvidedParams={{...}}>
+            <WorkspacePage params={Promise} searchParams={Promise}>
+              <main id="main-content" tabIndex={-1} className="workspace-...">
+                <header>
+                <div className="workspace-...">
+                  <nav>
+                  <div className="workspace-...">
+                    <section>
+                    <OperationalDashboard role="SELLER" data={{shop:{...}, ...}} ...>
+                      <div className="operationa...">
+                        <section>
+                        <section>
+                        <section>
+                        <section>
+                        <SellerKitchenEditor onSaved={function onSaved}>
+                          <section className="workspace-..." id="seller-menu">
+                            <div>
+                            <div>
+                            <section>
+                            <form>
+                            <section>
+                            <form>
+                            <form>
+                            <div>
+>                           <form className="workspace-form seller-editor-form" onSubmit={function onSubmit}>
+                              <h3>
+                              <label>
+                              <label>
+                              <label>
+                              <label>
+                              <label>
+                              <fieldset>
+                              <OriginButton>
+                              <div className="workspace-...">
+                                <article className="workspace-...">
+                                  <div>
+                                  <button>
+                                  <button>
+                                  <details className="plan-dish-...">
+                                    <summary>
+>                                   <form className="workspace-form" onSubmit={function onSubmit}>
+                        ...
+                        ...
+                    ...
+                ...
+        ...
+      ...
+ 
+[browser] <form> cannot contain a nested <form>.
+See this log for the ancestor stack trace. 

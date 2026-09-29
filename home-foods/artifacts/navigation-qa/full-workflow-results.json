@@ -1,0 +1,16 @@
+{
+  "passed": [
+    "Admin data is inaccessible to customer, seller and rider roles",
+    "Approval preserves seller offline state and writes audit history",
+    "Live street autocomplete saves a verified Finnish address",
+    "Customer sandbox checkout, offline purchase rejection, and existing seller fulfilment",
+    "Suspension cannot be bypassed and reactivation preserves voluntary pause",
+    "Rider ownership, suspension safety, atomic pickup/transit, customer status and idempotent completion",
+    "Scheduled delivery completes only its own meal while subscription and next meal remain active",
+    "Rider sign-out switches availability offline",
+    "Desktop drawer/layout and responsive availability drag, keyboard, failure and persistence checks",
+    "Accessible kitchen action disclosure and confirmed suspension dialog",
+    "Admin route rendering and 390/768/1440 light/dark viewport checks; seller/rider dashboard rendering",
+    "Shared navigation across all four roles, migrated pages, three viewports and both themes"
+  ]
+}

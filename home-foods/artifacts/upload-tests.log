@@ -1,0 +1,82 @@
+
+> home-foods@0.1.0 test
+> tsx --import dotenv/config --test tests/*.test.mjs
+
+◇ injected env (2) from .env
+✔ verification is bound to stored street, country, postcode and exact coordinates (6.6262ms)
+✔ Finland validation preserves leading zero and rejects incomplete/foreign fields (2.1291ms)
+✔ browser cannot forge or change provider proof (2.426ms)
+✔ sandbox records are explicitly distinct and fallback cannot activate in production (4.5061ms)
+◇ injected env (2) from .env
+✔ price sort is numerical in both directions (9.6137ms)
+✔ filters combine and exclude missing delivery estimates and ratings (1.6621ms)
+✔ nearest and fastest leave unknown measurements last (0.9261ms)
+✔ search and category remain active together (0.9417ms)
+✔ recommended search favors exact and name-prefix matches (0.7646ms)
+◇ injected env (2) from .env
+✔ nationwide delivery is an explicit local development-only opt-in (10.8195ms)
+✔ sandbox payments require development and fictional test data (1.8709ms)
+✔ discovery and checkout share the existing-seller development opt-in (2.3233ms)
+✔ development placeholder kitchens cannot be used in production (0.9303ms)
+◇ injected env (2) from .env
+✔ client upload limits reject unsafe, empty and oversized files (5.0024ms)
+✔ image references reject local paths, data, traversal and credential URLs (1.5865ms)
+✔ server decodes JPG PNG WebP and produces metadata-free webp (84.6499ms)
+✔ server rejects corrupt, empty, oversized and undersized images (18.6318ms)
+◇ injected env (2) from .env
+✔ kitchen filters combine real cuisine, location, ratings, fees and preparation values (8.0691ms)
+✔ profile completion requires valid persisted operational fields, not just a name (1.3401ms)
+✔ pickup snapshots retain the original kitchen location after edits (1.081ms)
+◇ injected env (2) from .env
+Geoapify API request rejected { service: '/v1/geocode/search', status: 401 }
+Geoapify API request rejected { service: '/v1/geocode/search', status: 403 }
+Geoapify API request rejected { service: '/v1/routing', status: 503 }
+Geoapify API request rejected { service: '/v1/routematrix', status: 503 }
+GEOAPIFY_API_KEY is malformed: check for an appended environment setting or whitespace.
+✔ 20 km driving-distance boundary is inclusive and rejects anything farther (3.4029ms)
+✔ saved verified Finnish addresses reuse their stored coordinates without geocoding again (5.8721ms)
+✔ legacy saved Finnish addresses are verified once and cache normalized coordinates (70.8657ms)
+✔ a legacy saved address explains when first-time geocoding is blocked (5.0759ms)
+✔ manual Finnish address resolution uses Geoapify and returns verified Finland details (2.3415ms)
+✔ Finnish autocomplete requests are country restricted and include attribution metadata (3.5893ms)
+✔ Geoapify provider failures remain distinguishable without exposing provider response details (5.743ms)
+✔ Geoapify JSON autocomplete records with flat address fields display a complete label (2.2593ms)
+✔ autocomplete reads GeoJSON feature responses and normalizes Finland when the code is omitted (3.09ms)
+✔ empty autocomplete response retries with Finland-filtered forward geocoding (3.1524ms)
+✔ foreign addresses and reverse-geocoded GPS locations are rejected (3.517ms)
+✔ invalid coordinates and provider failures fail closed (3.9354ms)
+✔ driving route threshold permits 5 km, 19.9 km and exactly 20 km, but rejects 20.1 km (5.9206ms)
+✔ failed routes are not converted into an assumed straight-line distance and successful routes are cached (3.1652ms)
+✔ kitchen route matrix batches multiple exact kitchen-to-customer road distances and caches each pair (3.2264ms)
+✔ route matrix outages and unroutable kitchen pairs remain unavailable (3.3387ms)
+✔ distance utility remains a pure estimate and returns zero for identical points (0.6864ms)
+✔ concatenated environment settings are rejected before sending a provider request (1.2267ms)
+✔ kitchen country checks reject foreign or missing coordinates without routing (15.7024ms)
+◇ injected env (2) from .env
+✔ role shortcuts and independent customer routes are centralized (6.003ms)
+✔ active navigation distinguishes hashes, nested routes, and similarly named paths (0.9576ms)
+◇ injected env (2) from .env
+✔ profile edits allow only self-service fields (3.3875ms)
+✔ sensitive input validation rejects email changes and short passwords (0.6393ms)
+◇ injected env (2) from .env
+✔ same-origin validation accepts the browser origin through a local reverse proxy (82.161ms)
+✔ same-origin validation still rejects a foreign browser origin (2.0924ms)
+◇ injected env (2) from .env
+✔ development session secret is stable across independently loaded server routes (3.6876ms)
+✔ production still requires a configured strong session secret (2.1266ms)
+◇ injected env (2) from .env
+✔ the existing main sidebar is the only theme control mount (160.0666ms)
+✔ theme initialization and persistence stay in the shared root system (4.4ms)
+◇ injected env (2) from .env
+✔ seller availability is independent of administrative status (3.348ms)
+✔ one pickup action becomes transit; retries do not generate transitions (0.7897ms)
+✔ administrative changes require meaningful bounded review notes (0.8651ms)
+✔ verification alone permits an omitted comment; suspension still requires one (2.8747ms)
+ℹ tests 53
+ℹ suites 0
+ℹ pass 53
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2350.5313
