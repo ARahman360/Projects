@@ -4,6 +4,7 @@ import {useEffect,useRef,useState,type FormEvent} from 'react';
 import ImageUpload from './image-upload';
 import MarketImage from './market-image';
 import {OriginButton} from './ui/origin-button';
+import OverlayLayer from './overlay-layer';
 
 type Row=Record<string,unknown>;
 type Props={items:Row[];categories:Row[];busy:boolean;save:(body:Row,isNew:boolean)=>Promise<boolean>;remove:(item:Row)=>void};
@@ -13,17 +14,20 @@ const money=(value:unknown)=>new Intl.NumberFormat('fi-FI',{style:'currency',cur
 export default function SellerDishList({items,categories,busy,save,remove}:Props){
   const [expanded,setExpanded]=useState<number|'new'|null>(null),[dirty,setDirty]=useState(false);
   const addButton=useRef<HTMLButtonElement>(null);
+  const discardDialog=useRef<HTMLDivElement>(null);
+  const [pendingNext,setPendingNext]=useState<number|'new'|null>(null);
+  const activeDirty=dirty&&(expanded==='new'||items.some(item=>Number(item.id)===expanded));
   useEffect(()=>{
-    if(!dirty)return;
+    if(!activeDirty)return;
     const unload=(event:BeforeUnloadEvent)=>event.preventDefault();
     const click=(event:MouseEvent)=>{const link=(event.target as Element)?.closest('a');if(link?.href&&new URL(link.href).pathname!==location.pathname&&!window.confirm('Leave without saving your dish changes?')){event.preventDefault();event.stopPropagation();}};
     const signout=(event:Event)=>{if(!window.confirm('Sign out without saving your dish changes?'))event.preventDefault();};
     window.addEventListener('beforeunload',unload);document.addEventListener('click',click,true);window.addEventListener('homefoods:before-signout',signout);
     return()=>{window.removeEventListener('beforeunload',unload);document.removeEventListener('click',click,true);window.removeEventListener('homefoods:before-signout',signout);};
-  },[dirty]);
+  },[activeDirty]);
   function toggle(next:number|'new'){
     if(busy)return;
-    if(dirty&&!window.confirm('Discard unsaved dish changes?'))return;
+    if(activeDirty){setPendingNext(next);return;}
     setDirty(false);setExpanded(current=>current===next?null:next);
   }
   async function submit(body:Row,isNew:boolean){
@@ -41,7 +45,10 @@ export default function SellerDishList({items,categories,busy,save,remove}:Props
       {open&&<div id={`dish-editor-${id}`} className="dish-editor-panel" role="region" aria-labelledby={`dish-toggle-${id}`}><DishForm key={id} item={item} categories={categories} busy={busy} onDirty={()=>setDirty(true)} onSave={body=>submit(body,false)} onCancel={()=>toggle(id)} onRemove={()=>remove(item)}/></div>}
     </article>;})}</div>
     {!items.length&&expanded!=='new'&&<p className="workspace-muted">Your menu is empty. Add your first dish to get started.</p>}
-    {dirty&&<p className="dish-draft-note" role="status">Unsaved dish changes</p>}
+    {activeDirty&&<p className="dish-draft-note" role="status">Unsaved dish changes</p>}
+    <OverlayLayer open={pendingNext!==null} onClose={()=>setPendingNext(null)} dialogRef={discardDialog} label="Unsaved dish changes" className="auth-overlay" dialogClassName="ops-confirm">
+      <h2>Discard unsaved dish changes?</h2><p>Your edits have not been saved.</p><div className="workspace-actions"><button type="button" onClick={()=>setPendingNext(null)}>Keep editing</button><button type="button" onClick={()=>{setDirty(false);setExpanded(current=>current===pendingNext?null:pendingNext);setPendingNext(null);}}>Discard changes</button></div>
+    </OverlayLayer>
   </section>;
 }
 
