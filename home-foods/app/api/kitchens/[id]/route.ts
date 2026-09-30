@@ -35,7 +35,26 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
         } catch { deliveryCheck = { status: "unknown", message: ROUTING_UNAVAILABLE_MESSAGE }; }
       }
     }
-    return Response.json({ shop, deliveryCheck });
+    // Only the public profile crosses the server boundary. The database row also
+    // contains private contact, location proof and administrative fields.
+    const publicShop = {
+      id: shop.id, name: shop.name, description: shop.description,
+      logoUrl: shop.logoUrl, coverImageUrl: shop.coverImageUrl, city: shop.city,
+      isOnline: shop.isOnline, deliveryFee: shop.deliveryFee,
+      estimatedMinutes: shop.estimatedMinutes, minimumOrder: shop.minimumOrder,
+      menuItems: shop.menuItems.map(item => ({
+        id: item.id, name: item.name, description: item.description,
+        imageUrl: item.imageUrl, price: item.price, isAvailable: item.isAvailable,
+        category: item.category,
+      })),
+      subscriptionPlans: shop.subscriptionPlans.map(plan => ({
+        id: plan.id, name: plan.name, description: plan.description,
+        price: plan.price, currency: plan.currency, type: plan.type,
+        mealsPerPeriod: plan.mealsPerPeriod,
+      })),
+      reviews: shop.reviews,
+    };
+    return Response.json({ shop: publicShop, deliveryCheck });
   } catch (error) {
     console.error("Kitchen details request failed", error);
     return Response.json({ error: "Kitchen details are unavailable right now." }, { status: 503 });
