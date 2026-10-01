@@ -8,7 +8,11 @@ test('role shortcuts and independent customer routes are centralized',()=>{
  assert.equal(roleDestinations.ADMIN.href,'/workspace/admin');
  assert.equal(roleDestinations.CUSTOMER,undefined);
  assert.deepEqual(personalNavigation('CUSTOMER').map(i=>i.href),['/orders','/meal-plans','/favorites']);
- for(const role of ['SELLER','RIDER','ADMIN'])assert.ok(!personalNavigation(role).some(i=>i.href==='/favorites'));
+ for(const role of ['SELLER','RIDER']){
+  assert.deepEqual(personalNavigation(role).map(i=>i.href),['/orders','/meal-plans','/favorites']);
+  assert.ok(!workspaceNavigation(role).some(i=>['/workspace#addresses','/workspace#profile'].includes(i.href)));
+ }
+ assert.ok(!personalNavigation('ADMIN').some(i=>i.href==='/favorites'));
  assert.ok(workspaceNavigation('CUSTOMER').some(i=>i.href==='/workspace#addresses'));
  assert.equal(discoveryNavigation[1].href,'/kitchens');
  assert.ok(adminSections.some(([key])=>key==='customers'));

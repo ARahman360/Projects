@@ -2,7 +2,7 @@ import { canBuy } from '@/src/lib/buyer-policy';
 export type AccountRole = 'CUSTOMER' | 'SELLER' | 'RIDER' | 'ADMIN';
 export type NavigationIcon = 'home' | 'search' | 'orders' | 'heart' | 'calendar' | 'settings' | 'kitchen' | 'delivery' | 'workspace' | 'arrow' | 'menu' | 'close' | 'cart';
 export type NavigationItem = { label: string; href: string; icon: NavigationIcon };
-export const accountHref = '/workspace#profile';
+export const accountHref = '/account';
 export const roleLabels: Record<AccountRole, string> = {CUSTOMER:'Customer', SELLER:'Kitchen owner', RIDER:'Delivery rider', ADMIN:'Administrator'};
 export const roleDestinations: Partial<Record<AccountRole, NavigationItem>> = {
  SELLER: {label:'Your Kitchen', href:'/workspace#seller-dashboard', icon:'kitchen'},
@@ -29,7 +29,7 @@ export function isNavigationActive(href:string, pathname:string, hash:string) {
 export function workspaceNavigation(role:AccountRole): NavigationItem[] {
  const item=(label:string,hash:string,icon:NavigationIcon):NavigationItem=>({label,href:`/workspace#${hash}`,icon});
  if(role==='CUSTOMER') return [item('Profile','profile','settings'),item('Saved Addresses','addresses','home')];
- if(role==='SELLER') return [item('Overview','seller-dashboard','kitchen'),item('Orders to prepare','orders','orders'),item('Meal-plan obligations','obligations','calendar'),item('Delivery requests','delivery-requests','delivery'),item('Menu & kitchen','seller-menu','kitchen'),item('Kitchen Settings','kitchen-settings','settings'),item('Profile','profile','settings'),item('Saved Addresses','addresses','home')];
- if(role==='RIDER') return [item('Availability','rider-dashboard','delivery'),item('Active delivery','orders','delivery'),item('Available jobs','available-jobs','search'),item('Delivery history','delivery-history','orders'),item('Earnings','earnings','workspace'),item('Profile','profile','settings')];
+ if(role==='SELLER') return [item('Overview','seller-dashboard','kitchen'),item('Orders to prepare','orders','orders'),item('Meal-plan obligations','obligations','calendar'),item('Delivery requests','delivery-requests','delivery'),item('Menu & kitchen','seller-menu','kitchen'),item('Kitchen Settings','kitchen-settings','settings')];
+ if(role==='RIDER') return [item('Availability','rider-dashboard','delivery'),item('Active delivery','orders','delivery'),item('Available jobs','available-jobs','search'),item('Delivery history','delivery-history','orders'),item('Earnings','earnings','workspace')];
  return [item('Profile','profile','settings'),{label:'Admin Workspace',href:'/workspace/admin',icon:'workspace'}];
 }

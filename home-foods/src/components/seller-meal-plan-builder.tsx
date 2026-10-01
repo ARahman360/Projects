@@ -1,0 +1,18 @@
+'use client';
+import {useState,type FormEvent} from 'react';
+import MarketImage from './market-image';
+type Row=Record<string,unknown>;
+export default function SellerMealPlanBuilder({items,categories,busy,save}:{items:Row[];categories:Row[];busy:boolean;save:(body:Row)=>Promise<boolean>}){
+ const [query,setQuery]=useState(''),[selected,setSelected]=useState<number[]>([]),[error,setError]=useState('');
+ const available=items.filter(item=>item.isAvailable);
+ const validSelected=selected.filter(id=>available.some(item=>item.id===id));
+ async function submit(e:FormEvent<HTMLFormElement>){e.preventDefault();setError('');if(!validSelected.length){setError('Select at least one dish for this plan.');return;}const form=e.currentTarget,data=new FormData(form);if(await save({action:'create-plan',name:String(data.get('name')),description:String(data.get('description')),type:String(data.get('type')),price:Number(data.get('price')),mealsPerPeriod:Number(data.get('mealsPerPeriod')),menuItemIds:validSelected})){form.reset();setSelected([]);setQuery('');}}
+ return <section className="meal-plan-builder"><div className="workspace-section-heading"><div><span className="eyebrow">COOKED FOR THEIR WEEK</span><h3>Publish a meal plan</h3><p>Set the routine, then choose what is on the menu.</p></div></div>
+ <form onSubmit={submit}><div className="meal-builder-columns"><div className="workspace-form meal-builder-details">
+ <label>Plan name<input name="name" required minLength={3} maxLength={100} placeholder="e.g. Weekday comfort meals"/></label><label>Description<textarea name="description" rows={3} maxLength={1000} placeholder="What makes this plan special?"/></label>
+ <label>Billing period<select name="type"><option value="DAILY">Daily</option><option value="THREE_DAY">3 day</option><option value="WEEKLY">Weekly</option><option value="MONTHLY">Monthly</option></select></label><label>Meals per billing period<input name="mealsPerPeriod" type="number" min="1" max="31" defaultValue="5" required/></label><label>Price (€)<input name="price" type="number" step="0.01" min="1" max="2000" required/></label>
+ </div><fieldset className="meal-builder-selection"><legend>Dishes included in every delivery</legend><label className="meal-dish-search">Search dishes<input type="search" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Find a dish or category"/></label><p role="status">{validSelected.length} dishes selected</p><div className="meal-builder-dishes">
+ {available.filter(item=>`${item.name} ${categories.find(c=>c.id===item.categoryId)?.name??''}`.toLowerCase().includes(query.toLowerCase())).map(item=>{const id=Number(item.id),checked=validSelected.includes(id);return <label key={id} className={`meal-builder-dish${checked?' is-selected':''}`}><MarketImage src={String(item.imageUrl??'')} alt=""/><span><b>{String(item.name)}</b><small>{String(categories.find(c=>c.id===item.categoryId)?.name??'Uncategorised')}</small><small>{checked?'✓ Included':'Select dish'}</small></span><input type="checkbox" checked={checked} disabled={busy} aria-label={`Include ${String(item.name)}`} onChange={()=>setSelected(current=>checked?current.filter(value=>value!==id):[...current,id])}/></label>;})}
+ {!available.length&&<p>Add an available dish to your menu first.</p>}</div></fieldset></div>
+ {error&&<p className="form-error" role="alert">{error}</p>}<div className="meal-builder-footer"><span>Customers receive the selected dishes with each delivery.</span><button className="dark-cta" disabled={busy||!available.length}>{busy?'Publishing…':'Publish plan →'}</button></div></form></section>;
+}

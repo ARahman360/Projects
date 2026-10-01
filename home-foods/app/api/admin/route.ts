@@ -21,9 +21,7 @@ export async function GET() {
       db.orm.public.Delivery.include("rider", (rider) => rider.select("id", "isAvailable").include("user", (user) => user.select("name", "email"))).include("order", (order) => order.include("shop", (shop) => shop.select("id", "name", "latitude", "longitude").include("seller", (seller) => seller.select("name", "email"))).include("address", (address) => address.select("addressLine1", "addressLine2", "postalCode", "city", "latitude", "longitude"))).orderBy((delivery) => delivery.createdAt.asc()).limit(200).all(),
       db.orm.public.Subscription.include("plan", (plan) => plan.include("shop", (shop) => shop.select("id", "name"))).include("scheduledMeals", (meals) => meals.include("order", (order) => order.include("delivery")).orderBy((meal) => meal.scheduledAt.asc())).orderBy((subscription) => subscription.createdAt.desc()).limit(100).all(),
     ]);
-    const staleRiders = initialRiders.filter((rider) => rider.isAvailable && Date.now() - new Date(rider.updatedAt).getTime() > 2 * 60 * 1000);
-    await Promise.all(staleRiders.map((rider) => db.orm.public.Rider.where({ id: rider.id }).update({ isAvailable: false })));
-    const riders = staleRiders.length ? await db.orm.public.Rider.include("user", (user) => user.select("id", "name", "email")).all() : initialRiders;
+    const riders = initialRiders;
     const deliveries = allDeliveries.filter((delivery) => delivery.status === "FAILED" || (delivery.status === "UNASSIGNED" && delivery.order?.status === "READY_FOR_PICKUP") || (Boolean(delivery.riderId) && delivery.rider?.isAvailable === false && ["ASSIGNED", "ACCEPTED", "PICKED_UP", "IN_TRANSIT"].includes(delivery.status)));
     return Response.json({ shops, orders, riders, users, deliveries, subscriptions });
   } catch (error) {

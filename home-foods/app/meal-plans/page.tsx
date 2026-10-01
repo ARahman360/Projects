@@ -1,4 +1,5 @@
 "use client";
+import PersonalMealPlans from '@/src/components/personal-meal-plans';
 import { canBuy } from '@/src/lib/buyer-policy';
 
 
@@ -100,7 +101,7 @@ export default function MealPlansPage() {
 
 
     <section className="meal-tracking-content"><p className={connected ? "meal-connection" : "meal-connection offline"} role="status">{connected ? "Live updates" : "Reconnecting"}</p><span className="eyebrow"><span className="eyebrow-line"/> A LITTLE ROUTINE</span><h1>Your meal plans</h1><p className="orders-intro">Every delivery, kitchen update and completed meal in one place.</p>
-      {loading ? <div className="orders-loading" role="status">Loading your meal schedule…</div> : error ? <div className="orders-error" role="alert">{error}<button onClick={() => window.location.reload()}>Try again</button></div> : subscriptions.length === 0 ? <div className="orders-empty"><span>✦</span><h2>No meal plans yet</h2><p>Your purchased meal plans and delivery schedule will appear here.</p><Link href="/workspace">Explore meal plans →</Link></div> : <>
+      {loading ? <div className="orders-loading" role="status">Loading your meal schedule…</div> : error ? <div className="orders-error" role="alert">{error}<button onClick={() => window.location.reload()}>Try again</button></div> : subscriptions.length === 0 ? <div className="orders-empty"><span>✦</span><h2>No meal plans yet</h2><p>Your purchased meal plans and delivery schedule will appear here.</p><Link href="/meal-plans#plans">Explore meal plans →</Link></div> : <>
         <label className="meal-plan-picker">Choose a plan<select value={String(current?.id ?? "")} onChange={(event) => { setSelected(event.target.value); setSelectedMeal(null); }} aria-label="Choose a meal plan">{subscriptions.map((subscription) => { const choice = (subscription.plan as Row | undefined) ?? {}; const choiceShop = (choice.shop as Row | undefined) ?? {}; return <option key={String(subscription.id)} value={String(subscription.id)}>{String(choice.name ?? "Meal plan")} · {String(choiceShop.name ?? "Home kitchen")}</option>; })}</select></label>
         <article className="meal-summary-card"><div className="meal-summary-copy"><span className="eyebrow">YOUR PURCHASED PLAN</span><h2>{String(plan.name ?? "Meal plan")}</h2><p>{String(kitchen.name ?? "Home kitchen")} · {readable(plan.type)} · {readable(current?.status)}</p><div className="meal-summary-dates"><span>Started <b>{dateText(current?.startDate)}</b></span>{Boolean(current?.endDate) && <span>Ends <b>{dateText(current?.endDate)}</b></span>}<span>{Number(plan.mealsPerPeriod ?? meals.length)} meals per billing period</span></div></div><div className="meal-progress-ring" style={{ "--meal-progress": `${percent}%` } as CSSProperties}><div><b>{delivered}</b><span>of {meals.length}</span></div></div><div className="meal-progress-text"><b>{meals.length ? `${delivered} of ${meals.length} deliveries completed` : "Schedule being confirmed"}</b><div className="meal-progress-bar"><i style={{ width: `${percent}%` }}/></div><small>{nextMeal ? `Next · ${dateText(nextMeal.scheduledAt)} at ${new Date(String(nextMeal.scheduledAt)).toLocaleTimeString("fi-FI", { timeZone: HELSINKI, hour: "2-digit", minute: "2-digit" })}` : meals.length ? "Every scheduled meal is complete" : "A schedule appears after payment confirmation."}</small></div></article>
         <div className="meal-calendar-toolbar"><div><span className="eyebrow">EUROPE / HELSINKI</span><h2>{view === "month" ? new Intl.DateTimeFormat("en-GB", { month: "long", year: "numeric", timeZone: HELSINKI }).format(cursor) : `${dateText(weekDays[0], { day: "numeric", month: "short" })} – ${dateText(weekDays[6], { day: "numeric", month: "short", year: "numeric" })}`}</h2></div><div className="meal-calendar-controls"><button onClick={() => shiftCursor(-1)} aria-label="Previous period">←</button><button onClick={() => setCursor(new Date())}>Today</button><button onClick={() => shiftCursor(1)} aria-label="Next period">→</button><div role="group" aria-label="Calendar view"><button aria-pressed={view === "week"} onClick={() => setView("week")}>Week</button><button aria-pressed={view === "month"} onClick={() => setView("month")}>Month</button></div></div></div>
@@ -110,7 +111,7 @@ export default function MealPlansPage() {
         <div className="meal-plan-footer"><span>Menu and delivery updates come from your kitchen and rider’s order records.</span><Link href="/orders">View all orders →</Link></div>
       </>}
     </section>
-  </main>;
+  <PersonalMealPlans/></main>;
 }
 
 function MealDetails({ meal, kitchen, plan, onClose }: { meal: Row; kitchen: Row; plan: Row; onClose: () => void }) {

@@ -28,7 +28,10 @@ export default function LocationSelector({ onSelect, triggerLabel }: { onSelect?
       try {
         const auth = await addressRequest("/api/auth");
         const id = canBuy(auth.user?.role) ? auth.user.id as number : null;
-        const result = id !== null ? await addressRequest("/api/addresses") : { addresses: [] };
+        let result = id !== null ? await addressRequest("/api/addresses") : { addresses: [] };
+        if(auth.user?.role === "SELLER" && !result.addresses.length && result.kitchen?.address){
+          try{await addressRequest('/api/addresses',{action:'use-kitchen-address'});result=await addressRequest('/api/addresses');}catch{/* A missing verification leaves the normal add-address prompt available. */}
+        }
         if (!active || generation !== request.current) return;
         setOwner(id); setAddresses(result.addresses); setLoaded(true); setError("");
         let stored: DeliveryLocation | null = null;

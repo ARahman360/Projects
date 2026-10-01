@@ -1,5 +1,5 @@
 "use client";
-import {canBuy} from "@/src/lib/buyer-policy";
+
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
@@ -45,11 +45,12 @@ export default function WorkspacePage() {
       const auth = await call("/api/auth");
       const current = auth.user as User | null;
       setUser(current);
-      if (current?.role === "ADMIN" && window.location.hash !== "#profile") { router.replace("/workspace/admin"); return; }
+      if (window.location.hash === "#profile" || (current?.role !== "CUSTOMER" && window.location.hash === "#addresses")) { router.replace("/account" + (window.location.hash === "#addresses" ? "#addresses" : "")); return; }
+      if (current?.role === "ADMIN") { router.replace("/workspace/admin"); return; }
       if (!current) { setData({}); return; }
-      const endpoint = current.role === "SELLER" ? "/api/seller" : current.role === "RIDER" ? "/api/rider" : current.role === "ADMIN" ? "/api/admin" : "/api/orders";
+      const endpoint = current.role === "SELLER" ? "/api/seller" : current.role === "RIDER" ? "/api/rider" : "/api/orders";
       let dashboard = await call(endpoint);
-      if (canBuy(current.role)) {
+      if (current.role === "CUSTOMER") {
         const [addressData, planData, favoriteData] = await Promise.all([call("/api/addresses"), call("/api/subscriptions"), call("/api/favorites")]);
         setAddresses((addressData.addresses ?? []) as Row[]); setPlans((planData.subscriptions ?? []) as Row[]);
         setFavoriteRows((favoriteData.favorites ?? []) as Row[]); setFavoriteKitchenRows((favoriteData.favoriteKitchens ?? []) as Row[]);
@@ -77,7 +78,7 @@ export default function WorkspacePage() {
       try {
         const response = await fetch("/api/rider", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "HEARTBEAT" }), cache: "no-store" });
         if (!response.ok) void load();
-      } catch { /* API stale timeout will switch this rider offline safely. */ }
+      } catch { /* A missed heartbeat must not change the rider's chosen availability. */ }
     };
     void heartbeat();
     const timer = window.setInterval(() => void heartbeat(), 30_000);
@@ -129,12 +130,12 @@ export default function WorkspacePage() {
       <section className="workspace-section" id="favorites"><div className="workspace-section-heading"><div><span className="eyebrow">KEEP THESE CLOSE</span><h2>Your favorites</h2></div></div><div className="favorite-tabs" role="tablist" aria-label="Saved favorites"><button type="button" role="tab" aria-selected={favoriteTab === "foods"} className={favoriteTab === "foods" ? "active" : ""} onClick={() => setFavoriteTab("foods")}>Foods <span>{favoriteRows.length}</span></button><button type="button" role="tab" aria-selected={favoriteTab === "kitchens"} className={favoriteTab === "kitchens" ? "active" : ""} onClick={() => setFavoriteTab("kitchens")}>Kitchens <span>{favoriteKitchenRows.length}</span></button></div>{favoriteTab === "foods" ? favoriteRows.length ? <div className="workspace-list">{favoriteRows.map((favorite) => { const item = favorite.menuItem as Row; const favoriteShop = favorite.shop as Row; return <article className="workspace-card workspace-row favorite-row" key={String(favorite.id)}><Link href={`/kitchens/${String(favorite.shopId)}?item=${String(favorite.menuItemId)}`}><div><b>{String(item?.name ?? "Saved dish")}</b><span>{String(favoriteShop?.name ?? "Home kitchen")} · {money(item?.price)}</span></div><span>View kitchen →</span></Link><button type="button" className="favorite-remove" onClick={() => void removeFavorite(Number(favorite.menuItemId))} aria-label={`Remove ${String(item?.name ?? "dish")} from favorites`} aria-pressed="true">♥</button></article>; })}</div> : <p className="workspace-muted">Your saved dishes will appear here. <Link href="/#discover">Explore homemade favourites →</Link></p> : favoriteKitchenRows.length ? <div className="workspace-list">{favoriteKitchenRows.map((favorite) => { const favoriteShop = favorite.shop as Row; return <article className="workspace-card workspace-row favorite-row" key={String(favorite.id)}><Link href={`/kitchens/${String(favorite.shopId)}`}><div><b>{String(favoriteShop?.name ?? "Home kitchen")}</b><span>{String(favoriteShop?.city ?? "Homemade food nearby")}</span></div><span>View kitchen →</span></Link><button type="button" className="favorite-remove" onClick={() => void removeKitchenFavorite(Number(favorite.shopId))} aria-label={`Remove ${String(favoriteShop?.name ?? "kitchen")} from favorites`} aria-pressed="true">♥</button></article>; })}</div> : <p className="workspace-muted">Your saved kitchens will appear here. <Link href="/#featured">Meet local cooks →</Link></p>}</section>
     </>}
     {(user.role === "SELLER" || user.role === "RIDER") && <OperationalDashboard role={user.role} data={data} onSaved={load}/>}
-    {canBuy(user.role) && <>
+    {user.role === "CUSTOMER" && <>
       <SavedAddresses onChange={() => { void call("/api/addresses").then(r => setAddresses((r.addresses ?? []) as Row[])); }}/>
       <section className="workspace-section"><div className="workspace-section-heading"><div><span className="eyebrow">A LITTLE ROUTINE</span><h2>Your meal plans</h2></div><Link href="/meal-plans" className="meal-tracker-link">Open live tracker →</Link></div>{plans.length ? <div className="workspace-list">{plans.map((subscription) => <article className="workspace-card" key={String(subscription.id)}><div className="workspace-card-top"><div><b>{String((subscription.plan as Row | undefined)?.name ?? "Meal plan")}</b><span>{title((subscription.plan as Row | undefined)?.type)} · {String((subscription.plan as Row | undefined)?.shop && ((subscription.plan as Row).shop as Row).name)}</span></div><span className="status-pill">{title(subscription.status)}</span></div><p>Next meal: {String(subscription.nextDelivery ?? "To be scheduled")}</p><div className="workspace-actions"><button onClick={() => void perform(() => call("/api/subscriptions", "PATCH", { subscriptionId: subscription.id, action: subscription.status === "PAUSED" ? "resume" : "pause" }), subscription.status === "PAUSED" ? "Plan resumed." : "Plan paused.")} disabled={busy}>{subscription.status === "PAUSED" ? "Resume" : "Pause"}</button><button onClick={() => askConfirmation(() => void perform(() => call("/api/subscriptions", "PATCH", { subscriptionId: subscription.id, action: "cancel" }), "Plan cancelled."), "Cancel this meal plan?", "This will stop future subscription renewals.", "Cancel plan")} disabled={busy}>Cancel</button></div></article>)}</div> : <p className="workspace-muted">No meal plans yet. Browse the plans below to make weekday meals easier.</p>}</section><section className="workspace-section"><div className="workspace-section-heading"><div><span className="eyebrow">COOKED FOR YOUR WEEK</span><h2>Meal plans from home cooks</h2></div></div><div className="plan-grid">{rows(data.plans).length ? rows(data.plans).map((plan) => <SpotlightCard className="spotlight-plan" glowColor="purple" size="medium" key={`plan-glow-${String(plan.id)}`}><article id={`plan-${String(plan.id)}`} className="workspace-card plan-card" key={String(plan.id)}><span className="status-pill">{title(plan.type)}</span><h3>{String(plan.name)}</h3><p>{String(plan.description ?? "Fresh homemade meals from a local kitchen.")}</p><b>{money(plan.price, String(plan.currency ?? "EUR"))} <small>/ {String(plan.type).toLowerCase()}</small></b><form className="workspace-form" onSubmit={(event) => void subscribe(event, Number(plan.id))}><label>Delivery address<select name="addressId" required defaultValue=""><option value="" disabled>Choose a saved address</option>{addresses.map((address) => <option key={String(address.id)} value={String(address.id)}>{String(address.label ?? address.addressLine1)} — {String(address.city)}</option>)}</select></label><label>Start date<input type="date" name="startDate" required/></label><label>Portions<input type="number" min="1" max="20" name="portions" defaultValue="1"/></label><label>Delivery time<input type="time" name="deliveryTime" defaultValue="12:00"/></label><button className="dark-cta" disabled={busy || Boolean(plan.isOwnKitchen)}>{plan.isOwnKitchen ? "Your kitchen" : "Subscribe with Stripe"} <span>→</span></button></form></article></SpotlightCard>) : <p className="workspace-muted">No active meal plans are published yet.</p>}</div></section></>}
 
 
-    {user.role !== "CUSTOMER" && <AccountProfile user={user} onSaved={load}/>}
+
 
 
       </div></div>

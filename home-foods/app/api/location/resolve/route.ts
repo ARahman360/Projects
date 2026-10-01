@@ -1,3 +1,4 @@
+import {canBuy} from '@/src/lib/buyer-policy';
 import { getSession } from "@/src/lib/auth";
 import { getLocationConfiguration, isLocationServiceUnavailableMessage, resolveLocation, verifyAddressText, reverseAddressCandidate, verifySavedFinnishAddress, type VerifiedLocation } from "@/src/lib/location";
 import { readLocationProof, signLocation, isSandboxAddress } from "@/src/lib/address-policy";
@@ -16,7 +17,7 @@ export async function POST(request: Request) {
     if (proof) verified = proof as VerifiedLocation;
     else if (body.addressId !== undefined) {
       const session = await getSession();
-      if (!session || session.role !== "CUSTOMER") return Response.json({ error: "Sign in to verify a saved address." }, { status: 401 });
+      if (!session || !canBuy(session.role)) return Response.json({ error: "Sign in to verify a saved address." }, { status: 401 });
       const address = await getSavedAddress(Number(body.addressId), session.userId);
       if (!address) return Response.json({ error: "Saved address not found. Choose another address." }, { status: 404 });
       if (isSandboxAddress(address) && isSandboxAddressFallbackEnabled()) return Response.json({ ...address, formattedAddress: `${address.addressLine1}, ${address.postalCode} ${address.city}, Finland`, sandbox: true, deliverable: true, nationwideDevelopmentMode: true });

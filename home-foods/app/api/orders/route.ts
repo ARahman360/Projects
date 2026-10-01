@@ -76,6 +76,8 @@ export async function POST(request: Request) {
     }
     const selectedAddressId = Number(body.addressId);
     const hasSavedAddress = Number.isInteger(selectedAddressId) && selectedAddressId > 0;
+    if (session.role === "RIDER" && !hasSavedAddress) return jsonError("Add and select a saved personal delivery address before checkout.", 422);
+    if (hasSavedAddress && !(await db.orm.public.Address.where({id:selectedAddressId,userId:session.userId,isArchived:false}).first())) return jsonError("This saved address was removed or is unavailable. Choose another address.",422);
     if (!hasSavedAddress && (typeof body.addressLine1 !== "string" || body.addressLine1.trim().length < 5 || typeof body.city !== "string" || body.city.trim().length < 2)) return jsonError("Enter a delivery address and city.");
     const paymentMethod = body.paymentMethod === "CARD" ? "CARD" : "CASH";
     if (paymentMethod === "CARD" && !process.env.STRIPE_SECRET_KEY) return jsonError("Online card payments are not configured yet. Choose cash on delivery or ask the administrator to configure Stripe.", 503);

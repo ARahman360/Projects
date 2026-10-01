@@ -35,12 +35,6 @@ export async function POST(request: Request) {
       const user = await db.orm.public.User.where((row) => row.email.eq(email)).first();
       if (isDevelopmentFixtureLogin && !user?.name?.startsWith("[TEST]")) return jsonError("Email or password is incorrect.", 401);
       if (!user || !(await verifyPassword(password, user.password))) return jsonError("Email or password is incorrect.", 401);
-      // Rider availability belongs to the account, not a browser session. Every
-      // new login starts offline so an old or parallel session can't receive jobs.
-      if (user.role === "RIDER") {
-        const rider = await db.orm.public.Rider.where({ userId: user.id }).first();
-        if (rider?.isAvailable) await db.orm.public.Rider.where({ id: rider.id }).update({ isAvailable: false });
-      }
       await setSession({ userId: user.id, role: user.role, email: user.email, name: user.name });
       return Response.json({ user: { id: user.id, role: user.role, email: user.email, name: user.name } });
     }

@@ -12,6 +12,7 @@ import "./addresses.css";
 import "./theme-system.css";
 import "./customer-collections.css";
 import "./operations.css";
+import "./seller-management.css";
 import "./admin-workspace.css";
 import "./app-navigation.css";
 import "./kitchen-experience.css";

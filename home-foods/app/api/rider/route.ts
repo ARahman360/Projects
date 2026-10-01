@@ -8,20 +8,14 @@ import { getKitchenDeliveryDistance } from "@/src/lib/location";
 import { isKitchenLocationAllowed, isDeliveryRadiusEnforced, isNationwideDevelopmentSeller, isNationwideDevelopmentMode } from "@/src/lib/feature-flags";
 
 export const runtime = "nodejs";
-const HEARTBEAT_STALE_MS = 2 * 60 * 1000;
+
 
 export async function GET() {
   const session = await getSession();
   if (!session) return jsonError("Sign in to open the rider workspace.", 401);
   if (session.role !== "RIDER") return jsonError("This workspace is for riders only.", 403);
   try {
-    let rider = await db.orm.public.Rider.where({ userId: session.userId }).first();
-    if (!rider) return jsonError("Rider profile not found.", 404);
-    // Rider.updatedAt doubles as a heartbeat and avoids a migration just to
-    // track presence. If the workspace stops pinging, stale availability ends.
-    if (rider.isAvailable && Date.now() - new Date(rider.updatedAt).getTime() > HEARTBEAT_STALE_MS) {
-      rider = await db.orm.public.Rider.where({ id: rider.id }).update({ isAvailable: false });
-    }
+    const rider = await db.orm.public.Rider.where({ userId: session.userId }).first();
     if (!rider) return jsonError("Rider profile not found.", 404);
     const riderAccount = await db.orm.public.User.where({id:session.userId}).select("accountStatus").first();
     const pendingJobs = rider.isAvailable && riderAccount?.accountStatus === "ACTIVE" ? await db.orm.public.Delivery.where({ status: "UNASSIGNED" }).where(d=>d.order.some(o=>o.customerId.neq(session.userId)))
@@ -162,7 +156,6 @@ export async function PATCH(request: Request) {
         await tx.orm.public.ScheduledMealEvent.create({ scheduledMealId: scheduled.id, status: target, actorId: session.userId, actorRole: "RIDER" });
       }
       if (body.status === "DELIVERED") await tx.orm.public.Payment.where({ orderId: delivery.orderId, method: "CASH" }).update({ status: "PAID" });
-      if (body.status === "DELIVERED") await tx.orm.public.Rider.where({ id: rider.id }).update({ isAvailable: false });
     });
     return Response.json({ success: true });
   } catch (error) {

@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config({path:'.env.local',quiet:true});dotenv.config({quiet:true});
 process.env.NODE_ENV='development';
 import assert from 'node:assert/strict';
-import {randomUUID,scryptSync} from 'node:crypto';
+import {randomUUID,scryptSync,createHash} from 'node:crypto';
 import pg from 'pg';
 const {db}=await import('../src/prisma/db.ts');
 const {verificationFields}=await import('../src/lib/address-policy.ts');
@@ -34,7 +34,28 @@ try {
   who.item=await db.orm.public.MenuItem.create({shopId:who.shop.id,name:'[TEST] Buyer-role dish',price:5});
  }
  for(const who of [rider,otherRider])who.rider=await db.orm.public.Rider.create({userId:who.user.id,isAvailable:true,isVerified:true});
+ // Verified kitchen address becomes a delivery copy, never an operational edit.
+ await db.orm.public.Address.where({id:seller.address.id}).delete();
+ const kitchenLocation={address:'Mannerheimintie 9, 00100 Helsinki, Finland',city:'Helsinki',latitude:60.1699,longitude:24.9384};
+ await db.orm.public.Shop.where({id:seller.shop.id}).update({...kitchenLocation,locationVerifiedAt:new Date().toISOString(),locationVerificationHash:createHash('sha256').update(JSON.stringify(Object.values(kitchenLocation))).digest('hex')});
+ seller.address=(await api(seller,'/api/addresses',{action:'use-kitchen-address'},'POST',201)).address;
+ assert.equal(seller.address.addressLine1,'Mannerheimintie 9');assert.equal(seller.address.isDefault,true);
+ const alternate=await db.orm.public.Address.create({userId:seller.user.id,...fields,addressLine2:'Test apartment',...verificationFields(fields)});
+ await api(seller,'/api/addresses',{id:alternate.id,action:'default'});
+ await api(seller,'/api/addresses',{action:'use-kitchen-address'},'POST',201);
+ assert.equal((await db.orm.public.Address.where({id:alternate.id}).first()).isDefault,true);
+ assert.equal((await db.orm.public.Shop.where({id:seller.shop.id}).first()).address,kitchenLocation.address);
+ await db.orm.public.Rider.where({id:otherRider.rider.id}).update({updatedAt:'2020-01-01T00:00:00.000Z'});
+ assert.equal((await api(otherRider,'/api/rider')).rider.isAvailable,true);
+ await api(admin,'/api/admin');
+ assert.equal((await db.orm.public.Rider.where({id:otherRider.rider.id}).first()).isAvailable,true);
  const body=(who,items)=>({lines:items.map(i=>({menuItemId:i.id,quantity:1})),addressId:who.address.id,paymentMethod:'CASH',idempotencyKey:randomUUID()});
+ await db.orm.public.Address.where({id:rider.address.id}).delete();
+ assert.equal((await api(rider,'/api/addresses')).addresses.length,0);
+ await api(rider,'/api/orders',body(rider,[otherSeller.item]),'POST',422);
+ rider.address=(await api(rider,'/api/addresses',{...fields,label:'Personal home',sandboxConfirmation:true},'POST',201)).address;
+ assert.equal(rider.address.isDefault,true);
+ for(const who of [seller,rider])await api(who,'/api/location/resolve',{addressId:who.address.id,candidateOnly:true},'POST');
  assert.equal((await api(seller,'/api/kitchens/'+seller.shop.id)).shop.isOwnKitchen,true);
  assert.equal((await api(seller,'/api/kitchens/'+otherSeller.shop.id)).shop.isOwnKitchen,false);
  await api(seller,'/api/orders',body(seller,[seller.item]),'POST',403);
@@ -44,6 +65,7 @@ try {
  assert.equal(eligibility.checks.find(c=>c.shopId===otherSeller.shop.id).eligible,true);
  const sellerOrder=(await api(seller,'/api/orders',body(seller,[otherSeller.item]),'POST',201)).orders[0].orderId;
  assert.ok((await api(seller,'/api/orders')).orders.some(o=>o.id===sellerOrder));
+ assert.ok(!(await api(seller,'/api/seller')).orders.some(o=>o.id===sellerOrder));
  assert.ok(!(await api(otherSeller,'/api/orders')).orders.some(o=>o.id===sellerOrder));
   for(const status of ['CONFIRMED','PREPARING','READY_FOR_PICKUP'])await api(otherSeller,'/api/seller/orders',{orderId:sellerOrder,status});
   const activeDelivery=await db.orm.public.Delivery.where({orderId:sellerOrder}).first();
@@ -82,12 +104,21 @@ try {
   await api(otherRider,'/api/rider',{deliveryId:delivery.id,status:'PICKED_UP'});
   assert.equal((await api(rider,'/api/orders')).orders.find(o=>o.id===orderId).status,'OUT_FOR_DELIVERY');
   await api(otherRider,'/api/rider',{deliveryId:delivery.id,status:'DELIVERED'});
+  assert.equal((await api(otherRider,'/api/rider')).rider.isAvailable,true);
+  assert.ok(!(await api(rider,'/api/rider')).assigned.some(d=>d.orderId===orderId));
   assert.equal((await api(rider,'/api/orders')).orders.find(o=>o.id===orderId).status,'DELIVERED');
   const notices=(await api(rider,'/api/notifications')).notifications;
   assert.ok(notices.some(n=>n.href===`/orders#order-${orderId}`));
   assert.ok(!notices.some(n=>n.kind==='delivery'&&n.href.endsWith('-'+orderId)));
  }
- console.log(JSON.stringify({result:'PASS',apiChecks:checks,coverage:'seller/rider purchasing, owner and mixed-basket rejection, personal orders, addresses/favorites, self-delivery lists/API/admin rejection, another rider completes delivery, buyer notifications, scheduled meals, seller subscription management'}));
+ await api(otherRider,'/api/rider',{isAvailable:false});
+ assert.equal((await api(otherRider,'/api/rider')).rider.isAvailable,false);
+ await api(otherRider,'/api/rider',{isAvailable:true});
+ const loginAgain=await fetch(base+'/api/auth',{method:'POST',headers:{Origin:base,'Content-Type':'application/json'},body:JSON.stringify({intent:'login',email:otherRider.user.email,password})});assert.equal(loginAgain.status,200);
+ assert.equal((await api(otherRider,'/api/rider')).rider.isAvailable,true);
+ await api(otherRider,'/api/auth',undefined,'DELETE');
+ assert.equal((await db.orm.public.Rider.where({id:otherRider.rider.id}).first()).isAvailable,false);
+ console.log(JSON.stringify({result:'PASS',apiChecks:checks,coverage:'seller/rider purchasing, owner and mixed-basket rejection, personal orders, kitchen default/personal address separation, rider address requirement and saved-address resolver, self-delivery protection, regular/scheduled completion stays online, manual offline/logout, notifications, subscription management'}));
 } finally {
  const c=new pg.Client({connectionString:process.env.DATABASE_URL});await c.connect();
  try {

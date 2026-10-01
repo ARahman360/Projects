@@ -1,3 +1,4 @@
+import {ensureSellerDeliveryAddress} from '@/src/lib/seller-delivery-address';
 import { canBuy } from '@/src/lib/buyer-policy';
 import { db } from "@/src/prisma/db";
 import { getSession, jsonError } from "@/src/lib/auth";
@@ -14,7 +15,8 @@ export async function GET() {
   if (!canBuy(session.role)) return jsonError("Addresses are available for buyer accounts.", 403);
   try {
     const addresses = await db.orm.public.Address.where({ userId: session.userId, isArchived: false }).orderBy(a => a.createdAt.desc()).all();
-    return Response.json({ addresses: addresses.map(a => ({ ...a, status: addressStatus(a) })), sandboxAddressFallback: isSandboxAddressFallbackEnabled() });
+    const kitchen = session.role === "SELLER" ? await db.orm.public.Shop.where({sellerId:session.userId}).select("name","address").first() : null;
+    return Response.json({ kitchen, addresses: addresses.map(a => ({ ...a, status: addressStatus(a) })), sandboxAddressFallback: isSandboxAddressFallbackEnabled() });
   } catch { return jsonError("Saved addresses are unavailable.", 503); }
 }
 async function mutate(request: Request, method: "POST" | "PATCH" | "DELETE") {
@@ -24,6 +26,11 @@ async function mutate(request: Request, method: "POST" | "PATCH" | "DELETE") {
   if (!canBuy(session.role)) return jsonError("Addresses are available for buyer accounts.", 403);
   try {
     const body = await request.json() as Record<string, unknown>;
+    if (method === "POST" && body.action === "use-kitchen-address") {
+      if(session.role !== "SELLER") return jsonError("A seller kitchen is required.",403);
+      const address=await ensureSellerDeliveryAddress(session.userId);
+      return Response.json({address:{...address,status:addressStatus(address)}},{status:201});
+    }
     const existing = method !== "POST" ? await getSavedAddress(Number(body.id), session.userId) : null;
     if (method !== "POST" && !existing) return jsonError("Saved address not found.", 404);
     const unchanged = existing && addressStatus(existing) === "verified" && normalized(String(body.addressLine1 ?? "")) === normalized(existing.addressLine1) && normalized(String(body.city ?? "")) === normalized(existing.city) && body.postalCode === existing.postalCode && (!body.countryCode || body.countryCode === "FI");
