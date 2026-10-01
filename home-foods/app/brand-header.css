@@ -1,0 +1,13 @@
+/* Display the supplied originals through snug windows, preserving their artwork. */
+.homefoods-brand{display:inline-flex;align-items:center;gap:10px;flex-shrink:0;text-decoration:none;max-width:100%;padding:4px;border-radius:12px;background:#fffefa}
+.brand-symbol-art,.brand-wordmark-art{display:block;position:relative;overflow:hidden;flex-shrink:0;isolation:isolate}
+.brand-symbol-art{width:44px;height:44px}
+.brand-symbol-art img{position:absolute;max-width:none;width:182%;height:auto;left:-41%;top:-41%;mix-blend-mode:multiply}
+.brand-wordmark-art{width:190px;aspect-ratio:1280/240}
+.brand-wordmark-art img{position:absolute;max-width:none;width:113.125%;height:auto;left:-6.25%;top:-174%;mix-blend-mode:multiply}
+.homefoods-brand.compact .brand-symbol-art{width:34px;height:34px}.homefoods-brand.compact .brand-wordmark-art{width:150px}
+.app-header :is(.cart-button,.app-cart){position:relative;display:grid!important;place-items:center;gap:0;flex-shrink:0;width:44px;min-width:44px;height:44px;padding:0;overflow:visible}
+.app-header :is(.cart-button,.app-cart)>svg{width:23px;height:23px;flex-shrink:0;margin:0}
+.app-header .cart-button .cart-count,.app-header .app-cart>span{position:absolute;top:-5px;right:-5px;display:grid;place-items:center;min-width:21px;width:auto;height:21px;padding:0 5px;border:2px solid var(--surface);border-radius:999px;background:var(--action);color:var(--on-action);font:700 10px/1 Arial,sans-serif;box-sizing:border-box;pointer-events:none;font-variant-numeric:tabular-nums}
+@media(max-width:760px){.homefoods-brand{gap:5px;padding:3px}.app-header .brand-symbol-art{width:32px;height:32px}.app-header .brand-wordmark-art{width:116px}.app-header-actions{gap:10px}.app-header :is(.cart-button,.app-cart){width:44px;min-width:44px;height:44px}}
+@media(max-width:380px){.app-header .brand-wordmark-art{width:98px}.app-header .brand-symbol-art{width:28px;height:28px}}
