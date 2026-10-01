@@ -1,3 +1,4 @@
+import { canBuy } from '@/src/lib/buyer-policy';
 import { db } from "@/src/prisma/db";
 import { getSession, jsonError } from "@/src/lib/auth";
 import { createSubscriptionCheckout, updateStripeSubscription } from "@/src/lib/stripe";
@@ -11,9 +12,9 @@ const intervals = { DAILY: { interval: "day", count: 1 }, THREE_DAY: { interval:
 export async function GET() {
   const session = await getSession();
   try {
-    const plans = await db.orm.public.SubscriptionPlan.where({ isActive: true }).include("shop", (shop) => shop.select("id", "name", "city", "status", "isOnline", "address").include("seller", (seller) => seller.select("name", "email"))).include("items", (items) => items.include("menuItem", (item) => item.select("id", "name", "imageUrl", "price"))).all();
-    const activePlans = plans.filter((plan) => plan.items.length > 0 && plan.shop?.status === "ACTIVE" && plan.shop.isOnline && isKitchenLocationAllowed(plan.shop.address) && (!isNationwideDevelopmentMode() || isNationwideDevelopmentSeller(plan.shop.seller)));
-    if (!session || session.role !== "CUSTOMER") return Response.json({ plans: activePlans, subscriptions: [] });
+    const plans = await db.orm.public.SubscriptionPlan.where({ isActive: true }).include("shop", (shop) => shop.select("id", "sellerId", "name", "city", "status", "isOnline", "address").include("seller", (seller) => seller.select("name", "email"))).include("items", (items) => items.include("menuItem", (item) => item.select("id", "name", "imageUrl", "price"))).all();
+    const activePlans = plans.map(plan=>({...plan,isOwnKitchen:plan.shop?.sellerId===session?.userId})).filter((plan) => plan.items.length > 0 && plan.shop?.status === "ACTIVE" && plan.shop.isOnline && isKitchenLocationAllowed(plan.shop.address) && (!isNationwideDevelopmentMode() || isNationwideDevelopmentSeller(plan.shop.seller)));
+    if (!session || !canBuy(session.role)) return Response.json({ plans: activePlans, subscriptions: [] });
     const subscriptions = await db.orm.public.Subscription.where({ customerId: session.userId }).include("plan", (plan) => plan.include("shop", (shop) => shop.select("id", "name")).include("items", (items) => items.include("menuItem", (item) => item.select("id", "name", "imageUrl")))).include("address").include("scheduledMeals", (meals) => meals.include("order", (order) => order.include("shop", (shop) => shop.select("id", "name", "city")).include("items", (items) => items.include("menuItem", (item) => item.select("imageUrl"))).include("delivery", (delivery) => delivery.include("rider", (rider) => rider.include("user", (user) => user.select("name", "phone")))).include("statusEvents")).orderBy((meal) => meal.scheduledAt.asc())).orderBy((subscription) => subscription.createdAt.desc()).all();
     return Response.json({ plans: activePlans, subscriptions });
   } catch (error) {
@@ -45,21 +46,22 @@ export async function POST(request: Request) {
       });
       return Response.json({ plan }, { status: 201 });
     }
-    if (session.role !== "CUSTOMER") return jsonError("Only customers can subscribe to a meal plan.", 403);
+    if (!canBuy(session.role)) return jsonError("Eligible accounts can subscribe to a meal plan.", 403);
     const planId = Number(body.planId);
     const addressId = Number(body.addressId);
     const portions = Number(body.portions ?? 1);
     const deliveryTime = typeof body.deliveryTime === "string" ? body.deliveryTime.trim().slice(0, 40) : "12:00";
     const startDate = typeof body.startDate === "string" ? new Date(body.startDate) : new Date(Date.now() + 86_400_000);
     if (!Number.isInteger(planId) || !Number.isInteger(addressId) || !Number.isInteger(portions) || portions < 1 || portions > 20 || Number.isNaN(startDate.getTime())) return jsonError("Choose a meal plan, delivery address, start date, and portion count.");
-    if (!process.env.STRIPE_SECRET_KEY) return jsonError("Recurring card billing is not configured yet. Ask the administrator to configure Stripe.", 503);
-    if (process.env.NODE_ENV === "development" && (!isDevelopmentSandboxEnabled() || !process.env.STRIPE_SECRET_KEY.startsWith("sk_test_"))) return jsonError("Development subscriptions require sandbox payments and a Stripe test key.", 503);
     const [plan, address] = await Promise.all([
-      db.orm.public.SubscriptionPlan.where({ id: planId, isActive: true }).include("shop", (shop) => shop.select("id", "status", "isOnline", "latitude", "longitude", "name", "address").include("seller", (seller) => seller.select("name", "email"))).include("items", (items) => items.include("menuItem")).first(),
+      db.orm.public.SubscriptionPlan.where({ id: planId, isActive: true }).include("shop", (shop) => shop.select("id", "sellerId", "status", "isOnline", "latitude", "longitude", "name", "address").include("seller", (seller) => seller.select("name", "email"))).include("items", (items) => items.include("menuItem")).first(),
       db.orm.public.Address.where({ id: addressId, userId: session.userId, isArchived: false }).first(),
     ]);
     if (!plan || !plan.shop || plan.shop.status !== "ACTIVE" || !plan.shop.isOnline) return jsonError("That meal plan is unavailable.", 404);
     if (isNationwideDevelopmentMode() && !isNationwideDevelopmentSeller(plan.shop.seller)) return jsonError("This kitchen is unavailable in the current development catalog.", 403);
+    if (plan.shop.sellerId === session.userId) return jsonError("You cannot purchase your own kitchen’s meal plan.", 403);
+    if (!process.env.STRIPE_SECRET_KEY) return jsonError("Recurring card billing is not configured yet. Ask the administrator to configure Stripe.", 503);
+    if (process.env.NODE_ENV === "development" && (!isDevelopmentSandboxEnabled() || !process.env.STRIPE_SECRET_KEY.startsWith("sk_test_"))) return jsonError("Development subscriptions require sandbox payments and a Stripe test key.", 503);
     if (!address) return jsonError("Choose one of your saved delivery addresses.", 404);
     if (!plan.items.length) return jsonError("This kitchen has not selected the dishes included in this meal plan yet.", 409);
     let verifiedAddress;
@@ -81,6 +83,8 @@ export async function POST(request: Request) {
       if (!activeAccount.affectedRows) throw new Error("This account cannot purchase a new meal plan.");
       const activeShop = await tx.execute(tx.sql.public.shop.update({updatedAt:new Date().toISOString()}).where((f,fn)=>fn.and(fn.eq(f.id,plan.shop!.id),fn.eq(f.status,"ACTIVE"),fn.eq(f.isOnline,true))).build());
       if (!activeShop.affectedRows) throw new Error("This kitchen is not accepting new meal-plan purchases.");
+      const currentShop = await tx.orm.public.Shop.where({id:plan.shop!.id}).first();
+      if (currentShop?.sellerId === session.userId) throw new Error("You cannot purchase your own kitchen’s meal plan.");
       return tx.orm.public.Subscription.create({ customerId: session.userId, planId, status: "PAUSED", startDate: startDate.toISOString(), nextDelivery: startDate.toISOString(), autoRenew: true, addressId, deliveryTime, portions });
     });
     try {
@@ -101,9 +105,10 @@ export async function POST(request: Request) {
 export async function PATCH(request: Request) {
   const session = await getSession();
   if (!session) return jsonError("Sign in to manage your subscription.", 401);
-  if (session.role === "SELLER") {
+  const body = await request.json().catch(() => null) as Record<string, unknown> | null;
+  if (!body || typeof body !== "object" || Array.isArray(body)) return jsonError("Invalid request.", 400);
+  if (session.role === "SELLER" && body.subscriptionId === undefined) {
     try {
-      const body = await request.json() as Record<string, unknown>;
       const planId = Number(body.planId);
       const shop = await db.orm.public.Shop.where({ sellerId: session.userId }).first();
       const plan = shop && Number.isInteger(planId) ? await db.orm.public.SubscriptionPlan.where({ id: planId, shopId: shop.id }).first() : null;
@@ -132,11 +137,11 @@ export async function PATCH(request: Request) {
       return jsonError("Couldn't update that meal plan.", 503);
     }
   }
-  if (session.role !== "CUSTOMER") return jsonError("Only customers can manage subscriptions.", 403);
+  if (!canBuy(session.role)) return jsonError("Eligible accounts can manage subscriptions.", 403);
   try {
-    const body = await request.json() as { subscriptionId?: number; action?: string };
+
     const id = Number(body.subscriptionId);
-    if (!Number.isInteger(id) || !["pause", "resume", "cancel"].includes(body.action ?? "")) return jsonError("Choose a subscription and action.");
+    if (!Number.isInteger(id) || !["pause", "resume", "cancel"].includes(String(body.action ?? ""))) return jsonError("Choose a subscription and action.");
     const subscription = await db.orm.public.Subscription.where({ id, customerId: session.userId }).first();
     if (!subscription) return jsonError("Subscription not found.", 404);
     if (body.action === "cancel") {

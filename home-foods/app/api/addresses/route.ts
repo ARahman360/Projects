@@ -1,3 +1,4 @@
+import { canBuy } from '@/src/lib/buyer-policy';
 import { db } from "@/src/prisma/db";
 import { getSession, jsonError } from "@/src/lib/auth";
 import { isSameOriginRequest } from "@/src/lib/request-security";
@@ -10,7 +11,7 @@ export const runtime = "nodejs";
 export async function GET() {
   const session = await getSession();
   if (!session) return jsonError("Sign in to view saved addresses.", 401);
-  if (session.role !== "CUSTOMER") return jsonError("Addresses are available for customer accounts.", 403);
+  if (!canBuy(session.role)) return jsonError("Addresses are available for buyer accounts.", 403);
   try {
     const addresses = await db.orm.public.Address.where({ userId: session.userId, isArchived: false }).orderBy(a => a.createdAt.desc()).all();
     return Response.json({ addresses: addresses.map(a => ({ ...a, status: addressStatus(a) })), sandboxAddressFallback: isSandboxAddressFallbackEnabled() });
@@ -20,7 +21,7 @@ async function mutate(request: Request, method: "POST" | "PATCH" | "DELETE") {
   if (!isSameOriginRequest(request)) return jsonError("Request origin could not be verified.", 403);
   const session = await getSession();
   if (!session) return jsonError("Sign in to manage addresses.", 401);
-  if (session.role !== "CUSTOMER") return jsonError("Addresses are available for customer accounts.", 403);
+  if (!canBuy(session.role)) return jsonError("Addresses are available for buyer accounts.", 403);
   try {
     const body = await request.json() as Record<string, unknown>;
     const existing = method !== "POST" ? await getSavedAddress(Number(body.id), session.userId) : null;

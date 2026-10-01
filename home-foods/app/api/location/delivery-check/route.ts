@@ -1,3 +1,4 @@
+import { canBuy } from '@/src/lib/buyer-policy';
 import { assertFinnishKitchen } from "@/src/lib/location";
 import { db } from "@/src/prisma/db";
 import { getSession } from "@/src/lib/auth";
@@ -10,12 +11,13 @@ export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {
+    const session = await getSession();
     const body = await request.json() as Record<string, unknown>;
     if (!Array.isArray(body.shopIds) || body.shopIds.length < 1 || body.shopIds.length > 20) return Response.json({ error: "Choose items from one or more kitchens first." }, { status: 400 });
     let address: {latitude:number|null;longitude:number|null;formattedAddress:string;countryCode:string};
     if (Number.isInteger(body.addressId) && Number(body.addressId) > 0) {
       const session = await getSession();
-      if (!session || session.role !== "CUSTOMER") return Response.json({ error: "Sign in to use your saved address." }, { status: 401 });
+      if (!session || !canBuy(session.role)) return Response.json({ error: "Sign in to use your saved address." }, { status: 401 });
       const saved = await resolveSavedDeliveryAddress(Number(body.addressId),session.userId);
       address = {...saved,formattedAddress:[saved.addressLine1,saved.postalCode,saved.city,"Finland"].join(", "),countryCode:saved.countryCode!};
     } else if (typeof body.latitude === "number" && typeof body.longitude === "number") address = await verifyCoordinates(body.latitude, body.longitude);
@@ -23,13 +25,14 @@ export async function POST(request: Request) {
     else return Response.json({ error: "Choose a confirmed Finnish delivery address first." }, { status: 400 });
 
     const ids = [...new Set(body.shopIds.map(Number).filter((id) => Number.isInteger(id) && id > 0))];
-    const shops = await db.orm.public.Shop.where((shop) => shop.id.in(ids)).select("id", "name", "address", "status", "isOnline", "latitude", "longitude").include("seller", (seller) => seller.select("name", "email")).all();
+    const shops = await db.orm.public.Shop.where((shop) => shop.id.in(ids)).select("id", "sellerId", "name", "address", "status", "isOnline", "latitude", "longitude").include("seller", (seller) => seller.select("name", "email")).all();
     const checks: Array<{ shopId: number; eligible: boolean; status: string; distanceKm?: number; message?: string }> = [];
     const locatedShops = shops.filter((shop) => ids.includes(shop.id) && shop.status === "ACTIVE" && shop.latitude != null && shop.longitude != null);
     const distances = isDeliveryRadiusEnforced() ? await getKitchenDeliveryDistances({latitude:address.latitude!,longitude:address.longitude!}, locatedShops.map((shop) => ({ latitude: shop.latitude!, longitude: shop.longitude! }))) : [];
     if (distances.some((distance) => distance === null)) throw new Error(ROUTING_UNAVAILABLE_MESSAGE);
     for (const shopId of ids) {
       const shop = shops.find((row) => row.id === shopId);
+      if (shop && shop.sellerId === session?.userId) { checks.push({shopId, eligible:false, status:"own_kitchen", message:"You cannot order from your own kitchen."}); continue; }
       if (!shop || shop.status !== "ACTIVE" || !shop.isOnline) { checks.push({ shopId, eligible: false, status: "unavailable", message: "This kitchen is unavailable." }); continue; }
       if (isNationwideDevelopmentMode() && !isNationwideDevelopmentSeller(shop.seller)) { checks.push({ shopId, eligible: false, status: "unavailable", message: "This kitchen is outside the configured development storefront." }); continue; }
       await assertFinnishKitchen(shop);

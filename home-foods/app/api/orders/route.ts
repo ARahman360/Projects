@@ -1,3 +1,4 @@
+import { canBuy, ownsKitchen } from '@/src/lib/buyer-policy';
 import {pickupSnapshot} from "@/src/lib/pickup-snapshot";
 import { assertFinnishKitchen } from "@/src/lib/location";
 import { createHash, randomBytes } from "node:crypto";
@@ -32,7 +33,7 @@ export async function GET() {
   const session = await getSession();
   if (!session) return jsonError("Sign in to view orders.", 401);
   try {
-    if (session.role === "CUSTOMER") {
+    if (canBuy(session.role)) {
       const orders = await db.orm.public.Order.where({ customerId: session.userId })
         .include("shop", (shop) => shop.select("id", "name", "city"))
         .include("address")
@@ -45,28 +46,6 @@ export async function GET() {
         .limit(50)
         .all();
       return Response.json({ orders });
-    }
-    if (session.role === "SELLER") {
-      const shop = await db.orm.public.Shop.where({ sellerId: session.userId }).first();
-      if (!shop) return jsonError("Set up your shop before viewing orders.", 404);
-      const orders = await db.orm.public.Order.where({ shopId: shop.id })
-        .include("items")
-        .include("payment")
-        .include("delivery")
-        .orderBy((order) => order.createdAt.desc())
-        .limit(50)
-        .all();
-      return Response.json({ orders, shop });
-    }
-    if (session.role === "RIDER") {
-      const rider = await db.orm.public.Rider.where({ userId: session.userId }).first();
-      if (!rider) return jsonError("Rider profile not found.", 404);
-      const deliveries = await db.orm.public.Delivery.where({ riderId: rider.id })
-        .include("order", (order) => order.include("shop").include("address").include("items"))
-        .orderBy((delivery) => delivery.createdAt.desc())
-        .limit(50)
-        .all();
-      return Response.json({ deliveries, rider });
     }
     const orders = await db.orm.public.Order.include("shop").include("items").include("payment").include("delivery").orderBy((order) => order.createdAt.desc()).limit(100).all();
     const deliveries = await db.orm.public.Delivery.include("order", (order) => order.include("shop").include("address")).where({ status: "UNASSIGNED" }).all();
@@ -83,7 +62,7 @@ export async function POST(request: Request) {
   let requestKey = "", requestHash = "";
   const session = await getSession();
   if (!session) return jsonError("Sign in to place an order.", 401);
-  if (session.role !== "CUSTOMER") return jsonError("Only customer accounts can place orders.", 403);
+  if (!canBuy(session.role)) return jsonError("This account cannot place orders.", 403);
   try {
     const body = await request.json() as { lines?: Array<{ menuItemId?: number; quantity?: number }>; addressId?: number | null; addressLine1?: string; addressLine2?: string; city?: string; postalCode?: string; notes?: string; paymentMethod?: string; idempotencyKey?: string; verificationToken?: string; countryCode?: string };
     if (!Array.isArray(body.lines) || body.lines.length < 1 || body.lines.length > 30) return jsonError("Your cart is empty or has too many different items.");
@@ -109,11 +88,12 @@ export async function POST(request: Request) {
       quantities.set(id, (quantities.get(id) ?? 0) + quantity);
     }
     const menuItems = await db.orm.public.MenuItem.where((item) => item.id.in([...quantities.keys()]))
-      .include("shop", (shop) => shop.select("id", "name", "address", "description", "status", "isOnline", "deliveryFee", "estimatedMinutes", "latitude", "longitude").include("seller", (seller) => seller.select("name", "email")))
+      .include("shop", (shop) => shop.select("id", "sellerId", "name", "address", "description", "status", "isOnline", "deliveryFee", "estimatedMinutes", "latitude", "longitude").include("seller", (seller) => seller.select("name", "email")))
       .all();
     if (menuItems.length !== quantities.size || menuItems.some((item) => !item.isAvailable || !item.shop || item.shop.status !== "ACTIVE" || !item.shop.isOnline)) return jsonError("A kitchen is offline or an item is unavailable. Your basket has been kept.", 409);
     if (menuItems.some((item) => !item.shop)) return jsonError("A cart shop is unavailable. Refresh the menu and try again.", 409);
     if (isNationwideDevelopmentMode() && menuItems.some((item) => !isNationwideDevelopmentSeller(item.shop?.seller))) return jsonError("This kitchen is unavailable in the current development catalog.", 403);
+    if (menuItems.some(item => ownsKitchen(session.userId, item.shop?.sellerId))) return jsonError("You cannot order from your own kitchen. Remove those items and keep the rest of your basket.", 403);
     const byShop = new Map<number, typeof menuItems>();
     for (const item of menuItems) byShop.set(item.shopId, [...(byShop.get(item.shopId) ?? []), item]);
     const addressLine1 = typeof body.addressLine1 === "string" ? body.addressLine1.trim() : "";
@@ -159,6 +139,7 @@ export async function POST(request: Request) {
         if (!currentShop.affectedRows) throw new Error("This kitchen is no longer accepting new orders. Your basket has been kept.");
         const subtotal = items.reduce((sum, item) => sum + item.price * (quantities.get(item.id) ?? 0), 0);
         const firstShop = await tx.orm.public.Shop.where({id:shopId}).first();
+        if (ownsKitchen(session.userId, firstShop?.sellerId)) throw new Error("You cannot order from your own kitchen.");
         const deliveryFee = firstShop?.deliveryFee ?? 2.5;
         const serviceFee = Math.round(subtotal * 0.05 * 100) / 100;
         const total = Math.round((subtotal + deliveryFee + serviceFee) * 100) / 100;

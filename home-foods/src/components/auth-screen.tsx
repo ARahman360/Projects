@@ -62,7 +62,7 @@ export default function AuthScreen({ mode }: { mode: Mode }) {
           }
         } catch { /* Keep account navigation working if storage is unavailable. */ }
       }
-      const destination = payload.user.role === "CUSTOMER" ? returnTo ?? "/" : "/workspace";
+      const destination = returnTo ?? (payload.user.role === "CUSTOMER" ? "/" : "/workspace");
       router.replace(destination);
       router.refresh();
     } catch (cause) { setError(cause instanceof Error ? cause.message : "The account service is unavailable."); }

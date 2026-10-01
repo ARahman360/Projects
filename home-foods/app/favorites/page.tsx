@@ -1,4 +1,6 @@
 "use client";
+import { canBuy } from '@/src/lib/buyer-policy';
+
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -88,8 +90,9 @@ export default function FavoritesPage() {
   };
 
   const addToBasket = (item: Row, kitchen: Row, itemId: number, shopId: number) => {
-    if (!profile?.id || profile.role !== "CUSTOMER") { setError("Sign in with a customer account to add food to your basket."); return; }
+    if (!profile?.id || !canBuy(profile.role)) { setError("Sign in with a customer account to add food to your basket."); return; }
     const reviews = Array.isArray(kitchen.reviews) ? (kitchen.reviews as Row[]).map((review) => Number(review.rating)).filter(Number.isFinite) : [];
+    if (Number(kitchen.sellerId) === profile.id) { setError("You cannot order from your own kitchen."); return; }
     const dish: CartDish = {
       id: itemId, shopId, name: text(item.name, "Saved dish"), shop: text(kitchen.name, "Home kitchen"),
       cuisine: text(kitchen.city, "Finnish home cooking"), category: "Homemade favourite", price: Number(item.price ?? 0),

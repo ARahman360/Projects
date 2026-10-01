@@ -1,4 +1,6 @@
 "use client";
+import { canBuy } from '@/src/lib/buyer-policy';
+
 
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import Link from "next/link";
@@ -48,7 +50,7 @@ export default function MealPlansPage() {
         if (!authenticated) {
           const auth = await fetch("/api/auth", { cache: "no-store" }).then((response) => response.json());
           if (!auth.user) { router.replace("/signin?returnTo=%2Fmeal-plans"); return; }
-          if (auth.user.role !== "CUSTOMER") { router.replace("/workspace"); return; }
+          if (!canBuy(auth.user.role)) { router.replace("/workspace"); return; }
           authenticated = true;
         }
         const response = await fetch("/api/subscriptions", { cache: "no-store" });

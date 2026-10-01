@@ -1,3 +1,4 @@
+import { canBuy } from '@/src/lib/buyer-policy';
 import { db } from "@/src/prisma/db";
 import { isSameOriginRequest } from "@/src/lib/request-security";
 import { getSession, jsonError } from "@/src/lib/auth";
@@ -7,9 +8,9 @@ export const runtime = "nodejs";
 export async function GET() {
   const session = await getSession();
   if (!session) return jsonError("Sign in to see your saved dishes.", 401);
-  if (session.role !== "CUSTOMER") return jsonError("Favorites are available for customer accounts.", 403);
+  if (!canBuy(session.role)) return jsonError("Favorites are available for buyer accounts.", 403);
   try {
-    const favorites = await db.orm.public.Favorite.where({ customerId: session.userId }).include("menuItem").include("shop", (shop) => shop.select("id", "name", "description", "city", "coverImageUrl", "logoUrl", "deliveryFee", "estimatedMinutes", "status").include("reviews", (reviews) => reviews.select("rating"))).orderBy((favorite) => favorite.createdAt.desc()).all();
+    const favorites = await db.orm.public.Favorite.where({ customerId: session.userId }).include("menuItem").include("shop", (shop) => shop.select("id", "sellerId", "name", "description", "city", "coverImageUrl", "logoUrl", "deliveryFee", "estimatedMinutes", "status").include("reviews", (reviews) => reviews.select("rating"))).orderBy((favorite) => favorite.createdAt.desc()).all();
     const favoriteKitchens = await db.orm.public.KitchenFavorite.where({ customerId: session.userId }).include("shop", (shop) => shop.select("id", "name", "description", "city", "coverImageUrl", "logoUrl", "deliveryFee", "estimatedMinutes", "status").include("reviews", (reviews) => reviews.select("rating"))).orderBy((favorite) => favorite.createdAt.desc()).all();
     return Response.json({ favorites, favoriteKitchens });
   } catch (error) {
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
   if (!isSameOriginRequest(request)) return jsonError("Request origin could not be verified.", 403);
   const session = await getSession();
   if (!session) return jsonError("Sign in to save favorites.", 401);
-  if (session.role !== "CUSTOMER") return jsonError("Favorites are available for customer accounts.", 403);
+  if (!canBuy(session.role)) return jsonError("Favorites are available for buyer accounts.", 403);
   try {
     const body = await request.json() as { menuItemId?: unknown; shopId?: unknown };
     if (body.shopId != null && body.menuItemId != null) return jsonError("Save one kitchen or dish at a time.");

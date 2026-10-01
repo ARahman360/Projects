@@ -1,3 +1,4 @@
+import { canBuy } from '@/src/lib/buyer-policy';
 import { db } from "@/src/prisma/db";
 import { getSession, jsonError } from "@/src/lib/auth";
 
@@ -18,7 +19,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const session = await getSession();
   if (!session) return jsonError("Sign in to review an order.", 401);
-  if (session.role !== "CUSTOMER") return jsonError("Only customers can review orders.", 403);
+  if (!canBuy(session.role)) return jsonError("Eligible accounts can review orders.", 403);
   try {
     const body = await request.json() as { orderId?: number; rating?: number; comment?: string };
     const orderId = Number(body.orderId);

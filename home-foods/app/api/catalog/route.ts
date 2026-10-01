@@ -1,3 +1,4 @@
+import { getSession } from '@/src/lib/auth';
 import { db } from "@/src/prisma/db";
 import { getKitchenDeliveryDistances, isWithinDeliveryRadius, MAX_DELIVERY_DISTANCE_METERS } from "@/src/lib/location";
 import { isDeliveryRadiusEnforced, isNationwideDevelopmentMode, isNationwideDevelopmentSeller, isKitchenLocationAllowed } from "@/src/lib/feature-flags";
@@ -13,6 +14,7 @@ const plantBased = /vegetarian|vegan|plant-based|salad|tofu|lentil|chickpea/i;
 
 export async function GET(request: Request) {
   try {
+    const viewer = await getSession();
     const url = new URL(request.url);
     const latParam = url.searchParams.get("lat");
     const lngParam = url.searchParams.get("lng");
@@ -55,7 +57,7 @@ export async function GET(request: Request) {
       const rating = average(shop.reviews ?? []);
       const cuisine = cuisineOf(shop.description);
       return (shop.menuItems ?? []).map((item) => ({
-        id: item.id, shopId: shop.id, name: item.name, shop: shop.name, cuisine,
+        isOwnKitchen: shop.sellerId === viewer?.userId, id: item.id, shopId: shop.id, name: item.name, shop: shop.name, cuisine,
         category: item.category?.name ?? "Other", price: item.price, rating,
         time: shop.estimatedMinutes == null ? "Estimate unavailable" : `${shop.estimatedMinutes} min`, estimatedMinutes: shop.estimatedMinutes,
         deliveryDistanceKm: deliveryChecks.get(shop.id)?.distanceKm ?? null, image: item.imageUrl,

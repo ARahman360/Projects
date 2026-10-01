@@ -6,7 +6,7 @@ import MarketImage from "@/src/components/market-image";
 import SpotlightCard from "@/src/components/ui/spotlight-card";
 import { OriginButton } from "@/src/components/ui/origin-button";
 
-type Dish = { id: number; shopId: number; name: string; shop: string; cuisine: string; category: string; price: number; rating: number | null; time: string; image: string | null; description: string; deliveryFee: number; orderCount?: number; favoriteCount?: number };
+type Dish = { isOwnKitchen?: boolean; id: number; shopId: number; name: string; shop: string; cuisine: string; category: string; price: number; rating: number | null; time: string; image: string | null; description: string; deliveryFee: number; orderCount?: number; favoriteCount?: number };
 type Shop = { id: number; name: string; description?: string | null; logoUrl?: string | null; coverImageUrl?: string | null; city?: string | null; cuisine?: string; status?: string; deliveryFee?: number | null; estimatedMinutes?: number | null; rating?: number | null; reviewCount?: number; orderCount?: number; favoriteCount?: number; deliverable?: boolean | null; deliveryStatus?: string | null; deliveryDistanceKm?: number | null };
 type Section = { id: string; title: string; description: string; kind: "food" | "kitchen"; href: string; items: Array<Dish | Shop> };
 const money = (n: number) => new Intl.NumberFormat("fi-FI", { style: "currency", currency: "EUR" }).format(n);
@@ -38,7 +38,7 @@ export default function HomeSections({ sections, loading, error, cart, favorites
             <div className="carousel-food-photo"><a href={`/kitchens/${dish.shopId}?item=${dish.id}`} aria-label={`View ${dish.name} at ${dish.shop}`}><MarketImage className="food-image" src={dish.image} alt={`${dish.name}, ${dish.cuisine} cuisine`} fallbackSrc={fallback}/></a><button type="button" className={`save-button ${saved ? "is-saved" : ""}`} aria-pressed={saved} aria-label={`${saved ? "Remove" : "Save"} ${dish.name} ${saved ? "from" : "to"} favorites`} onClick={() => onFavoriteDish(dish)}>{saved ? "♥" : "♡"}</button></div>
             <div className="carousel-food-info"><div className="carousel-food-title"><a href={`/kitchens/${dish.shopId}?item=${dish.id}`}>{dish.name}</a><strong>{money(dish.price)}</strong></div><p>{dish.shop} <span>·</span> {dish.cuisine}</p><div className="carousel-food-meta"><span>{dish.rating ? `★ ${dish.rating.toFixed(1)}` : "New kitchen"}</span><span>·</span><span>{dish.time}</span><div className={`carousel-quantity ${quantity ? "has-quantity" : ""}`} key={`${dish.id}-${quantity}`}>
               {quantity > 0 && <button type="button" onClick={() => onQuantity(dish.id, -1)} aria-label={`Remove one ${dish.name}`}>−</button>}
-              <OriginButton type="button" variant="promotional" className="carousel-add" onClick={() => onAdd(dish)} aria-label={quantity ? `Add another ${dish.name}; ${quantity} in basket` : `Add ${dish.name} to basket`}>{quantity > 0 ? `+${quantity}` : "+"}</OriginButton>
+              {dish.isOwnKitchen ? <span>Your kitchen</span> : <OriginButton type="button" variant="promotional" className="carousel-add" onClick={() => onAdd(dish)} aria-label={quantity ? `Add another ${dish.name}; ${quantity} in basket` : `Add ${dish.name} to basket`}>{quantity > 0 ? `+${quantity}` : "+"}</OriginButton>}
             </div></div></div>
           </article>;
         })}</HomeCarousel>;

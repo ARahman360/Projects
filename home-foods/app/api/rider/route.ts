@@ -1,3 +1,4 @@
+import { canDeliverOrder } from '@/src/lib/buyer-policy';
 import {pickupForOrder} from "@/src/lib/pickup-snapshot";
 import { db } from "@/src/prisma/db";
 import { isSameOriginRequest } from "@/src/lib/request-security";
@@ -23,12 +24,12 @@ export async function GET() {
     }
     if (!rider) return jsonError("Rider profile not found.", 404);
     const riderAccount = await db.orm.public.User.where({id:session.userId}).select("accountStatus").first();
-    const pendingJobs = rider.isAvailable && riderAccount?.accountStatus === "ACTIVE" ? await db.orm.public.Delivery.where({ status: "UNASSIGNED" })
+    const pendingJobs = rider.isAvailable && riderAccount?.accountStatus === "ACTIVE" ? await db.orm.public.Delivery.where({ status: "UNASSIGNED" }).where(d=>d.order.some(o=>o.customerId.neq(session.userId)))
       .include("order", (order) => order.include("shop", (shop) => shop.select("id", "name", "city", "latitude", "longitude", "address").include("seller", (seller) => seller.select("name", "email"))).include("address", (address) => address.select("city", "latitude", "longitude")).include("items"))
       .orderBy((delivery) => delivery.createdAt.asc())
       .limit(30)
       .all() : [];
-    const jobs = (await Promise.all(pendingJobs.filter((delivery) => delivery.order?.status === "READY_FOR_PICKUP").map(async (delivery) => {
+    const jobs = (await Promise.all(pendingJobs.filter((delivery) => delivery.order?.status === "READY_FOR_PICKUP" && delivery.order.customerId !== session.userId).map(async (delivery) => {
       if (delivery.order?.isSandbox && !isNationwideDevelopmentMode()) return null;
       const shop = delivery.order?.shop ? pickupForOrder(delivery.order,delivery.order.shop) : null;
       const address = delivery.order?.address;
@@ -44,7 +45,7 @@ export async function GET() {
       .include("order", (order) => order.include("shop").include("address").include("items"))
       .orderBy((delivery) => delivery.createdAt.desc())
       .all();
-    return Response.json({ rider, jobs, assigned: assigned.filter(d => !d.order?.isSandbox || isNationwideDevelopmentMode()) });
+    return Response.json({ rider, jobs, assigned: assigned.filter(d => d.order?.customerId !== session.userId && (!d.order?.isSandbox || isNationwideDevelopmentMode())) });
   } catch (error) {
     console.error("Rider workspace request failed", error);
     return jsonError("Rider jobs are unavailable. Check the database setup.", 503);
@@ -81,7 +82,8 @@ export async function PATCH(request: Request) {
     if (!Number.isInteger(deliveryId) || typeof body.status !== "string") return jsonError("Choose a delivery and status.");
     const delivery = await db.orm.public.Delivery.where({ id: deliveryId }).first();
     if (!delivery) return jsonError("Delivery not found.", 404);
-    const deliveryOrder = await db.orm.public.Order.where({id:delivery.orderId}).select("isSandbox").first();
+    const deliveryOrder = await db.orm.public.Order.where({id:delivery.orderId}).select("isSandbox", "customerId").first();
+    if (deliveryOrder && !canDeliverOrder(session.userId, deliveryOrder.customerId)) return jsonError("You cannot accept or deliver your own order.", 403);
     if (deliveryOrder?.isSandbox && !isNationwideDevelopmentMode()) return jsonError("Sandbox deliveries are unavailable outside development.",403);
     if (delivery.riderId === rider.id && body.status === "DELAYED" && ["PICKED_UP", "IN_TRANSIT"].includes(delivery.status)) {
       const reason = typeof body.reason === "string" ? body.reason.trim().slice(0, 300) : "Rider reported a delay";

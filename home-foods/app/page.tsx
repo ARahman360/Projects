@@ -1,4 +1,6 @@
 "use client";
+import { canBuy } from '@/src/lib/buyer-policy';
+
 
 function publishFavoritesChange(){localStorage.setItem("homefoods:favorites-updated",String(Date.now()));window.dispatchEvent(new Event("homefoods:favorites-change"));}
 
@@ -184,7 +186,7 @@ export default function Home() {
     }, 220);
     return () => { active = false; window.clearTimeout(timer); };
   }, [query, selectedLocation.latitude, selectedLocation.longitude]);
-  const cartStorageKey = `home-foods-cart:${user?.role === "CUSTOMER" ? user.id : "guest"}`;
+  const cartStorageKey = `home-foods-cart:${user && canBuy(user.role) ? user.id : "guest"}`;
   useEffect(() => {
     let active = true, generation = 0;
     const refreshAccount = () => {
@@ -195,7 +197,7 @@ export default function Home() {
         if (!active || currentRequest !== generation) return;
         const current = data.user as User | null;
         setUser(current); setFavorites([]); setFavoriteShops([]);
-        if (current?.role === "CUSTOMER") {
+        if (canBuy(current?.role)) {
           const response = await fetch("/api/favorites", { cache: "no-store" });
           const favorites = await response.json();
           if (!active || currentRequest !== generation) return;
@@ -207,7 +209,7 @@ export default function Home() {
     refreshAccount(); window.addEventListener("homefoods:account-change", refreshAccount);
     return () => { active = false; window.removeEventListener("homefoods:account-change", refreshAccount); };
   }, []);
-  useEffect(()=>{let active=true;const refresh=()=>{if(user?.role!=="CUSTOMER")return;void fetch("/api/favorites",{cache:"no-store"}).then(r=>r.json()).then(data=>{if(active){setFavorites((data.favorites??[]).map((f:{menuItemId:number})=>f.menuItemId));setFavoriteShops((data.favoriteKitchens??[]).map((f:{shopId:number})=>f.shopId));}}).catch(()=>{});};const storage=(e:StorageEvent)=>{if(e.key==="homefoods:favorites-updated")refresh();};window.addEventListener("focus",refresh);window.addEventListener("storage",storage);return()=>{active=false;window.removeEventListener("focus",refresh);window.removeEventListener("storage",storage);};},[user]);
+  useEffect(()=>{let active=true;const refresh=()=>{if(!canBuy(user?.role))return;void fetch("/api/favorites",{cache:"no-store"}).then(r=>r.json()).then(data=>{if(active){setFavorites((data.favorites??[]).map((f:{menuItemId:number})=>f.menuItemId));setFavoriteShops((data.favoriteKitchens??[]).map((f:{shopId:number})=>f.shopId));}}).catch(()=>{});};const storage=(e:StorageEvent)=>{if(e.key==="homefoods:favorites-updated")refresh();};window.addEventListener("focus",refresh);window.addEventListener("storage",storage);return()=>{active=false;window.removeEventListener("focus",refresh);window.removeEventListener("storage",storage);};},[user]);
   useEffect(() => {
     queueMicrotask(() => {
       try {
@@ -260,6 +262,7 @@ export default function Home() {
   const {subtotal,deliveryTotal,serviceFee,cartTotal}=basketTotals(cart);
 
   function add(dish: Dish) {
+    if (dish.isOwnKitchen) { setCatalogError("You cannot order from your own kitchen. Your other basket items are unchanged."); return; }
     if (selectedLocation.latitude != null && selectedLocation.longitude != null && dish.deliveryDistanceKm == null && locationStatus?.radiusEnforced !== false) {
       setCatalogError("Delivery distance isn't confirmed for this kitchen yet. Choose another kitchen or check your address.");
       return;
@@ -290,7 +293,7 @@ export default function Home() {
 
   function openCheckout() {
     if (!user) { setCartOpen(false); router.push("/signin?returnTo=%2F%3Fcart%3Dopen"); return; }
-    if (user.role !== "CUSTOMER") { setOrderError("Checkout is available for customer accounts."); return; }
+    if (!canBuy(user.role)) { setOrderError("Checkout is available for customer accounts."); return; }
     checkoutTriggerRef.current = cartTriggerRef.current;
     setCartOpen(false); setCheckout(true); setDeliveryCheckStatus("idle"); setOrderError("");
     if (selectedAddressId) void validateCartDelivery();
@@ -333,7 +336,7 @@ export default function Home() {
 
   async function toggleFavorite(dish: Dish) {
     if (!user) { router.push(`/signin?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`); return; }
-    if (user.role !== "CUSTOMER") { setCatalogError("Favorites are available for customer accounts."); return; }
+    if (!canBuy(user.role)) { setCatalogError("Favorites are available for customer accounts."); return; }
     const wasSaved = favorites.includes(dish.id);
     setFavorites((current) => wasSaved ? current.filter((id) => id !== dish.id) : [...current, dish.id]);
     try {
@@ -347,7 +350,7 @@ export default function Home() {
   }
   async function toggleKitchenFavorite(shop: Shop) {
     if (!user) { router.push(`/signin?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`); return; }
-    if (user.role !== "CUSTOMER") { setCatalogError("Favorites are available for customer accounts."); return; }
+    if (!canBuy(user.role)) { setCatalogError("Favorites are available for customer accounts."); return; }
     const wasSaved = favoriteShops.includes(shop.id);
     setFavoriteShops((current) => wasSaved ? current.filter((id) => id !== shop.id) : [...current, shop.id]);
     try {

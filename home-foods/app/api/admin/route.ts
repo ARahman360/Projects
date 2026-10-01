@@ -1,3 +1,4 @@
+import { canDeliverOrder } from '@/src/lib/buyer-policy';
 import { isSameOriginRequest } from "@/src/lib/request-security";
 import { db } from "@/src/prisma/db";
 import { getSession, jsonError } from "@/src/lib/auth";
@@ -59,6 +60,7 @@ export async function PATCH(request: Request) {
       const canReassignOfflineRider = Boolean(delivery?.riderId && delivery.rider?.isAvailable === false && ["ASSIGNED", "ACCEPTED", "PICKED_UP", "IN_TRANSIT"].includes(delivery.status));
       if (!delivery || !["UNASSIGNED", "FAILED"].includes(delivery.status) && !canReassignOfflineRider || !rider) return jsonError("That delivery or rider is no longer available.", 409);
       const order = await db.orm.public.Order.where({ id: delivery.orderId }).first();
+      if (order && rider && !canDeliverOrder(rider.userId, order.customerId)) return jsonError("A rider cannot deliver their own order.", 403);
       if (!order || (order.isSandbox && !isNationwideDevelopmentMode()) || ["CANCELLED", "REFUNDED", "DELIVERED"].includes(order.status)) return jsonError("This order can no longer be assigned.", 409);
       const shop = await db.orm.public.Shop.where({ id: order.shopId }).include("seller", (seller) => seller.select("name", "email")).first();
       const address = order.addressId == null ? null : await db.orm.public.Address.where({ id: order.addressId }).first();

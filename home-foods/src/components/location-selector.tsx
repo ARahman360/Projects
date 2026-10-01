@@ -1,4 +1,6 @@
 "use client";
+import { canBuy } from '@/src/lib/buyer-policy';
+
 import { useEffect, useRef, useState } from "react";
 import OverlayLayer from "./overlay-layer";
 import AddressEditor, { addressRequest, type SavedAddress } from "./address-editor";
@@ -25,7 +27,7 @@ export default function LocationSelector({ onSelect, triggerLabel }: { onSelect?
       setLoaded(false);
       try {
         const auth = await addressRequest("/api/auth");
-        const id = auth.user?.role === "CUSTOMER" ? auth.user.id as number : null;
+        const id = canBuy(auth.user?.role) ? auth.user.id as number : null;
         const result = id !== null ? await addressRequest("/api/addresses") : { addresses: [] };
         if (!active || generation !== request.current) return;
         setOwner(id); setAddresses(result.addresses); setLoaded(true); setError("");

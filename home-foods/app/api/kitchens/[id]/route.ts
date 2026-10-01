@@ -1,3 +1,4 @@
+import { getSession } from '@/src/lib/auth';
 import { db } from "@/src/prisma/db";
 import { getKitchenDeliveryDistance, ROUTING_UNAVAILABLE_MESSAGE } from "@/src/lib/location";
 import { isDeliveryRadiusEnforced, isNationwideDevelopmentMode, isNationwideDevelopmentSeller, isKitchenLocationAllowed } from "@/src/lib/feature-flags";
@@ -9,6 +10,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const id = Number(value);
   if (!Number.isInteger(id) || id < 1) return Response.json({ error: "Kitchen not found." }, { status: 404 });
   try {
+    const viewer = await getSession();
     const shop = await db.orm.public.Shop
       .where({ id, status: "ACTIVE" })
       .include("menuItems", (items) => items.include("category", (category) => category.select("id", "name")).orderBy((item) => item.name.asc()))
@@ -38,6 +40,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     // Only the public profile crosses the server boundary. The database row also
     // contains private contact, location proof and administrative fields.
     const publicShop = {
+      isOwnKitchen: shop.sellerId === viewer?.userId,
       id: shop.id, name: shop.name, description: shop.description,
       logoUrl: shop.logoUrl, coverImageUrl: shop.coverImageUrl, city: shop.city,
       isOnline: shop.isOnline, deliveryFee: shop.deliveryFee,
