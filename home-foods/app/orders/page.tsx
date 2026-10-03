@@ -1,4 +1,6 @@
 "use client";
+import {addBasketLine,type CartLine,type Dish} from '@/src/lib/basket';
+import type {PortionOption} from '@/src/lib/portion-options';
 import { canBuy } from '@/src/lib/buyer-policy';
 
 
@@ -96,11 +98,22 @@ export default function OrdersPage() {
     if(!user || reordering!==null)return;setReordering(Number(order.id));setNotice("");
     try{
       const response=await fetch('/api/kitchens/'+String(order.shopId));const data=await response.json();if(!response.ok)throw new Error(data.error);
-      const shop=data.shop;if(shop.isOwnKitchen)throw new Error("You cannot order from your own kitchen. Your other basket items are unchanged.");const wanted=rows(order.items);const available=shop.menuItems.filter((item:Row)=>item.isAvailable&&wanted.some(line=>line.menuItemId===item.id));
-      if(!available.length)throw new Error("These dishes are currently unavailable. Visit the kitchen to discover today's menu.");
-      const key='home-foods-cart:'+user.id;const cart=JSON.parse(localStorage.getItem(key)??'[]') as {dish:Row;quantity:number}[];
-      for(const item of available){const quantity=Math.min(25,Number(wanted.find(line=>line.menuItemId===item.id)?.quantity??1));const existing=cart.find(line=>line.dish.id===item.id);if(existing)existing.quantity=Math.min(25,existing.quantity+quantity);else cart.push({dish:{id:item.id,shopId:shop.id,name:item.name,shop:shop.name,price:item.price,image:item.imageUrl,description:item.description,category:item.category?.name??"Homemade",cuisine:shop.city,deliveryFee:shop.deliveryFee??2.5,rating:null,time:"Estimate at checkout"},quantity});}
-      localStorage.setItem(key,JSON.stringify(cart));if(available.length<wanted.length)sessionStorage.setItem('homefoods:reorder-notice','Some dishes were unavailable. Only available items were added.');router.push('/?cart=open');
+      const shop=data.shop;if(shop.isOwnKitchen)throw new Error("You cannot order from your own kitchen. Your other basket items are unchanged.");const wanted=rows(order.items);
+      const key='home-foods-cart:'+user.id;let cart=JSON.parse(localStorage.getItem(key)??'[]') as CartLine[];let added=0;
+      for(const previous of wanted){
+        const item=shop.menuItems.find((row:Row)=>row.id===previous.menuItemId&&row.isAvailable);if(!item)continue;
+        let optionId:number|undefined;
+        try{optionId=JSON.parse(String(previous.options??'null'))?.variantId;}catch{}
+        const options=(item.options??[]) as PortionOption[];
+        const selectedOption=options.find(option=>option.id===optionId&&option.isAvailable);
+        // Never substitute a different size on repeat orders.
+        if((options.length&&!selectedOption)||(!options.length&&optionId))continue;
+        const dish:Dish={id:item.id,shopId:shop.id,name:item.name,shop:shop.name,price:selectedOption?.price??item.price,options,selectedOption,image:item.imageUrl,description:item.description??'',category:item.category?.name??'Homemade',cuisine:shop.city??'',deliveryFee:shop.deliveryFee??2.5,rating:null,time:'Estimate at checkout'};
+        cart=addBasketLine(cart,dish,Math.min(25,Number(previous.quantity??1)));added++;
+      }
+      if(!added)throw new Error('These dishes or portions are unavailable. Visit the kitchen to choose from today’s menu.');
+      localStorage.setItem(key,JSON.stringify(cart));window.dispatchEvent(new Event('homefoods:cart-change'));
+      if(added<wanted.length)sessionStorage.setItem('homefoods:reorder-notice','Some dishes or portions were unavailable. Only matching available items were added.');router.push('/?cart=open');
     }catch(e){setNotice(e instanceof Error?e.message:"Couldn't repeat this order.");}finally{setReordering(null);}
   }
 

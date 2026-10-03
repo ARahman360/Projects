@@ -4,7 +4,7 @@ import {useEffect,useRef,useState} from 'react';
 import {useRouter} from 'next/navigation';
 import {currentBasketImages,applyBasketImages} from '@/src/lib/basket-images';
 import BasketDrawer from './basket-drawer';
-import type {CartLine} from '@/src/lib/basket';
+import {basketLineKey,type CartLine} from '@/src/lib/basket';
 
 export default function KitchenBasket({customerId,signedIn}:{customerId:number|null;signedIn:boolean}) {
   const router=useRouter();
@@ -22,7 +22,7 @@ export default function KitchenBasket({customerId,signedIn}:{customerId:number|n
   function save(next:CartLine[]){localStorage.setItem(key,JSON.stringify(next));setCart(next);window.dispatchEvent(new Event('homefoods:cart-change'));}
   function saveNotes(value:string){setNotes(value);sessionStorage.setItem(`${key}:notes`,value);}
   return <BasketDrawer cart={cart} open={open} onClose={()=>setOpen(false)} triggerRef={trigger}
-    changeQuantity={(id,delta)=>save(cart.map(line=>line.dish.id===id?{...line,quantity:line.quantity+delta}:line).filter(line=>line.quantity>0))}
-    onRemove={id=>save(cart.filter(line=>line.dish.id!==id))} cartNotes={notes} setCartNotes={saveNotes}
+    changeQuantity={(id,delta)=>save(cart.map(line=>basketLineKey(line.dish)===id?{...line,quantity:Math.min(25,line.quantity+delta)}:line).filter(line=>line.quantity>0))}
+    onRemove={id=>save(cart.filter(line=>basketLineKey(line.dish)!==id))} cartNotes={notes} setCartNotes={saveNotes}
     user={signedIn} openCheckout={()=>{setOpen(false);router.push('/?cart=open');}}/>;
 }

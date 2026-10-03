@@ -187,6 +187,7 @@ model MenuItemOption {
   name        String
   price       Float    @default(0)
   isAvailable Boolean  @default(true)
+  isDefault   Boolean  @default(false)
 
   menuItem    MenuItem @relation(fields: [menuItemId], references: [id])
 

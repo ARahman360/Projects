@@ -1,3 +1,4 @@
+import {resolvePortion,PortionError} from '@/src/lib/portion-options';
 import { canBuy, ownsKitchen } from '@/src/lib/buyer-policy';
 import {pickupSnapshot} from "@/src/lib/pickup-snapshot";
 import { assertFinnishKitchen } from "@/src/lib/location";
@@ -64,7 +65,7 @@ export async function POST(request: Request) {
   if (!session) return jsonError("Sign in to place an order.", 401);
   if (!canBuy(session.role)) return jsonError("This account cannot place orders.", 403);
   try {
-    const body = await request.json() as { lines?: Array<{ menuItemId?: number; quantity?: number }>; addressId?: number | null; addressLine1?: string; addressLine2?: string; city?: string; postalCode?: string; notes?: string; paymentMethod?: string; idempotencyKey?: string; verificationToken?: string; countryCode?: string };
+    const body = await request.json() as { lines?: Array<{ menuItemId?: number; optionId?: number; quantity?: number }>; addressId?: number | null; addressLine1?: string; addressLine2?: string; city?: string; postalCode?: string; notes?: string; paymentMethod?: string; idempotencyKey?: string; verificationToken?: string; countryCode?: string };
     if (!Array.isArray(body.lines) || body.lines.length < 1 || body.lines.length > 30) return jsonError("Your cart is empty or has too many different items.");
     if (typeof body.idempotencyKey !== "string" || !/^[a-zA-Z0-9-]{16,100}$/.test(body.idempotencyKey)) return jsonError("Please refresh checkout before submitting this order.");
     requestKey = session.userId + ":" + body.idempotencyKey;
@@ -82,17 +83,19 @@ export async function POST(request: Request) {
     const paymentMethod = body.paymentMethod === "CARD" ? "CARD" : "CASH";
     if (paymentMethod === "CARD" && !process.env.STRIPE_SECRET_KEY) return jsonError("Online card payments are not configured yet. Choose cash on delivery or ask the administrator to configure Stripe.", 503);
     if (paymentMethod === "CARD" && process.env.NODE_ENV === "development" && (!isDevelopmentSandboxEnabled() || !process.env.STRIPE_SECRET_KEY?.startsWith("sk_test_"))) return jsonError("Card checkout is available in development only when sandbox payments are enabled with a Stripe test key. Choose cash on delivery for local testing.", 503);
-    const quantities = new Map<number, number>();
-    for (const line of body.lines) {
-      const id = Number(line.menuItemId);
-      const quantity = Number(line.quantity);
-      if (!Number.isInteger(id) || id < 1 || !Number.isInteger(quantity) || quantity < 1 || quantity > 25) return jsonError("One or more cart quantities are invalid.");
-      quantities.set(id, (quantities.get(id) ?? 0) + quantity);
+    const requested=new Map<string,{menuItemId:number;optionId?:number;quantity:number}>();
+    for(const line of body.lines){
+      const id=Number(line.menuItemId),quantity=Number(line.quantity),optionId=line.optionId;
+      if(!Number.isInteger(id)||id<1||!Number.isInteger(quantity)||quantity<1||quantity>25||(optionId!==undefined&&(!Number.isInteger(optionId)||optionId<1)))return jsonError('Invalid dish, portion or quantity.',422);
+      const key=id+':'+(optionId??'base'),total=(requested.get(key)?.quantity??0)+quantity;
+      if(total>25)return jsonError('Choose up to 25 of each portion.',422);
+      requested.set(key,{menuItemId:id,optionId,quantity:total});
     }
-    const menuItems = await db.orm.public.MenuItem.where((item) => item.id.in([...quantities.keys()]))
+    const menuIds=[...new Set([...requested.values()].map(line=>line.menuItemId))];
+    const menuItems = await db.orm.public.MenuItem.where((item) => item.id.in(menuIds))
       .include("shop", (shop) => shop.select("id", "sellerId", "name", "address", "description", "status", "isOnline", "deliveryFee", "estimatedMinutes", "latitude", "longitude").include("seller", (seller) => seller.select("name", "email")))
       .all();
-    if (menuItems.length !== quantities.size || menuItems.some((item) => !item.isAvailable || !item.shop || item.shop.status !== "ACTIVE" || !item.shop.isOnline)) return jsonError("A kitchen is offline or an item is unavailable. Your basket has been kept.", 409);
+    if (menuItems.length !== menuIds.length || menuItems.some((item) => !item.isAvailable || !item.shop || item.shop.status !== "ACTIVE" || !item.shop.isOnline)) return jsonError("A kitchen is offline or an item is unavailable. Your basket has been kept.", 409);
     if (menuItems.some((item) => !item.shop)) return jsonError("A cart shop is unavailable. Refresh the menu and try again.", 409);
     if (isNationwideDevelopmentMode() && menuItems.some((item) => !isNationwideDevelopmentSeller(item.shop?.seller))) return jsonError("This kitchen is unavailable in the current development catalog.", 403);
     if (menuItems.some(item => ownsKitchen(session.userId, item.shop?.sellerId))) return jsonError("You cannot order from your own kitchen. Remove those items and keep the rest of your basket.", 403);
@@ -139,7 +142,17 @@ export async function POST(request: Request) {
         // Lock and recheck availability inside checkout, including concurrent pauses.
         const currentShop = await tx.execute(tx.sql.public.shop.update({updatedAt:new Date().toISOString()}).where((f,fn)=>fn.and(fn.eq(f.id,shopId),fn.eq(f.status,"ACTIVE"),fn.eq(f.isOnline,true))).build());
         if (!currentShop.affectedRows) throw new Error("This kitchen is no longer accepting new orders. Your basket has been kept.");
-        const subtotal = items.reduce((sum, item) => sum + item.price * (quantities.get(item.id) ?? 0), 0);
+        const purchased=[] as Array<{menuItemId:number;name:string;quantity:number;unitPrice:number;totalPrice:number;options:string|null}>;
+        for(const item of [...items].sort((a,b)=>a.id-b.id)){
+          await tx.orm.public.MenuItem.where({id:item.id}).update({updatedAt:new Date().toISOString()});
+          const current=await tx.orm.public.MenuItem.where({id:item.id,shopId}).include('options').first();
+          if(!current?.isAvailable)throw new PortionError('This dish is no longer available. Your basket has been kept.');
+          for(const line of requested.values())if(line.menuItemId===item.id){
+            const {price,option}=resolvePortion(current,line.optionId);
+            purchased.push({menuItemId:item.id,name:option?current.name+' — '+option.name:current.name,quantity:line.quantity,unitPrice:price,totalPrice:Math.round(price*line.quantity*100)/100,options:option?JSON.stringify({variantId:option.id,variantLabel:option.name,variantPrice:price,dishName:current.name}):null});
+          }
+        }
+        const subtotal=Math.round(purchased.reduce((sum,line)=>sum+line.totalPrice,0)*100)/100;
         const firstShop = await tx.orm.public.Shop.where({id:shopId}).first();
         if (ownsKitchen(session.userId, firstShop?.sellerId)) throw new Error("You cannot order from your own kitchen.");
         const deliveryFee = firstShop?.deliveryFee ?? 2.5;
@@ -148,10 +161,7 @@ export async function POST(request: Request) {
         const orderNumber = `HF-${randomBytes(4).toString("hex").toUpperCase()}`;
         const order = await tx.orm.public.Order.create({ pickupSnapshot:pickupSnapshot(firstShop??{}), orderNumber, customerId: session.userId, shopId, addressId: address.id, isSandbox: isNationwideDevelopmentMode(), status: "PENDING", subtotal, deliveryFee, serviceFee, discount: 0, total, notes: notes || null });
         await tx.orm.public.OrderStatusEvent.create({ orderId: order.id, status: "PENDING", domain: "ORDER", actorId: session.userId, actorRole: "CUSTOMER", message: "Order placed" });
-        for (const item of items) {
-          const quantity = quantities.get(item.id) ?? 0;
-          await tx.orm.public.OrderItem.create({ orderId: order.id, menuItemId: item.id, name: item.name, quantity, unitPrice: item.price, totalPrice: Math.round(item.price * quantity * 100) / 100 });
-        }
+        for(const line of purchased)await tx.orm.public.OrderItem.create({orderId:order.id,...line});
         await tx.orm.public.Payment.create({ orderId: order.id, amount: total, currency: "EUR", method: paymentMethod, status: "PENDING", provider: paymentMethod === "CARD" ? "stripe" : "cash-on-delivery" });
         await tx.orm.public.Delivery.create({ orderId: order.id, status: "UNASSIGNED", estimatedTime: isNationwideDevelopmentMode() ? null : firstShop?.estimatedMinutes ?? null, notes: isNationwideDevelopmentMode() ? "Fictional nationwide development test delivery. No real delivery-time commitment." : null });
         orders.push({ orderId: order.id, orderNumber, shopName: firstShop?.name ?? "HomeFoods kitchen", total });
@@ -166,6 +176,7 @@ export async function POST(request: Request) {
       const committed = await db.orm.public.CheckoutRequest.where({id:requestKey,userId:session.userId}).first();
       if (committed?.result && committed.requestHash === requestHash) return finishCheckout(JSON.parse(committed.result),requestKey,session.userId,new URL(request.url).origin);
     }
+    if(error instanceof PortionError)return jsonError(error.message,409);
     console.error("Order creation failed", error instanceof Error ? error.name : "unknown");
     const message = error instanceof Error ? error.message : "We couldn't place that order. Please check the address and try again.";
     const status = message.includes("not configured") ? 503 : message.includes("not available in this country") ? 422 : 503;

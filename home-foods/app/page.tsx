@@ -9,7 +9,9 @@ import { useRouter } from "next/navigation";
 import OverlayLayer from "@/src/components/overlay-layer";
 import BasketDrawer, {FoodImage} from '@/src/components/basket-drawer';
 import {currentBasketImages,applyBasketImages} from '@/src/lib/basket-images';
-import {basketTotals,type Dish,type CartLine} from '@/src/lib/basket';
+import PortionSelector from '@/src/components/portion-selector';
+import {availablePortions,portionPrice} from '@/src/lib/portion-options';
+import {basketTotals,basketLineKey,addBasketLine,type Dish,type CartLine} from '@/src/lib/basket';
 import Brand from "@/src/components/brand";
 import LocationSelector, { type DeliveryLocation } from "@/src/components/location-selector";
 import { AppHeader } from "@/src/components/app-shell";
@@ -85,6 +87,7 @@ export default function Home() {
   const [filtersHydrated, setFiltersHydrated] = useState(false);
   const [locationStatus, setLocationStatus] = useState<{ checked: boolean; available: boolean; kitchenCount: number; radiusEnforced?: boolean; nationwideDevelopmentMode?: boolean } | null>(null);
   const [showUnavailableKitchens, setShowUnavailableKitchens] = useState(false);
+  const [portionDish,setPortionDish]=useState<Dish|null>(null);
   const [cart, setCart] = useState<CartLine[]>([]);
   const [loadedCartKey, setLoadedCartKey] = useState<string | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
@@ -261,18 +264,21 @@ export default function Home() {
   const itemCount = cart.reduce((sum, line) => sum + line.quantity, 0);
   const {subtotal,deliveryTotal,serviceFee,cartTotal}=basketTotals(cart);
 
-  function add(dish: Dish) {
+  function add(dish: Dish, quantity=1) {
     if (dish.isOwnKitchen) { setCatalogError("You cannot order from your own kitchen. Your other basket items are unchanged."); return; }
     if (selectedLocation.latitude != null && selectedLocation.longitude != null && dish.deliveryDistanceKm == null && locationStatus?.radiusEnforced !== false) {
       setCatalogError("Delivery distance isn't confirmed for this kitchen yet. Choose another kitchen or check your address.");
       return;
     }
-    setCart((current) => {
-      const existing = current.find((line) => line.dish.id === dish.id);
-      return existing ? current.map((line) => line.dish.id === dish.id ? { ...line, quantity: line.quantity + 1 } : line) : [...current, { dish, quantity: 1 }];
-    });
+    if(dish.options?.length&&!dish.selectedOption){
+      const available=availablePortions(dish.options);
+      if(!available.length){setCatalogError('All portions of this dish are sold out.');return;}
+      if(available.length>1){setPortionDish(dish);return;}
+      dish={...dish,price:available[0].price,selectedOption:available[0]};
+    }
+    setCart(current=>addBasketLine(current,dish,quantity));
   }
-  function changeQuantity(id: number, delta: number) { setCart((current) => current.map((line) => line.dish.id === id ? { ...line, quantity: line.quantity + delta } : line).filter((line) => line.quantity > 0)); }
+  function changeQuantity(id: string, delta: number) { setCart((current) => current.map((line) => basketLineKey(line.dish) === id ? { ...line, quantity: Math.min(25,line.quantity + delta) } : line).filter((line) => line.quantity > 0)); }
 
   async function validateCartDelivery(addressId = selectedAddressId) {
     if (!cart.length) return false;
@@ -318,7 +324,7 @@ export default function Home() {
     try {
       const deliverable = await validateCartDelivery();
       if (!deliverable) { setPlacingOrder(false); return; }
-      const orderBody = {lines:cart.map(({dish,quantity})=>({menuItemId:dish.id,quantity})),addressId:selectedAddressId,paymentMethod,notes:cartNotes};
+      const orderBody = {lines:cart.map(({dish,quantity})=>({menuItemId:dish.id,optionId:dish.selectedOption?.id,quantity})),addressId:selectedAddressId,paymentMethod,notes:cartNotes};
       const signature=JSON.stringify(orderBody);
       const attemptStorageKey = `homefoods:checkout-attempt:${user.id}`;
       if(!checkoutAttempt.current) { try { checkoutAttempt.current=JSON.parse(sessionStorage.getItem(attemptStorageKey) ?? "null"); } catch {} }
@@ -382,7 +388,7 @@ export default function Home() {
           <LocationSelector onSelect={(location, address) => { setSelectedLocation(location); if (address) { setAddressLine1(address.addressLine1); setCity(address.city); setPostalCode(address.postalCode ?? ""); if (address.id) setSelectedAddressId(address.id); } else setSelectedAddressId(null); }} />
           <div className="top-search-wrap" ref={searchWrapRef}>
             <div className="top-search"><span aria-hidden="true">⌕</span><input className="search-field" value={query} onFocus={() => setSearchOpen(true)} onKeyDown={handleSearchKeyDown} onChange={(event) => { setQuery(event.target.value); setActiveSuggestion(-1); setSearchOpen(true); }} placeholder="Search dishes, kitchens, and more" aria-label="Search all of HomeFoods" aria-expanded={searchOpen} aria-controls="homefoods-search-suggestions" role="combobox" aria-autocomplete="list"/>{query && <button className="search-clear" type="button" aria-label="Clear search" onClick={() => { setQuery(""); setActiveSuggestion(-1); setSearchOpen(true); }}>×</button>}</div>
-            {searchOpen && <div className="search-results top-search-results" id="homefoods-search-suggestions" role="listbox" aria-label="Search suggestions">{query.trim().length < 2 ? <><strong>Popular searches</strong><div className="popular-searches">{["Beef Bhuna", "Chicken Curry", "Biryani", "Khichuri"].map((term) => <button type="button" key={term} onClick={() => { setQuery(term); setSearchOpen(true); document.getElementById("discover")?.scrollIntoView({ behavior: "smooth" }); }}>{term}</button>)}</div><strong>Popular categories</strong><div className="popular-searches">{categories.slice(1).map((item) => <button type="button" key={item} onClick={() => { chooseCategory(item); setSearchOpen(false); document.getElementById("discover")?.scrollIntoView({ behavior: "smooth" }); }}>{item}</button>)}</div></> : <>{searchSuggestions.map((dish, index) => <button type="button" role="option" aria-selected={activeSuggestion === index} key={`dish-${dish.id}`} onMouseEnter={() => setActiveSuggestion(index)} onClick={() => router.push(`/kitchens/${dish.shopId}?item=${dish.id}`)}><span><HighlightedMatch text={dish.name} query={query}/></span><small>{dish.shop} · {money(dish.price)}</small></button>)}{kitchenMatches.map((shop, index) => <button type="button" className="search-kitchen-option" role="option" aria-selected={activeSuggestion === searchSuggestions.length + index} key={`shop-${shop.id}`} onMouseEnter={() => setActiveSuggestion(searchSuggestions.length + index)} onClick={() => router.push(`/kitchens/${shop.id}`)}><span className="search-kitchen-thumb"><MarketImage src={shop.coverImageUrl ?? shop.logoUrl} alt="" fallbackSrc="https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=120&q=75"/></span><span className="search-kitchen-copy"><span><HighlightedMatch text={shop.name} query={query}/></span><small>{shop.cuisine || "Home kitchen"} · {shop.city || "Finland"}{shop.deliveryFee == null ? "" : ` · ${shop.deliveryFee === 0 ? "Free delivery" : money(shop.deliveryFee) + " delivery"}`}</small></span></button>)}{siteSearchMatches.map((item) => <a key={item.href} href={item.href} onClick={() => { setQuery(""); setSearchOpen(false); }}><span><HighlightedMatch text={item.title} query={query}/></span><small>{item.description}</small></a>)}{!searchSuggestions.length && !kitchenMatches.length && !siteSearchMatches.length && <p>{catalogLoading ? "Finding something lovely…" : "No matching dishes or kitchens. Try “biryani”, “chicken”, or a cook’s name."}</p>}</>}</div>}
+            {searchOpen && <div className="search-results top-search-results" id="homefoods-search-suggestions" role="listbox" aria-label="Search suggestions">{query.trim().length < 2 ? <><strong>Popular searches</strong><div className="popular-searches">{["Beef Bhuna", "Chicken Curry", "Biryani", "Khichuri"].map((term) => <button type="button" key={term} onClick={() => { setQuery(term); setSearchOpen(true); document.getElementById("discover")?.scrollIntoView({ behavior: "smooth" }); }}>{term}</button>)}</div><strong>Popular categories</strong><div className="popular-searches">{categories.slice(1).map((item) => <button type="button" key={item} onClick={() => { chooseCategory(item); setSearchOpen(false); document.getElementById("discover")?.scrollIntoView({ behavior: "smooth" }); }}>{item}</button>)}</div></> : <>{searchSuggestions.map((dish, index) => <button type="button" role="option" aria-selected={activeSuggestion === index} key={`dish-${dish.id}`} onMouseEnter={() => setActiveSuggestion(index)} onClick={() => router.push(`/kitchens/${dish.shopId}?item=${dish.id}`)}><span><HighlightedMatch text={dish.name} query={query}/></span><small>{dish.shop} · {portionPrice(dish.price,dish.options).from?"From ":""}{money(portionPrice(dish.price,dish.options).price)}</small></button>)}{kitchenMatches.map((shop, index) => <button type="button" className="search-kitchen-option" role="option" aria-selected={activeSuggestion === searchSuggestions.length + index} key={`shop-${shop.id}`} onMouseEnter={() => setActiveSuggestion(searchSuggestions.length + index)} onClick={() => router.push(`/kitchens/${shop.id}`)}><span className="search-kitchen-thumb"><MarketImage src={shop.coverImageUrl ?? shop.logoUrl} alt="" fallbackSrc="https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=120&q=75"/></span><span className="search-kitchen-copy"><span><HighlightedMatch text={shop.name} query={query}/></span><small>{shop.cuisine || "Home kitchen"} · {shop.city || "Finland"}{shop.deliveryFee == null ? "" : ` · ${shop.deliveryFee === 0 ? "Free delivery" : money(shop.deliveryFee) + " delivery"}`}</small></span></button>)}{siteSearchMatches.map((item) => <a key={item.href} href={item.href} onClick={() => { setQuery(""); setSearchOpen(false); }}><span><HighlightedMatch text={item.title} query={query}/></span><small>{item.description}</small></a>)}{!searchSuggestions.length && !kitchenMatches.length && !siteSearchMatches.length && <p>{catalogLoading ? "Finding something lovely…" : "No matching dishes or kitchens. Try “biryani”, “chicken”, or a cook’s name."}</p>}</>}</div>}
           </div>
 
         </AppHeader>
@@ -417,7 +423,8 @@ export default function Home() {
 
 
       {favoriteError && <div className="favorite-toast" role="alert">{favoriteError}<button type="button" onClick={() => setFavoriteError("")} aria-label="Dismiss message">×</button></div>}
-      <BasketDrawer cart={cart} open={cartOpen} onClose={()=>setCartOpen(false)} changeQuantity={changeQuantity} onRemove={id=>setCart(current=>current.filter(line=>line.dish.id!==id))} cartNotes={cartNotes} setCartNotes={setCartNotes} notice={promoMessage} openCheckout={openCheckout} user={user} triggerRef={cartTriggerRef}/>
+      <>{portionDish&&<PortionSelector key={portionDish.id} dish={portionDish} onClose={()=>setPortionDish(null)} onAdd={add}/>}</>
+      <BasketDrawer cart={cart} open={cartOpen} onClose={()=>setCartOpen(false)} changeQuantity={changeQuantity} onRemove={id=>setCart(current=>current.filter(line=>basketLineKey(line.dish)!==id))} cartNotes={cartNotes} setCartNotes={setCartNotes} notice={promoMessage} openCheckout={openCheckout} user={user} triggerRef={cartTriggerRef}/>
       <OverlayLayer open={checkout} className="modal-backdrop checkout-overlay" dialogClassName="checkout-modal" dialogRef={checkoutDialogRef} triggerRef={checkoutTriggerRef} onClose={() => setCheckout(false)} label="Checkout" initialFocusSelector=".modal-close">
         <header className="checkout-head"><div><span className="eyebrow">A GOOD MEAL, ALMOST HOME</span><h2>Checkout</h2><p>{itemCount} items · {new Set(cart.map(line=>line.dish.shopId)).size} home kitchens</p></div><button className="close-button modal-close" onClick={() => setCheckout(false)} aria-label="Close checkout">×</button></header>
         <form onSubmit={placeOrder} className="checkout-form" id="homefoods-checkout">
@@ -428,7 +435,7 @@ export default function Home() {
             </section>
             <section className="checkout-section"><h3><span>02</span> Payment</h3><fieldset className="payment-choices"><legend className="sr-only">Payment method</legend>{[{value:"CASH",title:"Cash on delivery",note:"Pay when your food arrives",icon:"€"},{value:"CARD",title:"Card via Stripe",note:"Continue to secure payment",icon:"▤"}].map(method=><label key={method.value} className={paymentMethod===method.value?"selected":""}><input type="radio" name="paymentMethod" value={method.value} checked={paymentMethod===method.value} onChange={()=>setPaymentMethod(method.value)}/><span className="payment-icon" aria-hidden="true">{method.icon}</span><span><b>{method.title}</b><small>{method.note}</small></span><span className="payment-check" aria-hidden="true">{paymentMethod===method.value?"✓":""}</span></label>)}</fieldset></section>
             {cartNotes && <section className="checkout-section"><h3>Kitchen instructions</h3><p>{cartNotes}</p></section>}
-          </div><section className="checkout-order-summary"><h3>Your order <span>{itemCount} items</span></h3>{[...new Set(cart.map(line=>line.dish.shopId))].map(shopId=><div className="checkout-kitchen-group" key={shopId}><h4>{cart.find(line=>line.dish.shopId===shopId)?.dish.shop}</h4>{cart.filter(line=>line.dish.shopId===shopId).map(({dish,quantity})=><div className="checkout-food" key={dish.id}><FoodImage dish={dish} className="checkout-food-photo"/><div><b>{dish.name}</b><small>Quantity {quantity}</small></div><strong>{money(dish.price*quantity)}</strong></div>)}</div>)}<div className="checkout-summary-breakdown"><div><span>Food subtotal</span><b>{money(subtotal)}</b></div><div><span>Delivery fees</span><b>{money(deliveryTotal)}</b></div><div><span>Service fee</span><b>{money(serviceFee)}</b></div><div className="checkout-summary-total"><span>Total</span><b>{money(cartTotal)}</b></div></div></section></div>
+          </div><section className="checkout-order-summary"><h3>Your order <span>{itemCount} items</span></h3>{[...new Set(cart.map(line=>line.dish.shopId))].map(shopId=><div className="checkout-kitchen-group" key={shopId}><h4>{cart.find(line=>line.dish.shopId===shopId)?.dish.shop}</h4>{cart.filter(line=>line.dish.shopId===shopId).map(({dish,quantity})=><div className="checkout-food" key={basketLineKey(dish)}><FoodImage dish={dish} className="checkout-food-photo"/><div><b>{dish.name}</b>{dish.selectedOption&&<small>{dish.selectedOption.name}</small>}<small>Quantity {quantity}</small></div><strong>{money(dish.price*quantity)}</strong></div>)}</div>)}<div className="checkout-summary-breakdown"><div><span>Food subtotal</span><b>{money(subtotal)}</b></div><div><span>Delivery fees</span><b>{money(deliveryTotal)}</b></div><div><span>Service fee</span><b>{money(serviceFee)}</b></div><div className="checkout-summary-total"><span>Total</span><b>{money(cartTotal)}</b></div></div></section></div>
           <footer className="checkout-footer">{orderError&&<p className="form-error" role="alert">{orderError}</p>}{deliveryCheckStatus==="checking"&&<p role="status">Checking your address and kitchen availability…</p>}<div className="checkout-footer-row"><div><span>Final total</span><strong>{money(cartTotal)}</strong><small>{locationStatus?.nationwideDevelopmentMode?"Sandbox order · no real delivery":"Your basket stays saved until your order is confirmed."}</small></div><OriginButton className="checkout-button" type="submit" loading={placingOrder||deliveryCheckStatus==="checking"} loadingText={deliveryCheckStatus==="checking"?"Checking delivery…":"Placing your order…"} disabled={!selectedAddressId||placingOrder||deliveryCheckStatus==="checking"}>{paymentMethod==="CARD"?"Continue to secure payment":"Place order"}<span>→</span></OriginButton></div></footer>
         </form>
       </OverlayLayer>

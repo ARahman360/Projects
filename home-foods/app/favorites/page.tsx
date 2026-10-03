@@ -5,14 +5,15 @@ import { canBuy } from '@/src/lib/buyer-policy';
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import PortionSelector from '@/src/components/portion-selector';
+import {availablePortions,portionPrice,type PortionOption} from '@/src/lib/portion-options';
+import {addBasketLine,type Dish as CartDish,type CartLine} from '@/src/lib/basket';
 import MarketImage from "@/src/components/market-image";
 
 type Row = Record<string, unknown>;
 type FavoritePayload = { favorites?: Row[]; favoriteKitchens?: Row[] };
 type Tab = "foods" | "kitchens";
 type Profile = { id?: number; role?: string; name?: string | null; email?: string | null };
-type CartDish = { id: number; shopId: number; name: string; shop: string; cuisine: string; category: string; price: number; rating: number | null; time: string; estimatedMinutes?: number | null; image: string | null; description: string; deliveryFee: number };
-type CartLine = { dish: CartDish; quantity: number };
 const text = (value: unknown, fallback: string) => typeof value === "string" && value.trim() ? value : fallback;
 const price = (value: unknown) => new Intl.NumberFormat("fi-FI", { style: "currency", currency: "EUR" }).format(Number(value ?? 0));
 const reviewLabel = (value: unknown) => {
@@ -30,6 +31,7 @@ const kitchenFallback = "https://images.unsplash.com/photo-1552566626-52f8b828ad
 
 export default function FavoritesPage() {
   const router = useRouter();
+  const [portionDish,setPortionDish]=useState<CartDish|null>(null);
   const [foods, setFoods] = useState<Row[]>([]);
   const [kitchens, setKitchens] = useState<Row[]>([]);
   const [tab, setTab] = useState<Tab>("foods");
@@ -94,7 +96,7 @@ export default function FavoritesPage() {
     const reviews = Array.isArray(kitchen.reviews) ? (kitchen.reviews as Row[]).map((review) => Number(review.rating)).filter(Number.isFinite) : [];
     if (Number(kitchen.sellerId) === profile.id) { setError("You cannot order from your own kitchen."); return; }
     const dish: CartDish = {
-      id: itemId, shopId, name: text(item.name, "Saved dish"), shop: text(kitchen.name, "Home kitchen"),
+      id: itemId, shopId, options:(item.options as PortionOption[])??[], name: text(item.name, "Saved dish"), shop: text(kitchen.name, "Home kitchen"),
       cuisine: text(kitchen.city, "Finnish home cooking"), category: "Homemade favourite", price: Number(item.price ?? 0),
       rating: reviews.length ? reviews.reduce((sum, rating) => sum + rating, 0) / reviews.length : null,
       time: kitchen.estimatedMinutes == null ? "Estimate unavailable" : `${String(kitchen.estimatedMinutes)} min`,
@@ -102,12 +104,17 @@ export default function FavoritesPage() {
       image: typeof item.imageUrl === "string" ? item.imageUrl : null, description: text(item.description, "Made with care by a local home cook."),
       deliveryFee: kitchen.deliveryFee == null ? 2.5 : Number(kitchen.deliveryFee),
     };
-    const key = `home-foods-cart:${profile.id}`;
+    const available=availablePortions(dish.options);
+    if(dish.options?.length){if(!available.length){setError('All portions are sold out.');return;}if(available.length>1){setPortionDish(dish);return;}dish.selectedOption=available[0];dish.price=available[0].price;}
+    storeDish(dish,1);
+  };
+  const storeDish=(dish:CartDish,quantity:number)=>{
+    const key = 'home-foods-cart:'+profile?.id;
     try {
       const current = JSON.parse(window.localStorage.getItem(key) ?? "[]") as CartLine[];
-      const existing = current.find((line) => line.dish?.id === itemId);
-      const next = existing ? current.map((line) => line.dish.id === itemId ? { ...line, quantity: line.quantity + 1 } : line) : [...current, { dish, quantity: 1 }];
+      const next=addBasketLine(current,dish,quantity);
       window.localStorage.setItem(key, JSON.stringify(next));
+      window.dispatchEvent(new Event("homefoods:cart-change"));
       setBasketNotice(`${dish.name} added to your basket.`);
       window.setTimeout(() => setBasketNotice(""), 3200);
     } catch { setError("Your basket could not be updated. Please try again."); }
@@ -116,6 +123,7 @@ export default function FavoritesPage() {
   const hasAny = useMemo(() => foods.length + kitchens.length > 0, [foods.length, kitchens.length]);
 
   return <main id="main-content" tabIndex={-1} className="favorites-page">
+    {portionDish&&<PortionSelector key={portionDish.id} dish={portionDish} onClose={()=>setPortionDish(null)} onAdd={storeDish}/>}
 
     <div className="favorites-layout">
     <div className="favorites-content">
@@ -132,11 +140,11 @@ export default function FavoritesPage() {
           const kitchen = (favorite.shop as Row | null) ?? {};
           const menuItemId = Number(favorite.menuItemId);
           const shopId = Number(favorite.shopId);
-          const available = item.isAvailable !== false && kitchen.status === "ACTIVE";
+          const available = item.isAvailable !== false && (!(item.options as PortionOption[])?.length || availablePortions(item.options as PortionOption[]).length>0) && kitchen.status === "ACTIVE";
           return <article className="favorite-card" key={String(favorite.id)}>
             <Link className="favorite-card-image" href={`/kitchens/${shopId}?item=${menuItemId}`}><MarketImage src={text(item.imageUrl, "")} alt={text(item.name, "Homemade favourite")} fallbackSrc={foodFallback}/><span className={`favorite-availability ${available ? "available" : "unavailable"}`}>{available ? "Available to order" : "Currently unavailable"}</span></Link>
             <button className="favorite-card-heart" type="button" aria-label={`Remove ${text(item.name, "dish")} from favourites`} aria-pressed="true" disabled={pending.includes(`foods-${menuItemId}`)} onClick={() => void remove("foods", menuItemId)}><HeartIcon/></button>
-            <div className="favorite-card-copy"><span className="favorite-card-kicker">HOMEMADE FAVOURITE</span><h2><Link href={`/kitchens/${shopId}?item=${menuItemId}`}>{text(item.name, "Saved dish")}</Link></h2><p>{text(item.description, "Made with care by a local home cook.")}</p><div className="favorite-card-foot"><span><b>{text(kitchen.name, "Home kitchen")}</b><small>{[text(kitchen.city, "Finland"), reviewLabel(kitchen.reviews)].filter(Boolean).join(" · ")}</small></span><strong>{price(item.price)}</strong></div><div className="favorite-card-actions">{available && <button type="button" className="favorite-card-add" onClick={() => addToBasket(item, kitchen, menuItemId, shopId)}>Add to basket</button>}<Link className="favorite-card-action" href={`/kitchens/${shopId}?item=${menuItemId}`}>{available ? "View dish" : "Visit kitchen"}<span>→</span></Link></div></div>
+            <div className="favorite-card-copy"><span className="favorite-card-kicker">HOMEMADE FAVOURITE</span><h2><Link href={`/kitchens/${shopId}?item=${menuItemId}`}>{text(item.name, "Saved dish")}</Link></h2><p>{text(item.description, "Made with care by a local home cook.")}</p><div className="favorite-card-foot"><span><b>{text(kitchen.name, "Home kitchen")}</b><small>{[text(kitchen.city, "Finland"), reviewLabel(kitchen.reviews)].filter(Boolean).join(" · ")}</small></span><strong>{portionPrice(Number(item.price),item.options as PortionOption[]).from?"From ":""}{price(portionPrice(Number(item.price),item.options as PortionOption[]).price)}</strong></div><div className="favorite-card-actions">{available && <button type="button" className="favorite-card-add" onClick={() => addToBasket(item, kitchen, menuItemId, shopId)}>Add to basket</button>}<Link className="favorite-card-action" href={`/kitchens/${shopId}?item=${menuItemId}`}>{available ? "View dish" : "Visit kitchen"}<span>→</span></Link></div></div>
           </article>;
         })}
       </div> : <EmptyFavorites hasAny={hasAny} kind="foods" onBrowse={() => router.push("/#discover")}/> : kitchens.length ? <div className="favorites-grid" role="tabpanel">

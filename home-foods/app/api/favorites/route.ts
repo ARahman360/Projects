@@ -10,7 +10,7 @@ export async function GET() {
   if (!session) return jsonError("Sign in to see your saved dishes.", 401);
   if (!canBuy(session.role)) return jsonError("Favorites are available for buyer accounts.", 403);
   try {
-    const favorites = await db.orm.public.Favorite.where({ customerId: session.userId }).include("menuItem").include("shop", (shop) => shop.select("id", "sellerId", "name", "description", "city", "coverImageUrl", "logoUrl", "deliveryFee", "estimatedMinutes", "status").include("reviews", (reviews) => reviews.select("rating"))).orderBy((favorite) => favorite.createdAt.desc()).all();
+    const favorites = await db.orm.public.Favorite.where({ customerId: session.userId }).include("menuItem", item=>item.include("options", options=>options.orderBy(option=>option.id.asc()))).include("shop", (shop) => shop.select("id", "sellerId", "name", "description", "city", "coverImageUrl", "logoUrl", "deliveryFee", "estimatedMinutes", "status").include("reviews", (reviews) => reviews.select("rating"))).orderBy((favorite) => favorite.createdAt.desc()).all();
     const favoriteKitchens = await db.orm.public.KitchenFavorite.where({ customerId: session.userId }).include("shop", (shop) => shop.select("id", "name", "description", "city", "coverImageUrl", "logoUrl", "deliveryFee", "estimatedMinutes", "status").include("reviews", (reviews) => reviews.select("rating"))).orderBy((favorite) => favorite.createdAt.desc()).all();
     return Response.json({ favorites, favoriteKitchens });
   } catch (error) {

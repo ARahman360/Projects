@@ -1,0 +1,44 @@
+[
+  {
+    "id": "column.public.menuItemOption.isDefault",
+    "label": "Add column \"isDefault\" to \"menuItemOption\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "isDefault",
+        "table": "menuItemOption"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"isDefault\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "menuItemOption",
+          "isDefault"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"isDefault\"",
+        "sql": "ALTER TABLE \"public\".\"menuItemOption\" ADD COLUMN \"isDefault\" bool DEFAULT false NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"isDefault\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "menuItemOption",
+          "isDefault"
+        ]
+      }
+    ]
+  }
+]

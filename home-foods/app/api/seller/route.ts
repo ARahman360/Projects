@@ -1,3 +1,5 @@
+import {validatePortions,PortionError} from '@/src/lib/portion-options';
+import {savePortions} from '@/src/lib/save-portions';
 import {validateImageReference,queueImageCleanup,UploadError} from '@/src/lib/image-storage';
 import {kitchenProfileError} from "@/src/lib/kitchen-profile";
 import {saveKitchenLocation,verifiedKitchenLocation} from "@/src/lib/kitchen-location-history";
@@ -20,7 +22,7 @@ export async function GET() {
   try {
     const shop = await ownedShop(session.userId);
     if (!shop) return Response.json({ shop: null, items: [], categories: [], orders: [], plans: [], subscriptions: [] });
-    const items = await db.orm.public.MenuItem.where({ shopId: shop.id }).orderBy((item) => item.createdAt.desc()).all();
+    const items = await db.orm.public.MenuItem.where({ shopId: shop.id }).include("options", options=>options.orderBy(option=>option.id.asc())).orderBy((item) => item.createdAt.desc()).all();
     const categories = await db.orm.public.MenuCategory.where({ shopId: shop.id }).orderBy((category) => category.sortOrder.asc()).all();
     const orders = await db.orm.public.Order.where({ shopId: shop.id }).include("items").include("payment").include("delivery").orderBy((order) => order.createdAt.desc()).all();
     const plans = await db.orm.public.SubscriptionPlan.where({ shopId: shop.id }).include("items").all();
@@ -28,6 +30,7 @@ export async function GET() {
     const subscriptions = planIds.length ? await db.orm.public.Subscription.where((subscription) => subscription.planId.in(planIds)).include("customer", (customer) => customer.select("name", "email")).include("plan", (plan) => plan.select("id", "name")).include("scheduledMeals", (meal) => meal.include("order", (order) => order.include("items").include("delivery")).orderBy((meal) => meal.scheduledAt.asc())).all() : [];
     return Response.json({ shop: {...shop, profileCompletedAt:kitchenProfileError(shop)?null:shop.profileCompletedAt, locationIsVerified: verifiedKitchenLocation(shop)}, items, categories, orders, plans, subscriptions });
   } catch (error) {
+    if(error instanceof PortionError)return jsonError(error.message,422);
     if(error instanceof UploadError)return jsonError(error.message,error.status);
     console.error("Seller workspace request failed", error);
     return jsonError("Seller workspace is unavailable. Check the database setup.", 503);
@@ -101,7 +104,12 @@ export async function PATCH(request: Request) {
         if (!Number.isInteger(categoryId) || !await db.orm.public.MenuCategory.where({ id: categoryId, shopId: shop.id }).first()) return jsonError("Choose one of your kitchen's categories.");
         update.categoryId = categoryId;
       }
-      const updated = await db.orm.public.MenuItem.where({ id: itemId }).update(update);
+      const portions=body.options===undefined?undefined:validatePortions(body.options);
+      const updated = await db.transaction(async tx=>{
+        const result=await tx.orm.public.MenuItem.where({id:itemId,shopId:shop.id}).update(update);
+        if(portions)await savePortions(tx,itemId,portions);
+        return result;
+      });
       if(update.imageUrl!==undefined)await queueImageCleanup(item.imageUrl,update.imageUrl);
       return Response.json({ item: updated });
     }
@@ -124,6 +132,7 @@ export async function PATCH(request: Request) {
     for(const key of ["logoUrl","coverImageUrl"] as const)if(update[key]!==undefined)await queueImageCleanup(shop[key],update[key]);
     return Response.json({ shop: updated });
   } catch (error) {
+    if(error instanceof PortionError)return jsonError(error.message,422);
     if(error instanceof UploadError)return jsonError(error.message,error.status);
     console.error("Seller update failed", error);
     if (error instanceof Error && isLocationServiceUnavailableMessage(error.message)) return jsonError(error.message, 503);
@@ -167,9 +176,15 @@ export async function POST(request: Request) {
     if (name.length < 2 || name.length > 100 || !Number.isFinite(price) || price < 0.5 || price > 500) return jsonError("Add a menu item name and a price between €0.50 and €500.");
     const categoryId = body.categoryId ? Number(body.categoryId) : null;
     if (categoryId !== null && (!Number.isInteger(categoryId) || !await db.orm.public.MenuCategory.where({ id: categoryId, shopId: shop.id }).first())) return jsonError("Choose one of your kitchen's categories.");
-    const item = await db.orm.public.MenuItem.create({ shopId: shop.id, categoryId, name, price: Math.round(price * 100) / 100, description: typeof body.description === "string" ? body.description.trim().slice(0, 1000) : null, imageUrl: typeof body.imageUrl === "string" ? body.imageUrl.trim().slice(0, 500) : null, isAvailable: typeof body.isAvailable === "boolean" ? body.isAvailable : true, isFeatured: false });
+    const portions=validatePortions(body.options??[]);
+    const item = await db.transaction(async tx=>{
+    const created = await tx.orm.public.MenuItem.create({ shopId: shop.id, categoryId, name, price: Math.round(price * 100) / 100, description: typeof body.description === "string" ? body.description.trim().slice(0, 1000) : null, imageUrl: typeof body.imageUrl === "string" ? body.imageUrl.trim().slice(0, 500) : null, isAvailable: typeof body.isAvailable === "boolean" ? body.isAvailable : true, isFeatured: false });
+    await savePortions(tx,created.id,portions);
+    return created;
+    });
     return Response.json({ item }, { status: 201 });
   } catch (error) {
+    if(error instanceof PortionError)return jsonError(error.message,422);
     if(error instanceof UploadError)return jsonError(error.message,error.status);
     console.error("Menu item creation failed", error);
     return jsonError("Couldn't add that menu item.", 503);
@@ -192,10 +207,14 @@ export async function DELETE(request: Request) {
       await db.orm.public.MenuItem.where({ id: itemId, shopId: shop.id }).update({ isAvailable: false });
       return Response.json({ archived: true, message: "This dish is part of order history, so it was hidden from the menu." });
     }
-    await db.orm.public.MenuItem.where({ id: itemId, shopId: shop.id }).delete();
+    await db.transaction(async tx=>{
+      await tx.orm.public.MenuItemOption.where({menuItemId:itemId}).delete();
+      await tx.orm.public.MenuItem.where({ id: itemId, shopId: shop.id }).delete();
+    });
     await queueImageCleanup(item.imageUrl,null);
     return Response.json({ success: true });
   } catch (error) {
+    if(error instanceof PortionError)return jsonError(error.message,422);
     if(error instanceof UploadError)return jsonError(error.message,error.status);
     console.error("Menu item removal failed", error);
     return jsonError("Couldn't remove that menu item.", 503);

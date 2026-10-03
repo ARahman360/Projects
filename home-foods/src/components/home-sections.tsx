@@ -6,7 +6,8 @@ import MarketImage from "@/src/components/market-image";
 import SpotlightCard from "@/src/components/ui/spotlight-card";
 import { OriginButton } from "@/src/components/ui/origin-button";
 
-type Dish = { isOwnKitchen?: boolean; id: number; shopId: number; name: string; shop: string; cuisine: string; category: string; price: number; rating: number | null; time: string; image: string | null; description: string; deliveryFee: number; orderCount?: number; favoriteCount?: number };
+import {basketLineKey,type Dish} from '@/src/lib/basket';
+import {portionPrice} from '@/src/lib/portion-options';
 type Shop = { id: number; name: string; description?: string | null; logoUrl?: string | null; coverImageUrl?: string | null; city?: string | null; cuisine?: string; status?: string; deliveryFee?: number | null; estimatedMinutes?: number | null; rating?: number | null; reviewCount?: number; orderCount?: number; favoriteCount?: number; deliverable?: boolean | null; deliveryStatus?: string | null; deliveryDistanceKm?: number | null };
 type Section = { id: string; title: string; description: string; kind: "food" | "kitchen"; href: string; items: Array<Dish | Shop> };
 const money = (n: number) => new Intl.NumberFormat("fi-FI", { style: "currency", currency: "EUR" }).format(n);
@@ -20,7 +21,7 @@ export default function HomeSections({ sections, loading, error, cart, favorites
   favorites: number[];
   favoriteShops: number[];
   onAdd: (dish: Dish) => void;
-  onQuantity: (id: number, delta: number) => void;
+  onQuantity: (id: string, delta: number) => void;
   onFavoriteDish: (dish: Dish) => void;
   onFavoriteShop: (shop: Shop) => void;
   onRetry: () => void;
@@ -32,12 +33,13 @@ export default function HomeSections({ sections, loading, error, cart, favorites
         const items = section.items as Dish[];
         const empty = section.id === "delicious-deals" ? "No active item discounts are available right now. Check back for offers from participating kitchens." : !items.length ? "No dishes are available in this collection yet." : undefined;
         return <HomeCarousel key={section.id} id={section.id} title={section.title} description={section.description} href={section.href} cardKind="food" empty={empty}>{items.map((dish) => {
-          const quantity = cart.find((line) => line.dish.id === dish.id)?.quantity ?? 0;
+          const lines=cart.filter(line=>line.dish.id===dish.id);
+          const quantity=lines.reduce((sum,line)=>sum+line.quantity,0),price=portionPrice(dish.price,dish.options);
           const saved = favorites.includes(dish.id);
           return <article className="carousel-food-card" key={dish.id}>
             <div className="carousel-food-photo"><a href={`/kitchens/${dish.shopId}?item=${dish.id}`} aria-label={`View ${dish.name} at ${dish.shop}`}><MarketImage className="food-image" src={dish.image} alt={`${dish.name}, ${dish.cuisine} cuisine`} fallbackSrc={fallback}/></a><button type="button" className={`save-button ${saved ? "is-saved" : ""}`} aria-pressed={saved} aria-label={`${saved ? "Remove" : "Save"} ${dish.name} ${saved ? "from" : "to"} favorites`} onClick={() => onFavoriteDish(dish)}>{saved ? "♥" : "♡"}</button></div>
-            <div className="carousel-food-info"><div className="carousel-food-title"><a href={`/kitchens/${dish.shopId}?item=${dish.id}`}>{dish.name}</a><strong>{money(dish.price)}</strong></div><p>{dish.shop} <span>·</span> {dish.cuisine}</p><div className="carousel-food-meta"><span>{dish.rating ? `★ ${dish.rating.toFixed(1)}` : "New kitchen"}</span><span>·</span><span>{dish.time}</span><div className={`carousel-quantity ${quantity ? "has-quantity" : ""}`} key={`${dish.id}-${quantity}`}>
-              {quantity > 0 && <button type="button" onClick={() => onQuantity(dish.id, -1)} aria-label={`Remove one ${dish.name}`}>−</button>}
+            <div className="carousel-food-info"><div className="carousel-food-title"><a href={`/kitchens/${dish.shopId}?item=${dish.id}`}>{dish.name}</a><strong>{price.from?"From ":""}{money(price.price)}</strong></div><p>{dish.shop} <span>·</span> {dish.cuisine}</p><div className="carousel-food-meta"><span>{dish.rating ? `★ ${dish.rating.toFixed(1)}` : "New kitchen"}</span><span>·</span><span>{dish.time}</span><div className={`carousel-quantity ${quantity ? "has-quantity" : ""}`} key={`${dish.id}-${quantity}`}>
+              {quantity > 0 && lines.length===1 && <button type="button" onClick={() => onQuantity(basketLineKey(lines[0].dish), -1)} aria-label={`Remove one ${dish.name}`}>−</button>}
               {dish.isOwnKitchen ? <span>Your kitchen</span> : <OriginButton type="button" variant="promotional" className="carousel-add" onClick={() => onAdd(dish)} aria-label={quantity ? `Add another ${dish.name}; ${quantity} in basket` : `Add ${dish.name} to basket`}>{quantity > 0 ? `+${quantity}` : "+"}</OriginButton>}
             </div></div></div>
           </article>;

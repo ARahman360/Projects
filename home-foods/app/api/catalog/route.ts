@@ -1,3 +1,4 @@
+import {portionPrice} from '@/src/lib/portion-options';
 import { getSession } from '@/src/lib/auth';
 import { db } from "@/src/prisma/db";
 import { getKitchenDeliveryDistances, isWithinDeliveryRadius, MAX_DELIVERY_DISTANCE_METERS } from "@/src/lib/location";
@@ -22,7 +23,7 @@ export async function GET(request: Request) {
     const customerLocation = hasLocation ? { latitude: Number(latParam), longitude: Number(lngParam) } : null;
     const shopRows = await db.orm.public.Shop
       .where({ status: "ACTIVE", isOnline: true })
-      .include("menuItems", (items) => items.where({ isAvailable: true }).include("category", (category) => category.select("name")).orderBy((item) => item.sortOrder.asc()))
+      .include("menuItems", (items) => items.where({ isAvailable: true }).include("options", options=>options.orderBy(option=>option.id.asc())).include("category", (category) => category.select("name")).orderBy((item) => item.sortOrder.asc()))
       .include("reviews", (reviews) => reviews.select("rating"))
       .include("seller", (seller) => seller.select("name", "email"))
       .orderBy((shop) => shop.name.asc())
@@ -56,9 +57,9 @@ export async function GET(request: Request) {
     const allDishes = eligibleShops.flatMap((shop) => {
       const rating = average(shop.reviews ?? []);
       const cuisine = cuisineOf(shop.description);
-      return (shop.menuItems ?? []).map((item) => ({
+      return (shop.menuItems ?? []).filter(item=>!item.options.length||item.options.some(option=>option.isAvailable)).map((item) => ({
         isOwnKitchen: shop.sellerId === viewer?.userId, id: item.id, shopId: shop.id, name: item.name, shop: shop.name, cuisine,
-        category: item.category?.name ?? "Other", price: item.price, rating,
+        category: item.category?.name ?? "Other", price: portionPrice(item.price,item.options).price, options:item.options.map(({id,name,price,isAvailable,isDefault})=>({id,name,price,isAvailable,isDefault})), rating,
         time: shop.estimatedMinutes == null ? "Estimate unavailable" : `${shop.estimatedMinutes} min`, estimatedMinutes: shop.estimatedMinutes,
         deliveryDistanceKm: deliveryChecks.get(shop.id)?.distanceKm ?? null, image: item.imageUrl,
         description: item.description ?? "Made fresh by a local home cook.",

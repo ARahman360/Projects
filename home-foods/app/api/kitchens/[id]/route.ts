@@ -13,7 +13,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     const viewer = await getSession();
     const shop = await db.orm.public.Shop
       .where({ id, status: "ACTIVE" })
-      .include("menuItems", (items) => items.include("category", (category) => category.select("id", "name")).orderBy((item) => item.name.asc()))
+      .include("menuItems", (items) => items.include("options", options=>options.orderBy(option=>option.id.asc())).include("category", (category) => category.select("id", "name")).orderBy((item) => item.name.asc()))
       .include("subscriptionPlans", plans=>plans.where({isActive:true}))
       .include("reviews", (reviews) => reviews.select("rating").orderBy((review) => review.createdAt.desc()).limit(100))
       .include("seller", (seller) => seller.select("name", "email"))
@@ -47,7 +47,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       estimatedMinutes: shop.estimatedMinutes, minimumOrder: shop.minimumOrder,
       menuItems: shop.menuItems.map(item => ({
         id: item.id, name: item.name, description: item.description,
-        imageUrl: item.imageUrl, price: item.price, isAvailable: item.isAvailable,
+        imageUrl: item.imageUrl, price: item.price, options:item.options.map(({id,name,price,isAvailable,isDefault})=>({id,name,price,isAvailable,isDefault})), isAvailable: item.isAvailable&&(!item.options.length||item.options.some(option=>option.isAvailable)),
         category: item.category,
       })),
       subscriptionPlans: shop.subscriptionPlans.map(plan => ({

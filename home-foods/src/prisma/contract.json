@@ -1688,6 +1688,13 @@
                   "kind": "scalar"
                 }
               },
+              "isDefault": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
               "menuItemId": {
                 "nullable": false,
                 "type": {
@@ -1745,6 +1752,9 @@
                 },
                 "isAvailable": {
                   "column": "isAvailable"
+                },
+                "isDefault": {
+                  "column": "isDefault"
                 },
                 "menuItemId": {
                   "column": "menuItemId"
@@ -5543,6 +5553,15 @@
                   "nativeType": "bool",
                   "nullable": false
                 },
+                "isDefault": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
                 "menuItemId": {
                   "codecId": "pg/int4@1",
                   "nativeType": "int4",
@@ -7722,7 +7741,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "16e95f66860db533af7e42ceba52221c73927c8c4667586b2931f661cb6e7671"
+    "storageHash": "a3025b17bc2a7f4b33a262e2278d844ebb037c87b889c7594c7af5f45a271712"
   },
   "execution": {
     "executionHash": "6a798fe5863219e1a94434be9b3689a946ed07045dc95c60387dff0fc37be662",
