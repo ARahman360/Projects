@@ -1,6 +1,8 @@
 'use client';
 
 import {useEffect,useRef,useState,type FormEvent} from 'react';
+import ModifierEditor from './modifier-editor';
+import {readModifierGroups} from '@/src/lib/modifiers';
 import PortionEditor from './portion-editor';
 import {portionPrice,type PortionDraft,type PortionOption} from '@/src/lib/portion-options';
 import ImageUpload from './image-upload';
@@ -57,16 +59,18 @@ export default function SellerDishList({items,categories,busy,save,remove}:Props
 
 function DishForm({item,categories,busy,onDirty,onSave,onCancel,onRemove}:{item?:Row;categories:Row[];busy:boolean;onDirty:()=>void;onSave:(body:Row)=>Promise<void>;onCancel:()=>void;onRemove?:()=>void}){
   const form=useRef<HTMLFormElement>(null);
+  const [modifierGroups,setModifierGroups]=useState(()=>readModifierGroups(item?.modifierGroups));
   const [options,setOptions]=useState<PortionDraft[]>((item?.options as PortionDraft[])??[]);
   // Capture native change events too: the existing uploader emits these when its
   // hidden image reference changes after upload/removal.
   useEffect(()=>{const node=form.current;if(!node)return;node.addEventListener('input',onDirty);node.addEventListener('change',onDirty);return()=>{node.removeEventListener('input',onDirty);node.removeEventListener('change',onDirty);};},[onDirty]);
-  async function submit(event:FormEvent<HTMLFormElement>){event.preventDefault();if(busy)return;const data=new FormData(event.currentTarget);await onSave({...(item?{itemId:item.id}:{}),name:text(data.get('name')).trim(),description:text(data.get('description')).trim(),price:options.length?(options.find(option=>option.isDefault)?.price??options[0].price):Number(data.get('price')),imageUrl:text(data.get('imageUrl')).trim(),categoryId:data.get('categoryId')?Number(data.get('categoryId')):null,isAvailable:data.get('isAvailable')==='on',options});}
+  async function submit(event:FormEvent<HTMLFormElement>){event.preventDefault();if(busy)return;const data=new FormData(event.currentTarget);await onSave({...(item?{itemId:item.id}:{}),name:text(data.get('name')).trim(),description:text(data.get('description')).trim(),price:options.length?(options.find(option=>option.isDefault)?.price??options[0].price):Number(data.get('price')),imageUrl:text(data.get('imageUrl')).trim(),categoryId:data.get('categoryId')?Number(data.get('categoryId')):null,isAvailable:data.get('isAvailable')==='on',options,modifierGroups});}
   return <form ref={form} className="seller-dish-editor dish-edit-form" aria-label={item?`Edit ${text(item.name)}`:'Add a dish'} onSubmit={submit}>
     <label>Dish name<input name="name" required minLength={2} maxLength={100} defaultValue={text(item?.name)} placeholder="e.g. Sunday roast chicken"/></label>
     <label>Description<input name="description" maxLength={1000} defaultValue={text(item?.description)} placeholder="What makes it lovely?"/></label>
     <div className="seller-dish-fields">{!options.length&&<label>Price (€)<input name="price" type="number" step="0.01" min="0.5" max="500" required defaultValue={item?text(item.price):''}/></label>}<label>Category<select name="categoryId" defaultValue={text(item?.categoryId)}><option value="">No category</option>{categories.map(category=><option key={text(category.id)} value={text(category.id)}>{text(category.name)}</option>)}</select></label></div>
     <PortionEditor options={options} disabled={busy} onChange={value=>{setOptions(value);onDirty();}}/>
+    <ModifierEditor groups={modifierGroups} disabled={busy} onChange={value=>{setModifierGroups(value);onDirty();}}/>
     <ImageUpload name="imageUrl" label="Dish image" initialValue={text(item?.imageUrl)} disabled={busy}/>
     <label className="seller-availability"><input type="checkbox" name="isAvailable" defaultChecked={item?Boolean(item.isAvailable):true}/> Available to order</label>
     <div className="workspace-actions"><OriginButton type="submit" loading={busy} loadingText="Saving…">{item?'Save dish':'Add dish'}</OriginButton><button type="button" disabled={busy} onClick={onCancel}>Cancel</button>{onRemove&&<button type="button" className="confirm-danger" disabled={busy} onClick={onRemove}>Remove dish</button>}</div>

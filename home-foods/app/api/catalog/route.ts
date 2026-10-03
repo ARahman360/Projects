@@ -1,3 +1,4 @@
+import {readModifierGroups} from '@/src/lib/modifiers';
 import {portionPrice} from '@/src/lib/portion-options';
 import { getSession } from '@/src/lib/auth';
 import { db } from "@/src/prisma/db";
@@ -59,7 +60,7 @@ export async function GET(request: Request) {
       const cuisine = cuisineOf(shop.description);
       return (shop.menuItems ?? []).filter(item=>!item.options.length||item.options.some(option=>option.isAvailable)).map((item) => ({
         isOwnKitchen: shop.sellerId === viewer?.userId, id: item.id, shopId: shop.id, name: item.name, shop: shop.name, cuisine,
-        category: item.category?.name ?? "Other", price: portionPrice(item.price,item.options).price, options:item.options.map(({id,name,price,isAvailable,isDefault})=>({id,name,price,isAvailable,isDefault})), rating,
+        category: item.category?.name ?? "Other", price: portionPrice(item.price,item.options).price, modifierGroups:readModifierGroups(item.modifierGroups), options:item.options.map(({id,name,price,isAvailable,isDefault})=>({id,name,price,isAvailable,isDefault})), rating,
         time: shop.estimatedMinutes == null ? "Estimate unavailable" : `${shop.estimatedMinutes} min`, estimatedMinutes: shop.estimatedMinutes,
         deliveryDistanceKm: deliveryChecks.get(shop.id)?.distanceKm ?? null, image: item.imageUrl,
         description: item.description ?? "Made fresh by a local home cook.",

@@ -5,6 +5,7 @@ import { canBuy } from '@/src/lib/buyer-policy';
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import {readModifierGroups} from '@/src/lib/modifiers';
 import PortionSelector from '@/src/components/portion-selector';
 import {availablePortions,portionPrice,type PortionOption} from '@/src/lib/portion-options';
 import {addBasketLine,type Dish as CartDish,type CartLine} from '@/src/lib/basket';
@@ -96,7 +97,7 @@ export default function FavoritesPage() {
     const reviews = Array.isArray(kitchen.reviews) ? (kitchen.reviews as Row[]).map((review) => Number(review.rating)).filter(Number.isFinite) : [];
     if (Number(kitchen.sellerId) === profile.id) { setError("You cannot order from your own kitchen."); return; }
     const dish: CartDish = {
-      id: itemId, shopId, options:(item.options as PortionOption[])??[], name: text(item.name, "Saved dish"), shop: text(kitchen.name, "Home kitchen"),
+      id: itemId, shopId, modifierGroups:readModifierGroups(item.modifierGroups), options:(item.options as PortionOption[])??[], name: text(item.name, "Saved dish"), shop: text(kitchen.name, "Home kitchen"),
       cuisine: text(kitchen.city, "Finnish home cooking"), category: "Homemade favourite", price: Number(item.price ?? 0),
       rating: reviews.length ? reviews.reduce((sum, rating) => sum + rating, 0) / reviews.length : null,
       time: kitchen.estimatedMinutes == null ? "Estimate unavailable" : `${String(kitchen.estimatedMinutes)} min`,
@@ -104,6 +105,7 @@ export default function FavoritesPage() {
       image: typeof item.imageUrl === "string" ? item.imageUrl : null, description: text(item.description, "Made with care by a local home cook."),
       deliveryFee: kitchen.deliveryFee == null ? 2.5 : Number(kitchen.deliveryFee),
     };
+    if(dish.modifierGroups?.length){setPortionDish(dish);return;}
     const available=availablePortions(dish.options);
     if(dish.options?.length){if(!available.length){setError('All portions are sold out.');return;}if(available.length>1){setPortionDish(dish);return;}dish.selectedOption=available[0];dish.price=available[0].price;}
     storeDish(dish,1);

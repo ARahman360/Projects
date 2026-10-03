@@ -1,0 +1,44 @@
+[
+  {
+    "id": "column.public.menuItem.modifierGroups",
+    "label": "Add column \"modifierGroups\" to \"menuItem\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "modifierGroups",
+        "table": "menuItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"modifierGroups\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "menuItem",
+          "modifierGroups"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"modifierGroups\"",
+        "sql": "ALTER TABLE \"public\".\"menuItem\" ADD COLUMN \"modifierGroups\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"modifierGroups\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "menuItem",
+          "modifierGroups"
+        ]
+      }
+    ]
+  }
+]

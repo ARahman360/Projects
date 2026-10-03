@@ -1477,6 +1477,13 @@
                   "kind": "scalar"
                 }
               },
+              "modifierGroups": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "name": {
                 "nullable": false,
                 "type": {
@@ -1644,6 +1651,9 @@
                 },
                 "isFeatured": {
                   "column": "isFeatured"
+                },
+                "modifierGroups": {
+                  "column": "modifierGroups"
                 },
                 "name": {
                   "column": "name"
@@ -5973,6 +5983,11 @@
                   "nativeType": "bool",
                   "nullable": false
                 },
+                "modifierGroups": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "name": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -8279,7 +8294,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "9636a180b67df33196eb8f00f33510a028873aadd78aef8d9dd88d146aefeb41"
+    "storageHash": "c6efd07880ad27401c510e16bfbebcb6684aa9cb6a766e78966c16ae4500141a"
   },
   "execution": {
     "executionHash": "6a798fe5863219e1a94434be9b3689a946ed07045dc95c60387dff0fc37be662",

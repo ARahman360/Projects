@@ -5,6 +5,7 @@ import { canBuy } from '@/src/lib/buyer-policy';
 function publishFavoritesChange(){localStorage.setItem("homefoods:favorites-updated",String(Date.now()));window.dispatchEvent(new Event("homefoods:favorites-change"));}
 
 import { useEffect, useMemo, useState } from "react";
+import {readModifierGroups,type ModifierGroup} from '@/src/lib/modifiers';
 import PortionSelector from './portion-selector';
 import {availablePortions,portionPrice,type PortionOption} from '@/src/lib/portion-options';
 import {addBasketLine,type Dish as CartDish,type CartLine} from '@/src/lib/basket';
@@ -13,7 +14,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import MarketImage from "@/src/components/market-image";
 
-type MenuItem = { options?:PortionOption[]; id: number; name: string; description: string | null; imageUrl: string | null; price: number; isAvailable: boolean; category?: { name: string } | null };
+type MenuItem = { modifierGroups?:ModifierGroup[];options?:PortionOption[]; id: number; name: string; description: string | null; imageUrl: string | null; price: number; isAvailable: boolean; category?: { name: string } | null };
 type Kitchen = { isOwnKitchen?: boolean; subscriptionPlans?:Array<{id:number;name:string;description?:string|null;price:number;currency:string;type:string;mealsPerPeriod:number}>; isOnline: boolean; id: number; name: string; description: string | null; logoUrl: string | null; coverImageUrl: string | null; city: string | null; deliveryFee: number | null; estimatedMinutes: number | null; minimumOrder: number | null; menuItems: MenuItem[]; reviews: Array<{ rating: number }> };
 type DeliveryCheck = { status: "available" | "too_far" | "unknown" | "unconfigured"; distanceKm?: number; message?: string } | null;
 const cartKey = (userId: number | null) => `home-foods-cart:${userId === null ? "guest" : userId}`;
@@ -115,7 +116,8 @@ export default function KitchenPage({ id }: { id: string }) {
     if (kitchen?.isOnline === false) { setNotice("This kitchen is offline and is not accepting new orders."); return; }
     if (!kitchen || !item.isAvailable) return;
     if (deliveryCheck && deliveryCheck.status !== "available") { setNotice(deliveryCheck.message || "Delivery availability must be checked before ordering from this kitchen."); window.setTimeout(() => setNotice(""), 3500); return; }
-    const dish: CartDish = { id: item.id, shopId: kitchen.id, name: item.name, shop: kitchen.name, cuisine: item.category?.name ?? kitchen.city ?? "Home cooked", category: item.category?.name ?? "Other", price: item.price, options:item.options, rating: null, time: kitchen.estimatedMinutes == null ? "Estimate unavailable" : `${kitchen.estimatedMinutes} min`, image: item.imageUrl, description: item.description ?? "Made fresh by a local home cook.", deliveryFee: kitchen.deliveryFee ?? 2.5 };
+    const dish: CartDish = { id: item.id, shopId: kitchen.id, name: item.name, shop: kitchen.name, cuisine: item.category?.name ?? kitchen.city ?? "Home cooked", category: item.category?.name ?? "Other", price: item.price, options:item.options,modifierGroups:readModifierGroups(item.modifierGroups), rating: null, time: kitchen.estimatedMinutes == null ? "Estimate unavailable" : `${kitchen.estimatedMinutes} min`, image: item.imageUrl, description: item.description ?? "Made fresh by a local home cook.", deliveryFee: kitchen.deliveryFee ?? 2.5 };
+    if(dish.modifierGroups?.length){setPortionDish(dish);return;}
     const available=availablePortions(item.options);
     if(item.options?.length){
       if(!available.length)return;

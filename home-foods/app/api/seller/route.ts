@@ -1,3 +1,4 @@
+import {readModifierGroups,validateModifierGroups,ModifierError} from '@/src/lib/modifiers';
 import {validatePortions,PortionError} from '@/src/lib/portion-options';
 import {savePortions} from '@/src/lib/save-portions';
 import {validateImageReference,queueImageCleanup,UploadError} from '@/src/lib/image-storage';
@@ -28,9 +29,9 @@ export async function GET() {
     const plans = await db.orm.public.SubscriptionPlan.where({ shopId: shop.id }).include("items").all();
     const planIds = plans.map((plan) => plan.id);
     const subscriptions = planIds.length ? await db.orm.public.Subscription.where((subscription) => subscription.planId.in(planIds)).include("customer", (customer) => customer.select("name", "email")).include("plan", (plan) => plan.select("id", "name")).include("scheduledMeals", (meal) => meal.include("order", (order) => order.include("items").include("delivery")).orderBy((meal) => meal.scheduledAt.asc())).all() : [];
-    return Response.json({ shop: {...shop, profileCompletedAt:kitchenProfileError(shop)?null:shop.profileCompletedAt, locationIsVerified: verifiedKitchenLocation(shop)}, items, categories, orders, plans, subscriptions });
+    return Response.json({ shop: {...shop, profileCompletedAt:kitchenProfileError(shop)?null:shop.profileCompletedAt, locationIsVerified: verifiedKitchenLocation(shop)}, items:items.map(item=>({...item,modifierGroups:readModifierGroups(item.modifierGroups)})), categories, orders, plans, subscriptions });
   } catch (error) {
-    if(error instanceof PortionError)return jsonError(error.message,422);
+    if(error instanceof ModifierError||error instanceof PortionError)return jsonError(error.message,422);
     if(error instanceof UploadError)return jsonError(error.message,error.status);
     console.error("Seller workspace request failed", error);
     return jsonError("Seller workspace is unavailable. Check the database setup.", 503);
@@ -91,7 +92,7 @@ export async function PATCH(request: Request) {
       const item = await db.orm.public.MenuItem.where({ id: itemId, shopId: shop.id }).first();
       if (!item) return jsonError("Menu item not found.", 404);
       if(body.imageUrl!==undefined)await validateImageReference(body.imageUrl,shop.id,item.imageUrl);
-      const update: { name?: string; description?: string | null; price?: number; imageUrl?: string | null; isAvailable?: boolean; isFeatured?: boolean; categoryId?: number | null } = {};
+      const update: { modifierGroups?:string; name?: string; description?: string | null; price?: number; imageUrl?: string | null; isAvailable?: boolean; isFeatured?: boolean; categoryId?: number | null } = {};
       if (typeof body.name === "string") update.name = body.name.trim().slice(0, 100);
       if (typeof body.description === "string") update.description = body.description.trim().slice(0, 1000);
       if (typeof body.price === "number" && Number.isFinite(body.price) && body.price >= 0.5 && body.price <= 500) update.price = Math.round(body.price * 100) / 100;
@@ -104,6 +105,7 @@ export async function PATCH(request: Request) {
         if (!Number.isInteger(categoryId) || !await db.orm.public.MenuCategory.where({ id: categoryId, shopId: shop.id }).first()) return jsonError("Choose one of your kitchen's categories.");
         update.categoryId = categoryId;
       }
+      if(body.modifierGroups!==undefined)update.modifierGroups=JSON.stringify(validateModifierGroups(body.modifierGroups));
       const portions=body.options===undefined?undefined:validatePortions(body.options);
       const updated = await db.transaction(async tx=>{
         const result=await tx.orm.public.MenuItem.where({id:itemId,shopId:shop.id}).update(update);
@@ -132,7 +134,7 @@ export async function PATCH(request: Request) {
     for(const key of ["logoUrl","coverImageUrl"] as const)if(update[key]!==undefined)await queueImageCleanup(shop[key],update[key]);
     return Response.json({ shop: updated });
   } catch (error) {
-    if(error instanceof PortionError)return jsonError(error.message,422);
+    if(error instanceof ModifierError||error instanceof PortionError)return jsonError(error.message,422);
     if(error instanceof UploadError)return jsonError(error.message,error.status);
     console.error("Seller update failed", error);
     if (error instanceof Error && isLocationServiceUnavailableMessage(error.message)) return jsonError(error.message, 503);
@@ -176,15 +178,16 @@ export async function POST(request: Request) {
     if (name.length < 2 || name.length > 100 || !Number.isFinite(price) || price < 0.5 || price > 500) return jsonError("Add a menu item name and a price between €0.50 and €500.");
     const categoryId = body.categoryId ? Number(body.categoryId) : null;
     if (categoryId !== null && (!Number.isInteger(categoryId) || !await db.orm.public.MenuCategory.where({ id: categoryId, shopId: shop.id }).first())) return jsonError("Choose one of your kitchen's categories.");
+    const modifierGroups=JSON.stringify(validateModifierGroups(body.modifierGroups??[]));
     const portions=validatePortions(body.options??[]);
     const item = await db.transaction(async tx=>{
-    const created = await tx.orm.public.MenuItem.create({ shopId: shop.id, categoryId, name, price: Math.round(price * 100) / 100, description: typeof body.description === "string" ? body.description.trim().slice(0, 1000) : null, imageUrl: typeof body.imageUrl === "string" ? body.imageUrl.trim().slice(0, 500) : null, isAvailable: typeof body.isAvailable === "boolean" ? body.isAvailable : true, isFeatured: false });
+    const created = await tx.orm.public.MenuItem.create({ modifierGroups, shopId: shop.id, categoryId, name, price: Math.round(price * 100) / 100, description: typeof body.description === "string" ? body.description.trim().slice(0, 1000) : null, imageUrl: typeof body.imageUrl === "string" ? body.imageUrl.trim().slice(0, 500) : null, isAvailable: typeof body.isAvailable === "boolean" ? body.isAvailable : true, isFeatured: false });
     await savePortions(tx,created.id,portions);
     return created;
     });
     return Response.json({ item }, { status: 201 });
   } catch (error) {
-    if(error instanceof PortionError)return jsonError(error.message,422);
+    if(error instanceof ModifierError||error instanceof PortionError)return jsonError(error.message,422);
     if(error instanceof UploadError)return jsonError(error.message,error.status);
     console.error("Menu item creation failed", error);
     return jsonError("Couldn't add that menu item.", 503);
@@ -214,7 +217,7 @@ export async function DELETE(request: Request) {
     await queueImageCleanup(item.imageUrl,null);
     return Response.json({ success: true });
   } catch (error) {
-    if(error instanceof PortionError)return jsonError(error.message,422);
+    if(error instanceof ModifierError||error instanceof PortionError)return jsonError(error.message,422);
     if(error instanceof UploadError)return jsonError(error.message,error.status);
     console.error("Menu item removal failed", error);
     return jsonError("Couldn't remove that menu item.", 503);

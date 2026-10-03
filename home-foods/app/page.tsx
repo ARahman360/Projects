@@ -1,4 +1,5 @@
 "use client";
+import ModifierSummary from '@/src/components/modifier-summary';
 import { canBuy } from '@/src/lib/buyer-policy';
 
 
@@ -270,6 +271,7 @@ export default function Home() {
       setCatalogError("Delivery distance isn't confirmed for this kitchen yet. Choose another kitchen or check your address.");
       return;
     }
+    if(dish.modifierGroups?.length&&!dish.customized){setPortionDish(dish);return;}
     if(dish.options?.length&&!dish.selectedOption){
       const available=availablePortions(dish.options);
       if(!available.length){setCatalogError('All portions of this dish are sold out.');return;}
@@ -324,7 +326,7 @@ export default function Home() {
     try {
       const deliverable = await validateCartDelivery();
       if (!deliverable) { setPlacingOrder(false); return; }
-      const orderBody = {lines:cart.map(({dish,quantity})=>({menuItemId:dish.id,optionId:dish.selectedOption?.id,quantity})),addressId:selectedAddressId,paymentMethod,notes:cartNotes};
+      const orderBody = {lines:cart.map(({dish,quantity})=>({menuItemId:dish.id,optionId:dish.selectedOption?.id,modifiers:dish.selectedModifiers?.map(({groupId,optionId})=>({groupId,optionId})),quantity})),addressId:selectedAddressId,paymentMethod,notes:cartNotes};
       const signature=JSON.stringify(orderBody);
       const attemptStorageKey = `homefoods:checkout-attempt:${user.id}`;
       if(!checkoutAttempt.current) { try { checkoutAttempt.current=JSON.parse(sessionStorage.getItem(attemptStorageKey) ?? "null"); } catch {} }
@@ -435,7 +437,7 @@ export default function Home() {
             </section>
             <section className="checkout-section"><h3><span>02</span> Payment</h3><fieldset className="payment-choices"><legend className="sr-only">Payment method</legend>{[{value:"CASH",title:"Cash on delivery",note:"Pay when your food arrives",icon:"€"},{value:"CARD",title:"Card via Stripe",note:"Continue to secure payment",icon:"▤"}].map(method=><label key={method.value} className={paymentMethod===method.value?"selected":""}><input type="radio" name="paymentMethod" value={method.value} checked={paymentMethod===method.value} onChange={()=>setPaymentMethod(method.value)}/><span className="payment-icon" aria-hidden="true">{method.icon}</span><span><b>{method.title}</b><small>{method.note}</small></span><span className="payment-check" aria-hidden="true">{paymentMethod===method.value?"✓":""}</span></label>)}</fieldset></section>
             {cartNotes && <section className="checkout-section"><h3>Kitchen instructions</h3><p>{cartNotes}</p></section>}
-          </div><section className="checkout-order-summary"><h3>Your order <span>{itemCount} items</span></h3>{[...new Set(cart.map(line=>line.dish.shopId))].map(shopId=><div className="checkout-kitchen-group" key={shopId}><h4>{cart.find(line=>line.dish.shopId===shopId)?.dish.shop}</h4>{cart.filter(line=>line.dish.shopId===shopId).map(({dish,quantity})=><div className="checkout-food" key={basketLineKey(dish)}><FoodImage dish={dish} className="checkout-food-photo"/><div><b>{dish.name}</b>{dish.selectedOption&&<small>{dish.selectedOption.name}</small>}<small>Quantity {quantity}</small></div><strong>{money(dish.price*quantity)}</strong></div>)}</div>)}<div className="checkout-summary-breakdown"><div><span>Food subtotal</span><b>{money(subtotal)}</b></div><div><span>Delivery fees</span><b>{money(deliveryTotal)}</b></div><div><span>Service fee</span><b>{money(serviceFee)}</b></div><div className="checkout-summary-total"><span>Total</span><b>{money(cartTotal)}</b></div></div></section></div>
+          </div><section className="checkout-order-summary"><h3>Your order <span>{itemCount} items</span></h3>{[...new Set(cart.map(line=>line.dish.shopId))].map(shopId=><div className="checkout-kitchen-group" key={shopId}><h4>{cart.find(line=>line.dish.shopId===shopId)?.dish.shop}</h4>{cart.filter(line=>line.dish.shopId===shopId).map(({dish,quantity})=><div className="checkout-food" key={basketLineKey(dish)}><FoodImage dish={dish} className="checkout-food-photo"/><div><b>{dish.name}</b><ModifierSummary values={dish.selectedModifiers}/>{dish.selectedOption&&<small>{dish.selectedOption.name}</small>}<small>Quantity {quantity}</small></div><strong>{money(dish.price*quantity)}</strong></div>)}</div>)}<div className="checkout-summary-breakdown"><div><span>Food subtotal</span><b>{money(subtotal)}</b></div><div><span>Delivery fees</span><b>{money(deliveryTotal)}</b></div><div><span>Service fee</span><b>{money(serviceFee)}</b></div><div className="checkout-summary-total"><span>Total</span><b>{money(cartTotal)}</b></div></div></section></div>
           <footer className="checkout-footer">{orderError&&<p className="form-error" role="alert">{orderError}</p>}{deliveryCheckStatus==="checking"&&<p role="status">Checking your address and kitchen availability…</p>}<div className="checkout-footer-row"><div><span>Final total</span><strong>{money(cartTotal)}</strong><small>{locationStatus?.nationwideDevelopmentMode?"Sandbox order · no real delivery":"Your basket stays saved until your order is confirmed."}</small></div><OriginButton className="checkout-button" type="submit" loading={placingOrder||deliveryCheckStatus==="checking"} loadingText={deliveryCheckStatus==="checking"?"Checking delivery…":"Placing your order…"} disabled={!selectedAddressId||placingOrder||deliveryCheckStatus==="checking"}>{paymentMethod==="CARD"?"Continue to secure payment":"Place order"}<span>→</span></OriginButton></div></footer>
         </form>
       </OverlayLayer>

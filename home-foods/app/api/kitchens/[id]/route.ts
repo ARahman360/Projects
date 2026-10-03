@@ -1,3 +1,4 @@
+import {readModifierGroups} from '@/src/lib/modifiers';
 import { getSession } from '@/src/lib/auth';
 import { db } from "@/src/prisma/db";
 import { getKitchenDeliveryDistance, ROUTING_UNAVAILABLE_MESSAGE } from "@/src/lib/location";
@@ -47,7 +48,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       estimatedMinutes: shop.estimatedMinutes, minimumOrder: shop.minimumOrder,
       menuItems: shop.menuItems.map(item => ({
         id: item.id, name: item.name, description: item.description,
-        imageUrl: item.imageUrl, price: item.price, options:item.options.map(({id,name,price,isAvailable,isDefault})=>({id,name,price,isAvailable,isDefault})), isAvailable: item.isAvailable&&(!item.options.length||item.options.some(option=>option.isAvailable)),
+        imageUrl: item.imageUrl, price: item.price, modifierGroups:readModifierGroups(item.modifierGroups), options:item.options.map(({id,name,price,isAvailable,isDefault})=>({id,name,price,isAvailable,isDefault})), isAvailable: item.isAvailable&&(!item.options.length||item.options.some(option=>option.isAvailable)),
         category: item.category,
       })),
       subscriptionPlans: shop.subscriptionPlans.map(plan => ({
