@@ -4450,8 +4450,546 @@
   },
   "storage": {
     "namespaces": {
+      "__unbound__": {
+        "entries": {
+          "role": {
+            "anon": {
+              "control": "external",
+              "kind": "role",
+              "name": "anon",
+              "namespaceId": "__unbound__"
+            },
+            "authenticated": {
+              "control": "external",
+              "kind": "role",
+              "name": "authenticated",
+              "namespaceId": "__unbound__"
+            }
+          },
+          "table": {}
+        },
+        "id": "__unbound__",
+        "kind": "postgres-unbound-schema"
+      },
       "public": {
         "entries": {
+          "policy": {
+            "address_server_only": {
+              "kind": "policy",
+              "name": "homefoods_server_only",
+              "namespaceId": "public",
+              "operation": "all",
+              "permissive": false,
+              "roles": [
+                "anon",
+                "authenticated"
+              ],
+              "tableName": "address",
+              "using": "false",
+              "withCheck": "false"
+            },
+            "adminAuditLog_server_only": {
+              "kind": "policy",
+              "name": "homefoods_server_only",
+              "namespaceId": "public",
+              "operation": "all",
+              "permissive": false,
+              "roles": [
+                "anon",
+                "authenticated"
+              ],
+              "tableName": "adminAuditLog",
+              "using": "false",
+              "withCheck": "false"
+            },
+            "cartItem_server_only": {
+              "kind": "policy",
+              "name": "homefoods_server_only",
+              "namespaceId": "public",
+              "operation": "all",
+              "permissive": false,
+              "roles": [
+                "anon",
+                "authenticated"
+              ],
+              "tableName": "cartItem",
+              "using": "false",
+              "withCheck": "false"
+            },
+            "cart_server_only": {
+              "kind": "policy",
+              "name": "homefoods_server_only",
+              "namespaceId": "public",
+              "operation": "all",
+              "permissive": false,
+              "roles": [
+                "anon",
+                "authenticated"
+              ],
+              "tableName": "cart",
+              "using": "false",
+              "withCheck": "false"
+            },
+            "checkoutRequest_server_only": {
+              "kind": "policy",
+              "name": "homefoods_server_only",
+              "namespaceId": "public",
+              "operation": "all",
+              "permissive": false,
+              "roles": [
+                "anon",
+                "authenticated"
+              ],
+              "tableName": "checkoutRequest",
+              "using": "false",
+              "withCheck": "false"
+            },
+            "delivery_server_only": {
+              "kind": "policy",
+              "name": "homefoods_server_only",
+              "namespaceId": "public",
+              "operation": "all",
+              "permissive": false,
+              "roles": [
+                "anon",
+                "authenticated"
+              ],
+              "tableName": "delivery",
+              "using": "false",
+              "withCheck": "false"
+            },
+            "favorite_server_only": {
+              "kind": "policy",
+              "name": "homefoods_server_only",
+              "namespaceId": "public",
+              "operation": "all",
+              "permissive": false,
+              "roles": [
+                "anon",
+                "authenticated"
+              ],
+              "tableName": "favorite",
+              "using": "false",
+              "withCheck": "false"
+            },
+            "kitchenFavorite_server_only": {
+              "kind": "policy",
+              "name": "homefoods_server_only",
+              "namespaceId": "public",
+              "operation": "all",
+              "permissive": false,
+              "roles": [
+                "anon",
+                "authenticated"
+              ],
+              "tableName": "kitchenFavorite",
+              "using": "false",
+              "withCheck": "false"
+            },
+            "menuCategory_server_only": {
+              "kind": "policy",
+              "name": "homefoods_server_only",
+              "namespaceId": "public",
+              "operation": "all",
+              "permissive": false,
+              "roles": [
+                "anon",
+                "authenticated"
+              ],
+              "tableName": "menuCategory",
+              "using": "false",
+              "withCheck": "false"
+            },
+            "menuItemOption_server_only": {
+              "kind": "policy",
+              "name": "homefoods_server_only",
+              "namespaceId": "public",
+              "operation": "all",
+              "permissive": false,
+              "roles": [
+                "anon",
+                "authenticated"
+              ],
+              "tableName": "menuItemOption",
+              "using": "false",
+              "withCheck": "false"
+            },
+            "menuItem_server_only": {
+              "kind": "policy",
+              "name": "homefoods_server_only",
+              "namespaceId": "public",
+              "operation": "all",
+              "permissive": false,
+              "roles": [
+                "anon",
+                "authenticated"
+              ],
+              "tableName": "menuItem",
+              "using": "false",
+              "withCheck": "false"
+            },
+            "newsletterSubscriber_server_only": {
+              "kind": "policy",
+              "name": "homefoods_server_only",
+              "namespaceId": "public",
+              "operation": "all",
+              "permissive": false,
+              "roles": [
+                "anon",
+                "authenticated"
+              ],
+              "tableName": "newsletterSubscriber",
+              "using": "false",
+              "withCheck": "false"
+            },
+            "notification_server_only": {
+              "kind": "policy",
+              "name": "homefoods_server_only",
+              "namespaceId": "public",
+              "operation": "all",
+              "permissive": false,
+              "roles": [
+                "anon",
+                "authenticated"
+              ],
+              "tableName": "notification",
+              "using": "false",
+              "withCheck": "false"
+            },
+            "orderItem_server_only": {
+              "kind": "policy",
+              "name": "homefoods_server_only",
+              "namespaceId": "public",
+              "operation": "all",
+              "permissive": false,
+              "roles": [
+                "anon",
+                "authenticated"
+              ],
+              "tableName": "orderItem",
+              "using": "false",
+              "withCheck": "false"
+            },
+            "orderStatusEvent_server_only": {
+              "kind": "policy",
+              "name": "homefoods_server_only",
+              "namespaceId": "public",
+              "operation": "all",
+              "permissive": false,
+              "roles": [
+                "anon",
+                "authenticated"
+              ],
+              "tableName": "orderStatusEvent",
+              "using": "false",
+              "withCheck": "false"
+            },
+            "order_server_only": {
+              "kind": "policy",
+              "name": "homefoods_server_only",
+              "namespaceId": "public",
+              "operation": "all",
+              "permissive": false,
+              "roles": [
+                "anon",
+                "authenticated"
+              ],
+              "tableName": "order",
+              "using": "false",
+              "withCheck": "false"
+            },
+            "passwordResetToken_server_only": {
+              "kind": "policy",
+              "name": "homefoods_server_only",
+              "namespaceId": "public",
+              "operation": "all",
+              "permissive": false,
+              "roles": [
+                "anon",
+                "authenticated"
+              ],
+              "tableName": "passwordResetToken",
+              "using": "false",
+              "withCheck": "false"
+            },
+            "payment_server_only": {
+              "kind": "policy",
+              "name": "homefoods_server_only",
+              "namespaceId": "public",
+              "operation": "all",
+              "permissive": false,
+              "roles": [
+                "anon",
+                "authenticated"
+              ],
+              "tableName": "payment",
+              "using": "false",
+              "withCheck": "false"
+            },
+            "review_server_only": {
+              "kind": "policy",
+              "name": "homefoods_server_only",
+              "namespaceId": "public",
+              "operation": "all",
+              "permissive": false,
+              "roles": [
+                "anon",
+                "authenticated"
+              ],
+              "tableName": "review",
+              "using": "false",
+              "withCheck": "false"
+            },
+            "rider_server_only": {
+              "kind": "policy",
+              "name": "homefoods_server_only",
+              "namespaceId": "public",
+              "operation": "all",
+              "permissive": false,
+              "roles": [
+                "anon",
+                "authenticated"
+              ],
+              "tableName": "rider",
+              "using": "false",
+              "withCheck": "false"
+            },
+            "scheduledMealEvent_server_only": {
+              "kind": "policy",
+              "name": "homefoods_server_only",
+              "namespaceId": "public",
+              "operation": "all",
+              "permissive": false,
+              "roles": [
+                "anon",
+                "authenticated"
+              ],
+              "tableName": "scheduledMealEvent",
+              "using": "false",
+              "withCheck": "false"
+            },
+            "scheduledMeal_server_only": {
+              "kind": "policy",
+              "name": "homefoods_server_only",
+              "namespaceId": "public",
+              "operation": "all",
+              "permissive": false,
+              "roles": [
+                "anon",
+                "authenticated"
+              ],
+              "tableName": "scheduledMeal",
+              "using": "false",
+              "withCheck": "false"
+            },
+            "shop_server_only": {
+              "kind": "policy",
+              "name": "homefoods_server_only",
+              "namespaceId": "public",
+              "operation": "all",
+              "permissive": false,
+              "roles": [
+                "anon",
+                "authenticated"
+              ],
+              "tableName": "shop",
+              "using": "false",
+              "withCheck": "false"
+            },
+            "subscriptionPlanItem_server_only": {
+              "kind": "policy",
+              "name": "homefoods_server_only",
+              "namespaceId": "public",
+              "operation": "all",
+              "permissive": false,
+              "roles": [
+                "anon",
+                "authenticated"
+              ],
+              "tableName": "subscriptionPlanItem",
+              "using": "false",
+              "withCheck": "false"
+            },
+            "subscriptionPlan_server_only": {
+              "kind": "policy",
+              "name": "homefoods_server_only",
+              "namespaceId": "public",
+              "operation": "all",
+              "permissive": false,
+              "roles": [
+                "anon",
+                "authenticated"
+              ],
+              "tableName": "subscriptionPlan",
+              "using": "false",
+              "withCheck": "false"
+            },
+            "subscription_server_only": {
+              "kind": "policy",
+              "name": "homefoods_server_only",
+              "namespaceId": "public",
+              "operation": "all",
+              "permissive": false,
+              "roles": [
+                "anon",
+                "authenticated"
+              ],
+              "tableName": "subscription",
+              "using": "false",
+              "withCheck": "false"
+            },
+            "user_server_only": {
+              "kind": "policy",
+              "name": "homefoods_server_only",
+              "namespaceId": "public",
+              "operation": "all",
+              "permissive": false,
+              "roles": [
+                "anon",
+                "authenticated"
+              ],
+              "tableName": "user",
+              "using": "false",
+              "withCheck": "false"
+            }
+          },
+          "rls": {
+            "address": {
+              "kind": "rls",
+              "namespaceId": "public",
+              "tableName": "address"
+            },
+            "adminAuditLog": {
+              "kind": "rls",
+              "namespaceId": "public",
+              "tableName": "adminAuditLog"
+            },
+            "cart": {
+              "kind": "rls",
+              "namespaceId": "public",
+              "tableName": "cart"
+            },
+            "cartItem": {
+              "kind": "rls",
+              "namespaceId": "public",
+              "tableName": "cartItem"
+            },
+            "checkoutRequest": {
+              "kind": "rls",
+              "namespaceId": "public",
+              "tableName": "checkoutRequest"
+            },
+            "delivery": {
+              "kind": "rls",
+              "namespaceId": "public",
+              "tableName": "delivery"
+            },
+            "favorite": {
+              "kind": "rls",
+              "namespaceId": "public",
+              "tableName": "favorite"
+            },
+            "kitchenFavorite": {
+              "kind": "rls",
+              "namespaceId": "public",
+              "tableName": "kitchenFavorite"
+            },
+            "menuCategory": {
+              "kind": "rls",
+              "namespaceId": "public",
+              "tableName": "menuCategory"
+            },
+            "menuItem": {
+              "kind": "rls",
+              "namespaceId": "public",
+              "tableName": "menuItem"
+            },
+            "menuItemOption": {
+              "kind": "rls",
+              "namespaceId": "public",
+              "tableName": "menuItemOption"
+            },
+            "newsletterSubscriber": {
+              "kind": "rls",
+              "namespaceId": "public",
+              "tableName": "newsletterSubscriber"
+            },
+            "notification": {
+              "kind": "rls",
+              "namespaceId": "public",
+              "tableName": "notification"
+            },
+            "order": {
+              "kind": "rls",
+              "namespaceId": "public",
+              "tableName": "order"
+            },
+            "orderItem": {
+              "kind": "rls",
+              "namespaceId": "public",
+              "tableName": "orderItem"
+            },
+            "orderStatusEvent": {
+              "kind": "rls",
+              "namespaceId": "public",
+              "tableName": "orderStatusEvent"
+            },
+            "passwordResetToken": {
+              "kind": "rls",
+              "namespaceId": "public",
+              "tableName": "passwordResetToken"
+            },
+            "payment": {
+              "kind": "rls",
+              "namespaceId": "public",
+              "tableName": "payment"
+            },
+            "review": {
+              "kind": "rls",
+              "namespaceId": "public",
+              "tableName": "review"
+            },
+            "rider": {
+              "kind": "rls",
+              "namespaceId": "public",
+              "tableName": "rider"
+            },
+            "scheduledMeal": {
+              "kind": "rls",
+              "namespaceId": "public",
+              "tableName": "scheduledMeal"
+            },
+            "scheduledMealEvent": {
+              "kind": "rls",
+              "namespaceId": "public",
+              "tableName": "scheduledMealEvent"
+            },
+            "shop": {
+              "kind": "rls",
+              "namespaceId": "public",
+              "tableName": "shop"
+            },
+            "subscription": {
+              "kind": "rls",
+              "namespaceId": "public",
+              "tableName": "subscription"
+            },
+            "subscriptionPlan": {
+              "kind": "rls",
+              "namespaceId": "public",
+              "tableName": "subscriptionPlan"
+            },
+            "subscriptionPlanItem": {
+              "kind": "rls",
+              "namespaceId": "public",
+              "tableName": "subscriptionPlanItem"
+            },
+            "user": {
+              "kind": "rls",
+              "namespaceId": "public",
+              "tableName": "user"
+            }
+          },
           "table": {
             "address": {
               "checks": [
@@ -7741,7 +8279,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "a3025b17bc2a7f4b33a262e2278d844ebb037c87b889c7594c7af5f45a271712"
+    "storageHash": "9636a180b67df33196eb8f00f33510a028873aadd78aef8d9dd88d146aefeb41"
   },
   "execution": {
     "executionHash": "6a798fe5863219e1a94434be9b3689a946ed07045dc95c60387dff0fc37be662",

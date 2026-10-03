@@ -17,12 +17,12 @@
 - Disposable API and browser fixtures were removed, and the guest test basket was emptied.
 - Database security verification passed 648 assertions and 27 backend reads after the additive column change; all 27 application tables retained RLS.
 
-## Database migration and publication blockers
+## Database migration recovery — resolved 3 October 2026
 
 The generated Prisma migration adds only MenuItemOption.isDefault. The standard Prisma migration runner failed and rolled back because its stored contract does not describe the RLS/policies added by the preceding security task (54 reported differences). No security controls or migration markers were changed to bypass that failure.
 
-The reviewed additive SQL in supabase/migrations/202610020001_menu_portion_default.sql was applied using scripts/migrate-portions.mjs --apply. The script verifies the column and unchanged RLS, grants and policies. This makes the current application compatible, but does not repair Prisma migration history. Reconcile the security contract and migration baseline before using the formal runner or deploying elsewhere; do not blindly replay or mark the generated migration applied.
+The reviewed additive SQL in supabase/migrations/202610020001_menu_portion_default.sql was applied using scripts/migrate-portions.mjs --apply. The script verifies the column and unchanged RLS, grants and policies. The follow-up security contract adoption now reconciles Prisma: strict schema verification passed, the supported verification-gated db sign command adopted the matching live schema, and db migrate reports Already up to date. See DATABASE-SECURITY.md for the recovery procedure.
 
-Both remote pushes remain withheld under AGENTS.md: the outgoing history contains security commit 0783e84 whose requested Supabase Security Advisor dashboard verification still requires a signed-in dashboard. The Prisma migration mismatch is an additional unresolved deployment check. Do not force-push or publish the range as fully verified.
+The signed-in Supabase Security Advisor linter was rerun and reports zero errors, warnings and suggestions. The previous dashboard and Prisma migration blockers are resolved; remote publication is handled by the follow-up completion commit.
 
 Production readiness remains on hold, and the 20 km restriction remains disabled. Email-change functionality remains excluded at the user's request.

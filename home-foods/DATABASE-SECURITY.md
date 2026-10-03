@@ -72,8 +72,9 @@ node scripts/database-security.mjs --apply
 node scripts/database-security.mjs --verify
 ```
 
-The security SQL is maintained separately from Prisma's generated contract migrations:
-no generated migration hashes or contract markers were changed. It is idempotent and
+RLS and the restrictive policies are now represented in Prisma's contract and the
+forward migration `20261003T0946_adopt_server_only_rls`. The security SQL also manages
+grants and default privileges, which Prisma does not model. It is idempotent and
 runs in a transaction with permission assertions before commit. The migration refuses
 unknown public tables and requires the reviewed server role's BYPASSRLS capability.
 Use the deployment's configured DATABASE_URL; never pass credentials on the command line.
@@ -96,9 +97,28 @@ schema changes; do not fix drift by disabling RLS.
   This is a scoped scan, not proof about deleted remote history or unknown credentials.
 - No UI redesign, authentication migration, radius change, or production-readiness work.
 
-## Outstanding verification
+## Completed verification — 3 October 2026
 
-Database catalog confirms zero public application tables with RLS disabled.
-The Supabase dashboard redirects to sign-in, so its refreshed Security Advisor result
-has not yet been observed. Sign in and rerun Security Advisor to confirm the displayed
-`rls_disabled_in_public` result. No password or secret needs to be pasted into chat.
+The signed-in Supabase Security Advisor was opened for the configured project and
+its linter rerun. The completed result showed **0 errors, 0 warnings and 0 suggestions**.
+The `rls_disabled_in_public` issue is absent. Local screenshot evidence is saved as
+`artifacts/security-advisor-clean.png`.
+
+Prisma's former 54 schema differences were the 27 enabled RLS settings and 27
+restrictive policies missing from its contract. Their exact live names and predicate
+text were inspected using `contract infer` and adopted without changing application
+models or authorization. Platform roles are external references, not managed roles.
+Strict schema verification passed before the supported `db sign --advance-ref db`
+command aligned the marker and checked-in reference with the already-applied schema,
+including the portion default column. No old migration package was rewritten.
+
+`db migrate --advance-ref db` now succeeds with “Already up to date.” Full strict
+verification checks the schema and marker. The security check again passed 648
+assertions and 27 backend reads. The prior dashboard and migration blockers are resolved.
+
+For an existing environment with these SQL changes already applied and an old
+marker, first verify the security state and run `prisma db verify --schema-only --strict`.
+Only after that passes, use `prisma db sign --advance-ref db` to adopt the matching
+schema, then `prisma db migrate --advance-ref db` and `prisma db verify --strict`.
+For an environment without the manual SQL changes, apply the normal migration graph
+and then the grant-hardening SQL/checks above. Never disable RLS to resolve drift.

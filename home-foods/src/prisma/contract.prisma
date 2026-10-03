@@ -96,6 +96,7 @@ model User {
 
   createdAt   TimestamptzString @default(now())
   updatedAt   temporal.updatedAtString()
+  @@rls
 }
 
 model Shop {
@@ -134,6 +135,7 @@ model Shop {
 
   @@index([sellerId])
   @@index([status])
+  @@rls
 }
 
 model MenuCategory {
@@ -152,6 +154,7 @@ model MenuCategory {
   updatedAt   temporal.updatedAtString()
 
   @@index([shopId])
+  @@rls
 }
 
 model MenuItem {
@@ -179,6 +182,7 @@ model MenuItem {
 
   @@index([shopId])
   @@index([categoryId])
+  @@rls
 }
 
 model MenuItemOption {
@@ -195,6 +199,7 @@ model MenuItemOption {
   updatedAt   temporal.updatedAtString()
 
   @@index([menuItemId])
+  @@rls
 }
 
 model Address {
@@ -223,6 +228,7 @@ model Address {
   updatedAt   temporal.updatedAtString()
 
   @@index([userId])
+  @@rls
 }
 
 model Cart {
@@ -235,6 +241,7 @@ model Cart {
   updatedAt   temporal.updatedAtString()
 
   @@unique([userId])
+  @@rls
 }
 
 model CartItem {
@@ -252,6 +259,7 @@ model CartItem {
 
   @@index([cartId])
   @@index([menuItemId])
+  @@rls
 }
 
 model Order {
@@ -288,6 +296,7 @@ model Order {
   @@index([customerId])
   @@index([shopId])
   @@index([status])
+  @@rls
 }
 
 // A committed response is reused when a checkout is retried, including across servers.
@@ -298,6 +307,7 @@ model CheckoutRequest {
   result      String?
   createdAt   TimestamptzString @default(now())
   @@index([userId])
+  @@rls
 }
 
 model OrderItem {
@@ -317,6 +327,7 @@ model OrderItem {
 
   @@index([orderId])
   @@index([menuItemId])
+  @@rls
 }
 
 // Append-only operational history; actor identity and role are captured at
@@ -334,6 +345,7 @@ model OrderStatusEvent {
   order       Order    @relation(fields: [orderId], references: [id])
 
   @@index([orderId, createdAt])
+  @@rls
 }
 
 model Payment {
@@ -351,6 +363,7 @@ model Payment {
 
   createdAt       TimestamptzString @default(now())
   updatedAt       temporal.updatedAtString()
+  @@rls
 }
 
 model Rider {
@@ -368,6 +381,7 @@ model Rider {
 
   createdAt       TimestamptzString @default(now())
   updatedAt       temporal.updatedAtString()
+  @@rls
 }
 
 model Delivery {
@@ -389,6 +403,7 @@ model Delivery {
 
   @@index([riderId])
   @@index([status])
+  @@rls
 }
 
 model SubscriptionPlan {
@@ -410,6 +425,7 @@ model SubscriptionPlan {
   updatedAt       temporal.updatedAtString()
 
   @@index([shopId])
+  @@rls
 }
 
 model SubscriptionPlanItem {
@@ -423,6 +439,7 @@ model SubscriptionPlanItem {
 
   @@unique([planId, menuItemId])
   @@index([menuItemId])
+  @@rls
 }
 
 model Subscription {
@@ -451,6 +468,7 @@ model Subscription {
   @@index([planId])
   @@index([addressId])
   @@index([status])
+  @@rls
 }
 
 model ScheduledMeal {
@@ -475,6 +493,7 @@ model ScheduledMeal {
   @@index([subscriptionId, scheduledAt])
   @@index([status, scheduledAt])
   @@unique([subscriptionId, billingEventKey, sequence])
+  @@rls
 }
 
 model ScheduledMealEvent {
@@ -489,6 +508,7 @@ model ScheduledMealEvent {
   scheduledMeal   ScheduledMeal @relation(fields: [scheduledMealId], references: [id])
 
   @@index([scheduledMealId, createdAt])
+  @@rls
 }
 
 model Review {
@@ -508,6 +528,7 @@ model Review {
 
   @@index([shopId])
   @@index([customerId])
+  @@rls
 }
 
 model Favorite {
@@ -525,6 +546,7 @@ model Favorite {
   @@unique([customerId, menuItemId])
   @@index([shopId])
   @@index([menuItemId])
+  @@rls
 }
 
 model PasswordResetToken {
@@ -537,6 +559,7 @@ model PasswordResetToken {
   user      User     @relation(fields: [userId], references: [id])
 
   @@index([userId, createdAt])
+  @@rls
 }
 
 model KitchenFavorite {
@@ -551,6 +574,7 @@ model KitchenFavorite {
 
   @@unique([customerId, shopId])
   @@index([shopId])
+  @@rls
 }
 
 model NewsletterSubscriber {
@@ -559,6 +583,7 @@ model NewsletterSubscriber {
   consentAt TimestamptzString  @default(now())
   createdAt TimestamptzString  @default(now())
   updatedAt temporal.updatedAtString()
+  @@rls
 }
 
 // Append-only administration history. Never stores credentials or payment tokens.
@@ -574,6 +599,7 @@ model AdminAuditLog {
   createdAt TimestamptzString @default(now())
 
   @@index([entityType, entityId, createdAt])
+  @@rls
 }
 
 model Notification {
@@ -588,4 +614,281 @@ model Notification {
   createdAt TimestamptzString @default(now())
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@index([userId, createdAt])
+  @@rls
+}
+
+// Platform roles are referenced only; Home Foods does not manage these roles.
+namespace unbound {
+  role anon {}
+  role authenticated {}
+}
+
+// Adopt the restrictive policy installed by the reviewed security SQL.
+policy_all user_server_only {
+  target = User
+  roles = [anon, authenticated]
+  using = "false"
+  withCheck = "false"
+  permissive = false
+  @@map("homefoods_server_only")
+}
+
+// Adopt the restrictive policy installed by the reviewed security SQL.
+policy_all shop_server_only {
+  target = Shop
+  roles = [anon, authenticated]
+  using = "false"
+  withCheck = "false"
+  permissive = false
+  @@map("homefoods_server_only")
+}
+
+// Adopt the restrictive policy installed by the reviewed security SQL.
+policy_all menuCategory_server_only {
+  target = MenuCategory
+  roles = [anon, authenticated]
+  using = "false"
+  withCheck = "false"
+  permissive = false
+  @@map("homefoods_server_only")
+}
+
+// Adopt the restrictive policy installed by the reviewed security SQL.
+policy_all menuItem_server_only {
+  target = MenuItem
+  roles = [anon, authenticated]
+  using = "false"
+  withCheck = "false"
+  permissive = false
+  @@map("homefoods_server_only")
+}
+
+// Adopt the restrictive policy installed by the reviewed security SQL.
+policy_all menuItemOption_server_only {
+  target = MenuItemOption
+  roles = [anon, authenticated]
+  using = "false"
+  withCheck = "false"
+  permissive = false
+  @@map("homefoods_server_only")
+}
+
+// Adopt the restrictive policy installed by the reviewed security SQL.
+policy_all address_server_only {
+  target = Address
+  roles = [anon, authenticated]
+  using = "false"
+  withCheck = "false"
+  permissive = false
+  @@map("homefoods_server_only")
+}
+
+// Adopt the restrictive policy installed by the reviewed security SQL.
+policy_all cart_server_only {
+  target = Cart
+  roles = [anon, authenticated]
+  using = "false"
+  withCheck = "false"
+  permissive = false
+  @@map("homefoods_server_only")
+}
+
+// Adopt the restrictive policy installed by the reviewed security SQL.
+policy_all cartItem_server_only {
+  target = CartItem
+  roles = [anon, authenticated]
+  using = "false"
+  withCheck = "false"
+  permissive = false
+  @@map("homefoods_server_only")
+}
+
+// Adopt the restrictive policy installed by the reviewed security SQL.
+policy_all order_server_only {
+  target = Order
+  roles = [anon, authenticated]
+  using = "false"
+  withCheck = "false"
+  permissive = false
+  @@map("homefoods_server_only")
+}
+
+// Adopt the restrictive policy installed by the reviewed security SQL.
+policy_all checkoutRequest_server_only {
+  target = CheckoutRequest
+  roles = [anon, authenticated]
+  using = "false"
+  withCheck = "false"
+  permissive = false
+  @@map("homefoods_server_only")
+}
+
+// Adopt the restrictive policy installed by the reviewed security SQL.
+policy_all orderItem_server_only {
+  target = OrderItem
+  roles = [anon, authenticated]
+  using = "false"
+  withCheck = "false"
+  permissive = false
+  @@map("homefoods_server_only")
+}
+
+// Adopt the restrictive policy installed by the reviewed security SQL.
+policy_all orderStatusEvent_server_only {
+  target = OrderStatusEvent
+  roles = [anon, authenticated]
+  using = "false"
+  withCheck = "false"
+  permissive = false
+  @@map("homefoods_server_only")
+}
+
+// Adopt the restrictive policy installed by the reviewed security SQL.
+policy_all payment_server_only {
+  target = Payment
+  roles = [anon, authenticated]
+  using = "false"
+  withCheck = "false"
+  permissive = false
+  @@map("homefoods_server_only")
+}
+
+// Adopt the restrictive policy installed by the reviewed security SQL.
+policy_all rider_server_only {
+  target = Rider
+  roles = [anon, authenticated]
+  using = "false"
+  withCheck = "false"
+  permissive = false
+  @@map("homefoods_server_only")
+}
+
+// Adopt the restrictive policy installed by the reviewed security SQL.
+policy_all delivery_server_only {
+  target = Delivery
+  roles = [anon, authenticated]
+  using = "false"
+  withCheck = "false"
+  permissive = false
+  @@map("homefoods_server_only")
+}
+
+// Adopt the restrictive policy installed by the reviewed security SQL.
+policy_all subscriptionPlan_server_only {
+  target = SubscriptionPlan
+  roles = [anon, authenticated]
+  using = "false"
+  withCheck = "false"
+  permissive = false
+  @@map("homefoods_server_only")
+}
+
+// Adopt the restrictive policy installed by the reviewed security SQL.
+policy_all subscriptionPlanItem_server_only {
+  target = SubscriptionPlanItem
+  roles = [anon, authenticated]
+  using = "false"
+  withCheck = "false"
+  permissive = false
+  @@map("homefoods_server_only")
+}
+
+// Adopt the restrictive policy installed by the reviewed security SQL.
+policy_all subscription_server_only {
+  target = Subscription
+  roles = [anon, authenticated]
+  using = "false"
+  withCheck = "false"
+  permissive = false
+  @@map("homefoods_server_only")
+}
+
+// Adopt the restrictive policy installed by the reviewed security SQL.
+policy_all scheduledMeal_server_only {
+  target = ScheduledMeal
+  roles = [anon, authenticated]
+  using = "false"
+  withCheck = "false"
+  permissive = false
+  @@map("homefoods_server_only")
+}
+
+// Adopt the restrictive policy installed by the reviewed security SQL.
+policy_all scheduledMealEvent_server_only {
+  target = ScheduledMealEvent
+  roles = [anon, authenticated]
+  using = "false"
+  withCheck = "false"
+  permissive = false
+  @@map("homefoods_server_only")
+}
+
+// Adopt the restrictive policy installed by the reviewed security SQL.
+policy_all review_server_only {
+  target = Review
+  roles = [anon, authenticated]
+  using = "false"
+  withCheck = "false"
+  permissive = false
+  @@map("homefoods_server_only")
+}
+
+// Adopt the restrictive policy installed by the reviewed security SQL.
+policy_all favorite_server_only {
+  target = Favorite
+  roles = [anon, authenticated]
+  using = "false"
+  withCheck = "false"
+  permissive = false
+  @@map("homefoods_server_only")
+}
+
+// Adopt the restrictive policy installed by the reviewed security SQL.
+policy_all passwordResetToken_server_only {
+  target = PasswordResetToken
+  roles = [anon, authenticated]
+  using = "false"
+  withCheck = "false"
+  permissive = false
+  @@map("homefoods_server_only")
+}
+
+// Adopt the restrictive policy installed by the reviewed security SQL.
+policy_all kitchenFavorite_server_only {
+  target = KitchenFavorite
+  roles = [anon, authenticated]
+  using = "false"
+  withCheck = "false"
+  permissive = false
+  @@map("homefoods_server_only")
+}
+
+// Adopt the restrictive policy installed by the reviewed security SQL.
+policy_all newsletterSubscriber_server_only {
+  target = NewsletterSubscriber
+  roles = [anon, authenticated]
+  using = "false"
+  withCheck = "false"
+  permissive = false
+  @@map("homefoods_server_only")
+}
+
+// Adopt the restrictive policy installed by the reviewed security SQL.
+policy_all adminAuditLog_server_only {
+  target = AdminAuditLog
+  roles = [anon, authenticated]
+  using = "false"
+  withCheck = "false"
+  permissive = false
+  @@map("homefoods_server_only")
+}
+
+// Adopt the restrictive policy installed by the reviewed security SQL.
+policy_all notification_server_only {
+  target = Notification
+  roles = [anon, authenticated]
+  using = "false"
+  withCheck = "false"
+  permissive = false
+  @@map("homefoods_server_only")
 }

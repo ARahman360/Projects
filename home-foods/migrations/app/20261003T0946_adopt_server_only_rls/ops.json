@@ -1,0 +1,2216 @@
+[
+  {
+    "id": "rowLevelSecurity.public.address",
+    "label": "Enable row-level security on \"address\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rowLevelSecurity",
+        "name": "address"
+      }
+    },
+    "precheck": [
+      {
+        "description": "check RLS is not already enabled on \"address\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND NOT (\"c\".\"relrowsecurity\"))) AS \"result\"",
+        "params": [
+          "public",
+          "address"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "enable row-level security on \"address\"",
+        "sql": "ALTER TABLE \"public\".\"address\" ENABLE ROW LEVEL SECURITY"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify row-level security is enabled on \"address\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"c\".\"relrowsecurity\")) AS \"result\"",
+        "params": [
+          "public",
+          "address"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rowLevelSecurity.public.adminAuditLog",
+    "label": "Enable row-level security on \"adminAuditLog\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rowLevelSecurity",
+        "name": "adminAuditLog"
+      }
+    },
+    "precheck": [
+      {
+        "description": "check RLS is not already enabled on \"adminAuditLog\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND NOT (\"c\".\"relrowsecurity\"))) AS \"result\"",
+        "params": [
+          "public",
+          "adminAuditLog"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "enable row-level security on \"adminAuditLog\"",
+        "sql": "ALTER TABLE \"public\".\"adminAuditLog\" ENABLE ROW LEVEL SECURITY"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify row-level security is enabled on \"adminAuditLog\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"c\".\"relrowsecurity\")) AS \"result\"",
+        "params": [
+          "public",
+          "adminAuditLog"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rowLevelSecurity.public.cart",
+    "label": "Enable row-level security on \"cart\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rowLevelSecurity",
+        "name": "cart"
+      }
+    },
+    "precheck": [
+      {
+        "description": "check RLS is not already enabled on \"cart\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND NOT (\"c\".\"relrowsecurity\"))) AS \"result\"",
+        "params": [
+          "public",
+          "cart"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "enable row-level security on \"cart\"",
+        "sql": "ALTER TABLE \"public\".\"cart\" ENABLE ROW LEVEL SECURITY"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify row-level security is enabled on \"cart\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"c\".\"relrowsecurity\")) AS \"result\"",
+        "params": [
+          "public",
+          "cart"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rowLevelSecurity.public.cartItem",
+    "label": "Enable row-level security on \"cartItem\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rowLevelSecurity",
+        "name": "cartItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "check RLS is not already enabled on \"cartItem\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND NOT (\"c\".\"relrowsecurity\"))) AS \"result\"",
+        "params": [
+          "public",
+          "cartItem"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "enable row-level security on \"cartItem\"",
+        "sql": "ALTER TABLE \"public\".\"cartItem\" ENABLE ROW LEVEL SECURITY"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify row-level security is enabled on \"cartItem\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"c\".\"relrowsecurity\")) AS \"result\"",
+        "params": [
+          "public",
+          "cartItem"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rowLevelSecurity.public.checkoutRequest",
+    "label": "Enable row-level security on \"checkoutRequest\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rowLevelSecurity",
+        "name": "checkoutRequest"
+      }
+    },
+    "precheck": [
+      {
+        "description": "check RLS is not already enabled on \"checkoutRequest\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND NOT (\"c\".\"relrowsecurity\"))) AS \"result\"",
+        "params": [
+          "public",
+          "checkoutRequest"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "enable row-level security on \"checkoutRequest\"",
+        "sql": "ALTER TABLE \"public\".\"checkoutRequest\" ENABLE ROW LEVEL SECURITY"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify row-level security is enabled on \"checkoutRequest\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"c\".\"relrowsecurity\")) AS \"result\"",
+        "params": [
+          "public",
+          "checkoutRequest"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rowLevelSecurity.public.delivery",
+    "label": "Enable row-level security on \"delivery\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rowLevelSecurity",
+        "name": "delivery"
+      }
+    },
+    "precheck": [
+      {
+        "description": "check RLS is not already enabled on \"delivery\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND NOT (\"c\".\"relrowsecurity\"))) AS \"result\"",
+        "params": [
+          "public",
+          "delivery"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "enable row-level security on \"delivery\"",
+        "sql": "ALTER TABLE \"public\".\"delivery\" ENABLE ROW LEVEL SECURITY"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify row-level security is enabled on \"delivery\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"c\".\"relrowsecurity\")) AS \"result\"",
+        "params": [
+          "public",
+          "delivery"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rowLevelSecurity.public.favorite",
+    "label": "Enable row-level security on \"favorite\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rowLevelSecurity",
+        "name": "favorite"
+      }
+    },
+    "precheck": [
+      {
+        "description": "check RLS is not already enabled on \"favorite\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND NOT (\"c\".\"relrowsecurity\"))) AS \"result\"",
+        "params": [
+          "public",
+          "favorite"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "enable row-level security on \"favorite\"",
+        "sql": "ALTER TABLE \"public\".\"favorite\" ENABLE ROW LEVEL SECURITY"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify row-level security is enabled on \"favorite\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"c\".\"relrowsecurity\")) AS \"result\"",
+        "params": [
+          "public",
+          "favorite"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rowLevelSecurity.public.kitchenFavorite",
+    "label": "Enable row-level security on \"kitchenFavorite\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rowLevelSecurity",
+        "name": "kitchenFavorite"
+      }
+    },
+    "precheck": [
+      {
+        "description": "check RLS is not already enabled on \"kitchenFavorite\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND NOT (\"c\".\"relrowsecurity\"))) AS \"result\"",
+        "params": [
+          "public",
+          "kitchenFavorite"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "enable row-level security on \"kitchenFavorite\"",
+        "sql": "ALTER TABLE \"public\".\"kitchenFavorite\" ENABLE ROW LEVEL SECURITY"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify row-level security is enabled on \"kitchenFavorite\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"c\".\"relrowsecurity\")) AS \"result\"",
+        "params": [
+          "public",
+          "kitchenFavorite"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rowLevelSecurity.public.menuCategory",
+    "label": "Enable row-level security on \"menuCategory\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rowLevelSecurity",
+        "name": "menuCategory"
+      }
+    },
+    "precheck": [
+      {
+        "description": "check RLS is not already enabled on \"menuCategory\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND NOT (\"c\".\"relrowsecurity\"))) AS \"result\"",
+        "params": [
+          "public",
+          "menuCategory"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "enable row-level security on \"menuCategory\"",
+        "sql": "ALTER TABLE \"public\".\"menuCategory\" ENABLE ROW LEVEL SECURITY"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify row-level security is enabled on \"menuCategory\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"c\".\"relrowsecurity\")) AS \"result\"",
+        "params": [
+          "public",
+          "menuCategory"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rowLevelSecurity.public.menuItem",
+    "label": "Enable row-level security on \"menuItem\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rowLevelSecurity",
+        "name": "menuItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "check RLS is not already enabled on \"menuItem\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND NOT (\"c\".\"relrowsecurity\"))) AS \"result\"",
+        "params": [
+          "public",
+          "menuItem"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "enable row-level security on \"menuItem\"",
+        "sql": "ALTER TABLE \"public\".\"menuItem\" ENABLE ROW LEVEL SECURITY"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify row-level security is enabled on \"menuItem\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"c\".\"relrowsecurity\")) AS \"result\"",
+        "params": [
+          "public",
+          "menuItem"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rowLevelSecurity.public.menuItemOption",
+    "label": "Enable row-level security on \"menuItemOption\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rowLevelSecurity",
+        "name": "menuItemOption"
+      }
+    },
+    "precheck": [
+      {
+        "description": "check RLS is not already enabled on \"menuItemOption\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND NOT (\"c\".\"relrowsecurity\"))) AS \"result\"",
+        "params": [
+          "public",
+          "menuItemOption"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "enable row-level security on \"menuItemOption\"",
+        "sql": "ALTER TABLE \"public\".\"menuItemOption\" ENABLE ROW LEVEL SECURITY"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify row-level security is enabled on \"menuItemOption\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"c\".\"relrowsecurity\")) AS \"result\"",
+        "params": [
+          "public",
+          "menuItemOption"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rowLevelSecurity.public.newsletterSubscriber",
+    "label": "Enable row-level security on \"newsletterSubscriber\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rowLevelSecurity",
+        "name": "newsletterSubscriber"
+      }
+    },
+    "precheck": [
+      {
+        "description": "check RLS is not already enabled on \"newsletterSubscriber\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND NOT (\"c\".\"relrowsecurity\"))) AS \"result\"",
+        "params": [
+          "public",
+          "newsletterSubscriber"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "enable row-level security on \"newsletterSubscriber\"",
+        "sql": "ALTER TABLE \"public\".\"newsletterSubscriber\" ENABLE ROW LEVEL SECURITY"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify row-level security is enabled on \"newsletterSubscriber\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"c\".\"relrowsecurity\")) AS \"result\"",
+        "params": [
+          "public",
+          "newsletterSubscriber"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rowLevelSecurity.public.notification",
+    "label": "Enable row-level security on \"notification\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rowLevelSecurity",
+        "name": "notification"
+      }
+    },
+    "precheck": [
+      {
+        "description": "check RLS is not already enabled on \"notification\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND NOT (\"c\".\"relrowsecurity\"))) AS \"result\"",
+        "params": [
+          "public",
+          "notification"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "enable row-level security on \"notification\"",
+        "sql": "ALTER TABLE \"public\".\"notification\" ENABLE ROW LEVEL SECURITY"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify row-level security is enabled on \"notification\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"c\".\"relrowsecurity\")) AS \"result\"",
+        "params": [
+          "public",
+          "notification"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rowLevelSecurity.public.order",
+    "label": "Enable row-level security on \"order\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rowLevelSecurity",
+        "name": "order"
+      }
+    },
+    "precheck": [
+      {
+        "description": "check RLS is not already enabled on \"order\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND NOT (\"c\".\"relrowsecurity\"))) AS \"result\"",
+        "params": [
+          "public",
+          "order"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "enable row-level security on \"order\"",
+        "sql": "ALTER TABLE \"public\".\"order\" ENABLE ROW LEVEL SECURITY"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify row-level security is enabled on \"order\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"c\".\"relrowsecurity\")) AS \"result\"",
+        "params": [
+          "public",
+          "order"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rowLevelSecurity.public.orderItem",
+    "label": "Enable row-level security on \"orderItem\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rowLevelSecurity",
+        "name": "orderItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "check RLS is not already enabled on \"orderItem\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND NOT (\"c\".\"relrowsecurity\"))) AS \"result\"",
+        "params": [
+          "public",
+          "orderItem"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "enable row-level security on \"orderItem\"",
+        "sql": "ALTER TABLE \"public\".\"orderItem\" ENABLE ROW LEVEL SECURITY"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify row-level security is enabled on \"orderItem\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"c\".\"relrowsecurity\")) AS \"result\"",
+        "params": [
+          "public",
+          "orderItem"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rowLevelSecurity.public.orderStatusEvent",
+    "label": "Enable row-level security on \"orderStatusEvent\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rowLevelSecurity",
+        "name": "orderStatusEvent"
+      }
+    },
+    "precheck": [
+      {
+        "description": "check RLS is not already enabled on \"orderStatusEvent\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND NOT (\"c\".\"relrowsecurity\"))) AS \"result\"",
+        "params": [
+          "public",
+          "orderStatusEvent"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "enable row-level security on \"orderStatusEvent\"",
+        "sql": "ALTER TABLE \"public\".\"orderStatusEvent\" ENABLE ROW LEVEL SECURITY"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify row-level security is enabled on \"orderStatusEvent\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"c\".\"relrowsecurity\")) AS \"result\"",
+        "params": [
+          "public",
+          "orderStatusEvent"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rowLevelSecurity.public.passwordResetToken",
+    "label": "Enable row-level security on \"passwordResetToken\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rowLevelSecurity",
+        "name": "passwordResetToken"
+      }
+    },
+    "precheck": [
+      {
+        "description": "check RLS is not already enabled on \"passwordResetToken\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND NOT (\"c\".\"relrowsecurity\"))) AS \"result\"",
+        "params": [
+          "public",
+          "passwordResetToken"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "enable row-level security on \"passwordResetToken\"",
+        "sql": "ALTER TABLE \"public\".\"passwordResetToken\" ENABLE ROW LEVEL SECURITY"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify row-level security is enabled on \"passwordResetToken\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"c\".\"relrowsecurity\")) AS \"result\"",
+        "params": [
+          "public",
+          "passwordResetToken"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rowLevelSecurity.public.payment",
+    "label": "Enable row-level security on \"payment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rowLevelSecurity",
+        "name": "payment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "check RLS is not already enabled on \"payment\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND NOT (\"c\".\"relrowsecurity\"))) AS \"result\"",
+        "params": [
+          "public",
+          "payment"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "enable row-level security on \"payment\"",
+        "sql": "ALTER TABLE \"public\".\"payment\" ENABLE ROW LEVEL SECURITY"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify row-level security is enabled on \"payment\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"c\".\"relrowsecurity\")) AS \"result\"",
+        "params": [
+          "public",
+          "payment"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rowLevelSecurity.public.review",
+    "label": "Enable row-level security on \"review\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rowLevelSecurity",
+        "name": "review"
+      }
+    },
+    "precheck": [
+      {
+        "description": "check RLS is not already enabled on \"review\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND NOT (\"c\".\"relrowsecurity\"))) AS \"result\"",
+        "params": [
+          "public",
+          "review"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "enable row-level security on \"review\"",
+        "sql": "ALTER TABLE \"public\".\"review\" ENABLE ROW LEVEL SECURITY"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify row-level security is enabled on \"review\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"c\".\"relrowsecurity\")) AS \"result\"",
+        "params": [
+          "public",
+          "review"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rowLevelSecurity.public.rider",
+    "label": "Enable row-level security on \"rider\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rowLevelSecurity",
+        "name": "rider"
+      }
+    },
+    "precheck": [
+      {
+        "description": "check RLS is not already enabled on \"rider\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND NOT (\"c\".\"relrowsecurity\"))) AS \"result\"",
+        "params": [
+          "public",
+          "rider"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "enable row-level security on \"rider\"",
+        "sql": "ALTER TABLE \"public\".\"rider\" ENABLE ROW LEVEL SECURITY"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify row-level security is enabled on \"rider\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"c\".\"relrowsecurity\")) AS \"result\"",
+        "params": [
+          "public",
+          "rider"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rowLevelSecurity.public.scheduledMeal",
+    "label": "Enable row-level security on \"scheduledMeal\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rowLevelSecurity",
+        "name": "scheduledMeal"
+      }
+    },
+    "precheck": [
+      {
+        "description": "check RLS is not already enabled on \"scheduledMeal\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND NOT (\"c\".\"relrowsecurity\"))) AS \"result\"",
+        "params": [
+          "public",
+          "scheduledMeal"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "enable row-level security on \"scheduledMeal\"",
+        "sql": "ALTER TABLE \"public\".\"scheduledMeal\" ENABLE ROW LEVEL SECURITY"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify row-level security is enabled on \"scheduledMeal\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"c\".\"relrowsecurity\")) AS \"result\"",
+        "params": [
+          "public",
+          "scheduledMeal"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rowLevelSecurity.public.scheduledMealEvent",
+    "label": "Enable row-level security on \"scheduledMealEvent\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rowLevelSecurity",
+        "name": "scheduledMealEvent"
+      }
+    },
+    "precheck": [
+      {
+        "description": "check RLS is not already enabled on \"scheduledMealEvent\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND NOT (\"c\".\"relrowsecurity\"))) AS \"result\"",
+        "params": [
+          "public",
+          "scheduledMealEvent"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "enable row-level security on \"scheduledMealEvent\"",
+        "sql": "ALTER TABLE \"public\".\"scheduledMealEvent\" ENABLE ROW LEVEL SECURITY"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify row-level security is enabled on \"scheduledMealEvent\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"c\".\"relrowsecurity\")) AS \"result\"",
+        "params": [
+          "public",
+          "scheduledMealEvent"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rowLevelSecurity.public.shop",
+    "label": "Enable row-level security on \"shop\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rowLevelSecurity",
+        "name": "shop"
+      }
+    },
+    "precheck": [
+      {
+        "description": "check RLS is not already enabled on \"shop\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND NOT (\"c\".\"relrowsecurity\"))) AS \"result\"",
+        "params": [
+          "public",
+          "shop"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "enable row-level security on \"shop\"",
+        "sql": "ALTER TABLE \"public\".\"shop\" ENABLE ROW LEVEL SECURITY"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify row-level security is enabled on \"shop\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"c\".\"relrowsecurity\")) AS \"result\"",
+        "params": [
+          "public",
+          "shop"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rowLevelSecurity.public.subscription",
+    "label": "Enable row-level security on \"subscription\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rowLevelSecurity",
+        "name": "subscription"
+      }
+    },
+    "precheck": [
+      {
+        "description": "check RLS is not already enabled on \"subscription\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND NOT (\"c\".\"relrowsecurity\"))) AS \"result\"",
+        "params": [
+          "public",
+          "subscription"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "enable row-level security on \"subscription\"",
+        "sql": "ALTER TABLE \"public\".\"subscription\" ENABLE ROW LEVEL SECURITY"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify row-level security is enabled on \"subscription\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"c\".\"relrowsecurity\")) AS \"result\"",
+        "params": [
+          "public",
+          "subscription"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rowLevelSecurity.public.subscriptionPlan",
+    "label": "Enable row-level security on \"subscriptionPlan\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rowLevelSecurity",
+        "name": "subscriptionPlan"
+      }
+    },
+    "precheck": [
+      {
+        "description": "check RLS is not already enabled on \"subscriptionPlan\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND NOT (\"c\".\"relrowsecurity\"))) AS \"result\"",
+        "params": [
+          "public",
+          "subscriptionPlan"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "enable row-level security on \"subscriptionPlan\"",
+        "sql": "ALTER TABLE \"public\".\"subscriptionPlan\" ENABLE ROW LEVEL SECURITY"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify row-level security is enabled on \"subscriptionPlan\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"c\".\"relrowsecurity\")) AS \"result\"",
+        "params": [
+          "public",
+          "subscriptionPlan"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rowLevelSecurity.public.subscriptionPlanItem",
+    "label": "Enable row-level security on \"subscriptionPlanItem\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rowLevelSecurity",
+        "name": "subscriptionPlanItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "check RLS is not already enabled on \"subscriptionPlanItem\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND NOT (\"c\".\"relrowsecurity\"))) AS \"result\"",
+        "params": [
+          "public",
+          "subscriptionPlanItem"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "enable row-level security on \"subscriptionPlanItem\"",
+        "sql": "ALTER TABLE \"public\".\"subscriptionPlanItem\" ENABLE ROW LEVEL SECURITY"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify row-level security is enabled on \"subscriptionPlanItem\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"c\".\"relrowsecurity\")) AS \"result\"",
+        "params": [
+          "public",
+          "subscriptionPlanItem"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rowLevelSecurity.public.user",
+    "label": "Enable row-level security on \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rowLevelSecurity",
+        "name": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "check RLS is not already enabled on \"user\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND NOT (\"c\".\"relrowsecurity\"))) AS \"result\"",
+        "params": [
+          "public",
+          "user"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "enable row-level security on \"user\"",
+        "sql": "ALTER TABLE \"public\".\"user\" ENABLE ROW LEVEL SECURITY"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify row-level security is enabled on \"user\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"c\".\"relrowsecurity\")) AS \"result\"",
+        "params": [
+          "public",
+          "user"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rlsPolicy.public.address.homefoods_server_only",
+    "label": "Create RLS policy \"homefoods_server_only\" on \"address\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rlsPolicy",
+        "name": "homefoods_server_only",
+        "table": "address"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure RLS policy \"homefoods_server_only\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "address",
+          "homefoods_server_only"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create RLS policy \"homefoods_server_only\"",
+        "sql": "CREATE POLICY \"homefoods_server_only\" ON \"public\".\"address\" AS RESTRICTIVE FOR ALL TO anon, authenticated USING (false) WITH CHECK (false)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify RLS policy \"homefoods_server_only\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "address",
+          "homefoods_server_only"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rlsPolicy.public.adminAuditLog.homefoods_server_only",
+    "label": "Create RLS policy \"homefoods_server_only\" on \"adminAuditLog\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rlsPolicy",
+        "name": "homefoods_server_only",
+        "table": "adminAuditLog"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure RLS policy \"homefoods_server_only\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "adminAuditLog",
+          "homefoods_server_only"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create RLS policy \"homefoods_server_only\"",
+        "sql": "CREATE POLICY \"homefoods_server_only\" ON \"public\".\"adminAuditLog\" AS RESTRICTIVE FOR ALL TO anon, authenticated USING (false) WITH CHECK (false)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify RLS policy \"homefoods_server_only\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "adminAuditLog",
+          "homefoods_server_only"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rlsPolicy.public.cart.homefoods_server_only",
+    "label": "Create RLS policy \"homefoods_server_only\" on \"cart\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rlsPolicy",
+        "name": "homefoods_server_only",
+        "table": "cart"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure RLS policy \"homefoods_server_only\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "cart",
+          "homefoods_server_only"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create RLS policy \"homefoods_server_only\"",
+        "sql": "CREATE POLICY \"homefoods_server_only\" ON \"public\".\"cart\" AS RESTRICTIVE FOR ALL TO anon, authenticated USING (false) WITH CHECK (false)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify RLS policy \"homefoods_server_only\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "cart",
+          "homefoods_server_only"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rlsPolicy.public.cartItem.homefoods_server_only",
+    "label": "Create RLS policy \"homefoods_server_only\" on \"cartItem\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rlsPolicy",
+        "name": "homefoods_server_only",
+        "table": "cartItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure RLS policy \"homefoods_server_only\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "cartItem",
+          "homefoods_server_only"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create RLS policy \"homefoods_server_only\"",
+        "sql": "CREATE POLICY \"homefoods_server_only\" ON \"public\".\"cartItem\" AS RESTRICTIVE FOR ALL TO anon, authenticated USING (false) WITH CHECK (false)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify RLS policy \"homefoods_server_only\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "cartItem",
+          "homefoods_server_only"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rlsPolicy.public.checkoutRequest.homefoods_server_only",
+    "label": "Create RLS policy \"homefoods_server_only\" on \"checkoutRequest\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rlsPolicy",
+        "name": "homefoods_server_only",
+        "table": "checkoutRequest"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure RLS policy \"homefoods_server_only\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "checkoutRequest",
+          "homefoods_server_only"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create RLS policy \"homefoods_server_only\"",
+        "sql": "CREATE POLICY \"homefoods_server_only\" ON \"public\".\"checkoutRequest\" AS RESTRICTIVE FOR ALL TO anon, authenticated USING (false) WITH CHECK (false)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify RLS policy \"homefoods_server_only\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "checkoutRequest",
+          "homefoods_server_only"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rlsPolicy.public.delivery.homefoods_server_only",
+    "label": "Create RLS policy \"homefoods_server_only\" on \"delivery\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rlsPolicy",
+        "name": "homefoods_server_only",
+        "table": "delivery"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure RLS policy \"homefoods_server_only\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "delivery",
+          "homefoods_server_only"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create RLS policy \"homefoods_server_only\"",
+        "sql": "CREATE POLICY \"homefoods_server_only\" ON \"public\".\"delivery\" AS RESTRICTIVE FOR ALL TO anon, authenticated USING (false) WITH CHECK (false)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify RLS policy \"homefoods_server_only\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "delivery",
+          "homefoods_server_only"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rlsPolicy.public.favorite.homefoods_server_only",
+    "label": "Create RLS policy \"homefoods_server_only\" on \"favorite\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rlsPolicy",
+        "name": "homefoods_server_only",
+        "table": "favorite"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure RLS policy \"homefoods_server_only\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "favorite",
+          "homefoods_server_only"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create RLS policy \"homefoods_server_only\"",
+        "sql": "CREATE POLICY \"homefoods_server_only\" ON \"public\".\"favorite\" AS RESTRICTIVE FOR ALL TO anon, authenticated USING (false) WITH CHECK (false)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify RLS policy \"homefoods_server_only\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "favorite",
+          "homefoods_server_only"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rlsPolicy.public.kitchenFavorite.homefoods_server_only",
+    "label": "Create RLS policy \"homefoods_server_only\" on \"kitchenFavorite\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rlsPolicy",
+        "name": "homefoods_server_only",
+        "table": "kitchenFavorite"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure RLS policy \"homefoods_server_only\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "kitchenFavorite",
+          "homefoods_server_only"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create RLS policy \"homefoods_server_only\"",
+        "sql": "CREATE POLICY \"homefoods_server_only\" ON \"public\".\"kitchenFavorite\" AS RESTRICTIVE FOR ALL TO anon, authenticated USING (false) WITH CHECK (false)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify RLS policy \"homefoods_server_only\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "kitchenFavorite",
+          "homefoods_server_only"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rlsPolicy.public.menuCategory.homefoods_server_only",
+    "label": "Create RLS policy \"homefoods_server_only\" on \"menuCategory\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rlsPolicy",
+        "name": "homefoods_server_only",
+        "table": "menuCategory"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure RLS policy \"homefoods_server_only\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "menuCategory",
+          "homefoods_server_only"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create RLS policy \"homefoods_server_only\"",
+        "sql": "CREATE POLICY \"homefoods_server_only\" ON \"public\".\"menuCategory\" AS RESTRICTIVE FOR ALL TO anon, authenticated USING (false) WITH CHECK (false)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify RLS policy \"homefoods_server_only\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "menuCategory",
+          "homefoods_server_only"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rlsPolicy.public.menuItem.homefoods_server_only",
+    "label": "Create RLS policy \"homefoods_server_only\" on \"menuItem\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rlsPolicy",
+        "name": "homefoods_server_only",
+        "table": "menuItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure RLS policy \"homefoods_server_only\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "menuItem",
+          "homefoods_server_only"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create RLS policy \"homefoods_server_only\"",
+        "sql": "CREATE POLICY \"homefoods_server_only\" ON \"public\".\"menuItem\" AS RESTRICTIVE FOR ALL TO anon, authenticated USING (false) WITH CHECK (false)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify RLS policy \"homefoods_server_only\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "menuItem",
+          "homefoods_server_only"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rlsPolicy.public.menuItemOption.homefoods_server_only",
+    "label": "Create RLS policy \"homefoods_server_only\" on \"menuItemOption\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rlsPolicy",
+        "name": "homefoods_server_only",
+        "table": "menuItemOption"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure RLS policy \"homefoods_server_only\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "menuItemOption",
+          "homefoods_server_only"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create RLS policy \"homefoods_server_only\"",
+        "sql": "CREATE POLICY \"homefoods_server_only\" ON \"public\".\"menuItemOption\" AS RESTRICTIVE FOR ALL TO anon, authenticated USING (false) WITH CHECK (false)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify RLS policy \"homefoods_server_only\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "menuItemOption",
+          "homefoods_server_only"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rlsPolicy.public.newsletterSubscriber.homefoods_server_only",
+    "label": "Create RLS policy \"homefoods_server_only\" on \"newsletterSubscriber\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rlsPolicy",
+        "name": "homefoods_server_only",
+        "table": "newsletterSubscriber"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure RLS policy \"homefoods_server_only\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "newsletterSubscriber",
+          "homefoods_server_only"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create RLS policy \"homefoods_server_only\"",
+        "sql": "CREATE POLICY \"homefoods_server_only\" ON \"public\".\"newsletterSubscriber\" AS RESTRICTIVE FOR ALL TO anon, authenticated USING (false) WITH CHECK (false)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify RLS policy \"homefoods_server_only\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "newsletterSubscriber",
+          "homefoods_server_only"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rlsPolicy.public.notification.homefoods_server_only",
+    "label": "Create RLS policy \"homefoods_server_only\" on \"notification\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rlsPolicy",
+        "name": "homefoods_server_only",
+        "table": "notification"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure RLS policy \"homefoods_server_only\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "notification",
+          "homefoods_server_only"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create RLS policy \"homefoods_server_only\"",
+        "sql": "CREATE POLICY \"homefoods_server_only\" ON \"public\".\"notification\" AS RESTRICTIVE FOR ALL TO anon, authenticated USING (false) WITH CHECK (false)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify RLS policy \"homefoods_server_only\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "notification",
+          "homefoods_server_only"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rlsPolicy.public.order.homefoods_server_only",
+    "label": "Create RLS policy \"homefoods_server_only\" on \"order\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rlsPolicy",
+        "name": "homefoods_server_only",
+        "table": "order"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure RLS policy \"homefoods_server_only\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "order",
+          "homefoods_server_only"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create RLS policy \"homefoods_server_only\"",
+        "sql": "CREATE POLICY \"homefoods_server_only\" ON \"public\".\"order\" AS RESTRICTIVE FOR ALL TO anon, authenticated USING (false) WITH CHECK (false)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify RLS policy \"homefoods_server_only\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "order",
+          "homefoods_server_only"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rlsPolicy.public.orderItem.homefoods_server_only",
+    "label": "Create RLS policy \"homefoods_server_only\" on \"orderItem\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rlsPolicy",
+        "name": "homefoods_server_only",
+        "table": "orderItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure RLS policy \"homefoods_server_only\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "orderItem",
+          "homefoods_server_only"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create RLS policy \"homefoods_server_only\"",
+        "sql": "CREATE POLICY \"homefoods_server_only\" ON \"public\".\"orderItem\" AS RESTRICTIVE FOR ALL TO anon, authenticated USING (false) WITH CHECK (false)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify RLS policy \"homefoods_server_only\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "orderItem",
+          "homefoods_server_only"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rlsPolicy.public.orderStatusEvent.homefoods_server_only",
+    "label": "Create RLS policy \"homefoods_server_only\" on \"orderStatusEvent\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rlsPolicy",
+        "name": "homefoods_server_only",
+        "table": "orderStatusEvent"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure RLS policy \"homefoods_server_only\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "orderStatusEvent",
+          "homefoods_server_only"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create RLS policy \"homefoods_server_only\"",
+        "sql": "CREATE POLICY \"homefoods_server_only\" ON \"public\".\"orderStatusEvent\" AS RESTRICTIVE FOR ALL TO anon, authenticated USING (false) WITH CHECK (false)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify RLS policy \"homefoods_server_only\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "orderStatusEvent",
+          "homefoods_server_only"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rlsPolicy.public.passwordResetToken.homefoods_server_only",
+    "label": "Create RLS policy \"homefoods_server_only\" on \"passwordResetToken\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rlsPolicy",
+        "name": "homefoods_server_only",
+        "table": "passwordResetToken"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure RLS policy \"homefoods_server_only\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "passwordResetToken",
+          "homefoods_server_only"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create RLS policy \"homefoods_server_only\"",
+        "sql": "CREATE POLICY \"homefoods_server_only\" ON \"public\".\"passwordResetToken\" AS RESTRICTIVE FOR ALL TO anon, authenticated USING (false) WITH CHECK (false)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify RLS policy \"homefoods_server_only\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "passwordResetToken",
+          "homefoods_server_only"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rlsPolicy.public.payment.homefoods_server_only",
+    "label": "Create RLS policy \"homefoods_server_only\" on \"payment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rlsPolicy",
+        "name": "homefoods_server_only",
+        "table": "payment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure RLS policy \"homefoods_server_only\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "payment",
+          "homefoods_server_only"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create RLS policy \"homefoods_server_only\"",
+        "sql": "CREATE POLICY \"homefoods_server_only\" ON \"public\".\"payment\" AS RESTRICTIVE FOR ALL TO anon, authenticated USING (false) WITH CHECK (false)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify RLS policy \"homefoods_server_only\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "payment",
+          "homefoods_server_only"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rlsPolicy.public.review.homefoods_server_only",
+    "label": "Create RLS policy \"homefoods_server_only\" on \"review\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rlsPolicy",
+        "name": "homefoods_server_only",
+        "table": "review"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure RLS policy \"homefoods_server_only\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "review",
+          "homefoods_server_only"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create RLS policy \"homefoods_server_only\"",
+        "sql": "CREATE POLICY \"homefoods_server_only\" ON \"public\".\"review\" AS RESTRICTIVE FOR ALL TO anon, authenticated USING (false) WITH CHECK (false)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify RLS policy \"homefoods_server_only\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "review",
+          "homefoods_server_only"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rlsPolicy.public.rider.homefoods_server_only",
+    "label": "Create RLS policy \"homefoods_server_only\" on \"rider\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rlsPolicy",
+        "name": "homefoods_server_only",
+        "table": "rider"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure RLS policy \"homefoods_server_only\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "rider",
+          "homefoods_server_only"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create RLS policy \"homefoods_server_only\"",
+        "sql": "CREATE POLICY \"homefoods_server_only\" ON \"public\".\"rider\" AS RESTRICTIVE FOR ALL TO anon, authenticated USING (false) WITH CHECK (false)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify RLS policy \"homefoods_server_only\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "rider",
+          "homefoods_server_only"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rlsPolicy.public.scheduledMeal.homefoods_server_only",
+    "label": "Create RLS policy \"homefoods_server_only\" on \"scheduledMeal\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rlsPolicy",
+        "name": "homefoods_server_only",
+        "table": "scheduledMeal"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure RLS policy \"homefoods_server_only\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "scheduledMeal",
+          "homefoods_server_only"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create RLS policy \"homefoods_server_only\"",
+        "sql": "CREATE POLICY \"homefoods_server_only\" ON \"public\".\"scheduledMeal\" AS RESTRICTIVE FOR ALL TO anon, authenticated USING (false) WITH CHECK (false)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify RLS policy \"homefoods_server_only\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "scheduledMeal",
+          "homefoods_server_only"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rlsPolicy.public.scheduledMealEvent.homefoods_server_only",
+    "label": "Create RLS policy \"homefoods_server_only\" on \"scheduledMealEvent\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rlsPolicy",
+        "name": "homefoods_server_only",
+        "table": "scheduledMealEvent"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure RLS policy \"homefoods_server_only\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "scheduledMealEvent",
+          "homefoods_server_only"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create RLS policy \"homefoods_server_only\"",
+        "sql": "CREATE POLICY \"homefoods_server_only\" ON \"public\".\"scheduledMealEvent\" AS RESTRICTIVE FOR ALL TO anon, authenticated USING (false) WITH CHECK (false)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify RLS policy \"homefoods_server_only\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "scheduledMealEvent",
+          "homefoods_server_only"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rlsPolicy.public.shop.homefoods_server_only",
+    "label": "Create RLS policy \"homefoods_server_only\" on \"shop\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rlsPolicy",
+        "name": "homefoods_server_only",
+        "table": "shop"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure RLS policy \"homefoods_server_only\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "shop",
+          "homefoods_server_only"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create RLS policy \"homefoods_server_only\"",
+        "sql": "CREATE POLICY \"homefoods_server_only\" ON \"public\".\"shop\" AS RESTRICTIVE FOR ALL TO anon, authenticated USING (false) WITH CHECK (false)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify RLS policy \"homefoods_server_only\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "shop",
+          "homefoods_server_only"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rlsPolicy.public.subscription.homefoods_server_only",
+    "label": "Create RLS policy \"homefoods_server_only\" on \"subscription\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rlsPolicy",
+        "name": "homefoods_server_only",
+        "table": "subscription"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure RLS policy \"homefoods_server_only\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "subscription",
+          "homefoods_server_only"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create RLS policy \"homefoods_server_only\"",
+        "sql": "CREATE POLICY \"homefoods_server_only\" ON \"public\".\"subscription\" AS RESTRICTIVE FOR ALL TO anon, authenticated USING (false) WITH CHECK (false)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify RLS policy \"homefoods_server_only\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "subscription",
+          "homefoods_server_only"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rlsPolicy.public.subscriptionPlan.homefoods_server_only",
+    "label": "Create RLS policy \"homefoods_server_only\" on \"subscriptionPlan\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rlsPolicy",
+        "name": "homefoods_server_only",
+        "table": "subscriptionPlan"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure RLS policy \"homefoods_server_only\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "subscriptionPlan",
+          "homefoods_server_only"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create RLS policy \"homefoods_server_only\"",
+        "sql": "CREATE POLICY \"homefoods_server_only\" ON \"public\".\"subscriptionPlan\" AS RESTRICTIVE FOR ALL TO anon, authenticated USING (false) WITH CHECK (false)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify RLS policy \"homefoods_server_only\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "subscriptionPlan",
+          "homefoods_server_only"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rlsPolicy.public.subscriptionPlanItem.homefoods_server_only",
+    "label": "Create RLS policy \"homefoods_server_only\" on \"subscriptionPlanItem\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rlsPolicy",
+        "name": "homefoods_server_only",
+        "table": "subscriptionPlanItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure RLS policy \"homefoods_server_only\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "subscriptionPlanItem",
+          "homefoods_server_only"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create RLS policy \"homefoods_server_only\"",
+        "sql": "CREATE POLICY \"homefoods_server_only\" ON \"public\".\"subscriptionPlanItem\" AS RESTRICTIVE FOR ALL TO anon, authenticated USING (false) WITH CHECK (false)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify RLS policy \"homefoods_server_only\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "subscriptionPlanItem",
+          "homefoods_server_only"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rlsPolicy.public.user.homefoods_server_only",
+    "label": "Create RLS policy \"homefoods_server_only\" on \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rlsPolicy",
+        "name": "homefoods_server_only",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure RLS policy \"homefoods_server_only\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "homefoods_server_only"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create RLS policy \"homefoods_server_only\"",
+        "sql": "CREATE POLICY \"homefoods_server_only\" ON \"public\".\"user\" AS RESTRICTIVE FOR ALL TO anon, authenticated USING (false) WITH CHECK (false)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify RLS policy \"homefoods_server_only\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "homefoods_server_only"
+        ]
+      }
+    ]
+  }
+]
